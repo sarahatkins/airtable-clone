@@ -4,6 +4,38 @@
 import { useState } from "react";
 import { faker } from "@faker-js/faker";
 import { FileText, User, Plus } from "lucide-react";
+import {
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+
+const columns = [
+  {
+    accessorKey: "name",
+    header: "Name",
+    size: 120,
+    cell: (props: any) => <p>{props.getValue()}</p>,
+  },
+  {
+    accessorKey: "notes",
+    header: "Notes",
+    size: 120,
+    cell: (props: any) => <p>{props.getValue()}</p>,
+  },
+  {
+    accessorKey: "assignee",
+    header: "Assignee",
+    size: 120,
+    cell: (props: any) => <p>{props.getValue()}</p>,
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    size: 120,
+    cell: (props: any) => <p>{props.getValue()}</p>,
+  },
+];
 
 const SelectedTableRows = () => {
   const generateFakeRow = () => ({
@@ -11,81 +43,138 @@ const SelectedTableRows = () => {
     notes: faker.lorem.sentence(),
     assignee: faker.person.firstName(),
     status: faker.helpers.arrayElement(["Open", "In Progress", "Done"]),
-    attachments: faker.number.int({ min: 0, max: 5 }),
-    attachmentSize: faker.helpers.arrayElement(["Small", "Medium", "Large"]),
   });
 
-  const [rows, setRows] = useState(() =>
-    Array.from({ length: 5 }, generateFakeRow)
+  const [data, setData] = useState(() =>
+    Array.from({ length: 5 }, generateFakeRow),
   );
+
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    columnResizeMode: "onChange",
+  });
+
+  console.log(table.getHeaderGroups());
+
   return (
-    <div className="flex flex-col h-full">
-      {/* Header + rows*/}
-      <div className="">
-
-      <div
-        className="grid border-b border-gray-200 bg-gray-50 text-xs font-medium text-gray-500"
-        style={{
-          gridTemplateColumns: "40px 150px 180px 150px 100px 120px 140px",
-        }}
-      >
-        <div className="px-2 py-2 flex items-center justify-center">
-          <input type="checkbox" />
-        </div>
-        <div className="border-r border-gray-200 px-3 py-2">Name</div>
-        <div className="flex items-center gap-1 border-r border-gray-200 px-3 py-2">
-          <FileText className="h-3 w-3" /> Notes
-        </div>
-        <div className="flex items-center gap-1 border-r border-gray-200 px-3 py-2">
-          <User className="h-3 w-3" /> Assignee
-        </div>
-        <div className="border-r border-gray-200 px-3 py-2">Status</div>
-        <div className="border-r border-gray-200 px-3 py-2">Attachments</div>
-        <div className="px-3 py-2">Attachment Size</div>
-      </div>
-
-      {/* Rows */}
-      <div className="overflow-y-auto flex-grow">
-
-      {rows.map((row, idx) => (
-        <div
-        key={idx}
-        className="grid border-b border-gray-100 text-sm bg-white"
-        style={{
-          gridTemplateColumns: "40px 150px 180px 150px 100px 120px 140px",
-        }}
-        >
-          <div className="px-2 py-2 flex items-center justify-center text-gray-400">
-            <input type="checkbox" />
-          </div>
-          <div className="px-3 py-2">{row.name}</div>
-          <div className="px-3 py-2">{row.notes}</div>
-          <div className="px-3 py-2">{row.assignee}</div>
-          <div className="px-3 py-2">{row.status}</div>
-          <div className="px-3 py-2">{row.attachments}</div>
-          <div className="px-3 py-2 text-gray-500 text-xs">
-            {row.attachmentSize}
-          </div>
+    <div className="table w-full">
+      {table.getHeaderGroups().map((headerGroup) => (
+        <div className="tr flex" key={headerGroup.id}>
+          {headerGroup.headers.map((header) => (
+            <div
+              className="th relative flex items-center border-b px-2 py-1"
+              style={{ width: header.getSize() }}
+              key={header.id}
+            >
+              {flexRender(header.column.columnDef.header, header.getContext())}
+              {header.column.getCanSort() && (
+                <button
+                  onClick={header.column.getToggleSortingHandler()}
+                  className="ml-2 text-xs text-gray-600 hover:text-black"
+                >
+                  ⇅
+                </button>
+              )}
+              {
+                {
+                  asc: " 🔼",
+                  desc: " 🔽",
+                }[header.column.getIsSorted() as string]
+              }
+              <div
+                onMouseDown={header.getResizeHandler()}
+                onTouchStart={header.getResizeHandler()}
+                className={`absolute top-0 right-0 h-full w-1 cursor-col-resize transition-colors duration-150 select-none ${header.column.getIsResizing() ? "bg-blue-500" : "bg-transparent"} `}
+              />
+            </div>
+          ))}
         </div>
       ))}
-        </div>
 
-      {/* Add Row Button */}
-      <div className="bg-white text-gray-500 text-xs px-3 py-2">
-        <button
-          onClick={() => setRows([...rows, generateFakeRow()])}
-          className="flex items-center gap-1 text-sm text-gray-600 hover:text-black"
-        >
-          <Plus size={16} />
-        </button>
-      </div>
+      {table.getRowModel().rows.map((row) => (
+        <div className="tr flex" key={row.id}>
+          {row.getVisibleCells().map((cell) => (
+            <div
+              className="td border-b px-2 py-1"
+              style={{ width: cell.column.getSize() }}
+              key={cell.id}
+            >
+              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            </div>
+          ))}
         </div>
-
-      {/* Footer */}
-      <div className="text-gray-500 text-xs px-3 py-1 ">
-        {rows.length} record{rows.length !== 1 ? "s" : ""}
-      </div>
+      ))}
     </div>
+
+    // <div className="flex flex-col h-full">
+    //   {/* Header + rows*/}
+    //   <div className="">
+
+    //   <div
+    //     className="grid border-b border-gray-200 bg-gray-50 text-xs font-medium text-gray-500"
+    //     style={{
+    //       gridTemplateColumns: "40px 150px 180px 150px 100px 120px 140px",
+    //     }}
+    //   >
+    //     <div className="px-2 py-2 flex items-center justify-center">
+    //       <input type="checkbox" />
+    //     </div>
+    //     <div className="border-r border-gray-200 px-3 py-2">Name</div>
+    //     <div className="flex items-center gap-1 border-r border-gray-200 px-3 py-2">
+    //       <FileText className="h-3 w-3" /> Notes
+    //     </div>
+    //     <div className="flex items-center gap-1 border-r border-gray-200 px-3 py-2">
+    //       <User className="h-3 w-3" /> Assignee
+    //     </div>
+    //     <div className="border-r border-gray-200 px-3 py-2">Status</div>
+    //     <div className="border-r border-gray-200 px-3 py-2">Attachments</div>
+    //     <div className="px-3 py-2">Attachment Size</div>
+    //   </div>
+
+    //   {/* Rows */}
+    //   <div className="overflow-y-auto flex-grow">
+
+    //   {rows.map((row, idx) => (
+    //     <div
+    //     key={idx}
+    //     className="grid border-b border-gray-100 text-sm bg-white"
+    //     style={{
+    //       gridTemplateColumns: "40px 150px 180px 150px 100px 120px 140px",
+    //     }}
+    //     >
+    //       <div className="px-2 py-2 flex items-center justify-center text-gray-400">
+    //         <input type="checkbox" />
+    //       </div>
+    //       <div className="px-3 py-2">{row.name}</div>
+    //       <div className="px-3 py-2">{row.notes}</div>
+    //       <div className="px-3 py-2">{row.assignee}</div>
+    //       <div className="px-3 py-2">{row.status}</div>
+    //       <div className="px-3 py-2">{row.attachments}</div>
+    //       <div className="px-3 py-2 text-gray-500 text-xs">
+    //         {row.attachmentSize}
+    //       </div>
+    //     </div>
+    //   ))}
+    //     </div>
+
+    //   {/* Add Row Button */}
+    //   <div className="bg-white text-gray-500 text-xs px-3 py-2">
+    //     <button
+    //       onClick={() => setRows([...rows, generateFakeRow()])}
+    //       className="flex items-center gap-1 text-sm text-gray-600 hover:text-black"
+    //     >
+    //       <Plus size={16} />
+    //     </button>
+    //   </div>
+    //     </div>
+
+    //   {/* Footer */}
+    //   <div className="text-gray-500 text-xs px-3 py-1 ">
+    //     {rows.length} record{rows.length !== 1 ? "s" : ""}
+    //   </div>
+    // </div>
   );
 };
 export default SelectedTableRows;
