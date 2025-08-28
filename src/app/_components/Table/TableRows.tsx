@@ -7,33 +7,37 @@ import { FileText, User, Plus } from "lucide-react";
 import {
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import EditableCell from "./TableComponents/EditableCell";
 
 const columns = [
   {
     accessorKey: "name",
     header: "Name",
     size: 120,
-    cell: (props: any) => <p>{props.getValue()}</p>,
+    cell: EditableCell,
   },
   {
     accessorKey: "notes",
     header: "Notes",
     size: 120,
-    cell: (props: any) => <p>{props.getValue()}</p>,
+    cell: EditableCell,
   },
   {
     accessorKey: "assignee",
     header: "Assignee",
     size: 120,
-    cell: (props: any) => <p>{props.getValue()}</p>,
+    cell: EditableCell,
   },
   {
     accessorKey: "status",
     header: "Status",
     size: 120,
-    cell: (props: any) => <p>{props.getValue()}</p>,
+    cell: EditableCell,
   },
 ];
 
@@ -53,7 +57,27 @@ const SelectedTableRows = () => {
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     columnResizeMode: "onChange",
+    meta: {
+      updateData: <K extends keyof any>(
+        rowIndex: number,
+        columnId: K,
+        value: any[K],
+      ) =>
+        setData((prev: any) =>
+          prev.map((row: any, index: any) =>
+            index === rowIndex
+              ? {
+                  ...prev[rowIndex],
+                  [columnId]: value,
+                }
+              : row,
+          ),
+        ),
+    } as any,
   });
 
   console.log(table.getHeaderGroups());
