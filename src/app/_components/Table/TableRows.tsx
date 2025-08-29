@@ -1,7 +1,7 @@
 // app/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, type SetStateAction } from "react";
 import { faker } from "@faker-js/faker";
 import { FileText, User, Plus } from "lucide-react";
 import {
@@ -11,8 +11,10 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
+  type ColumnFilter,
 } from "@tanstack/react-table";
 import EditableCell from "./TableComponents/EditableCell";
+import TableFilters from "./TableComponents/TableFilters";
 
 const columns = [
   {
@@ -52,11 +54,16 @@ const SelectedTableRows = () => {
   const [data, setData] = useState(() =>
     Array.from({ length: 5 }, generateFakeRow),
   );
+  const [columnFilters, setColumnFilters] = useState<ColumnFilter[]>([]);
 
   const table = useReactTable({
     data,
     columns,
+    state: {
+      columnFilters
+    },
     getCoreRowModel: getCoreRowModel(),
+    onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -84,6 +91,7 @@ const SelectedTableRows = () => {
 
   return (
     <div className="table w-full">
+      <TableFilters columnFilters={columnFilters} setColumnFilters={setColumnFilters} />
       {table.getHeaderGroups().map((headerGroup) => (
         <div className="tr flex" key={headerGroup.id}>
           {headerGroup.headers.map((header) => (
