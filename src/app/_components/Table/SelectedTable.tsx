@@ -4,11 +4,7 @@
 import { useState } from "react";
 import {
   Search,
-  Plus,
   ChevronDown,
-  User,
-  FileText,
-  CheckCircle,
   Menu,
   EyeOff,
   Filter,
@@ -16,18 +12,26 @@ import {
   ArrowDownUp,
   Palette,
   List,
-  Share2,
   Table,
 } from "lucide-react";
 import TableMenu from "./TableMenu";
-import SelectedTableRows from "./TableRows";
+import SelectedTableRows from "./SelectedTableRows";
+import type { columns, rows, table } from "~/server/db/schemas/tableSchema";
+import type { InferSelectModel } from "drizzle-orm";
 
-const SelectedTable = () => {
-  const [rows] = useState([
-    { id: 1, name: "", notes: "", assignee: "", status: "", attachments: "" },
-    { id: 2, name: "", notes: "", assignee: "", status: "", attachments: "" },
-    { id: 3, name: "", notes: "", assignee: "", status: "", attachments: "" },
-  ]);
+type Table = InferSelectModel<typeof table>;
+type Col = InferSelectModel<typeof columns>;
+type Row = InferSelectModel<typeof rows>;
+
+interface SelectedTableProps {
+  table: Table,
+  tableRows: Row[];
+  tableCols: Col[]
+}
+
+const SelectedTable: React.FC<SelectedTableProps> = ({ table, tableRows, tableCols }) => {
+  const [rows, setRows] = useState(tableRows);
+  const [cols, setCols] = useState(tableCols);
 
   return (
     <div className="h-full w-full bg-gray-50 text-sm text-gray-700">
@@ -82,13 +86,12 @@ const SelectedTable = () => {
         </div>
       </div>
 
-      <div className="h-full flex">
+      <div className="flex h-full">
         {/* Sidebar */}
         <TableMenu />
         {/* Row cells */}
-        <SelectedTableRows />
+        <SelectedTableRows rows={rows} cols={cols} />
       </div>
-
     </div>
   );
 };

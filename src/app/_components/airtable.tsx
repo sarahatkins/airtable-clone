@@ -3,74 +3,61 @@
 
 import { Plus, ChevronDown } from "lucide-react";
 import Image from "next/image";
-import SelectedTable from "./Table/Table";
-import { base, columns } from "~/server/db/schemas/tableSchema"; // your Drizzle table
-import type { InferSelectModel } from "drizzle-orm";
+import SelectedTable from "./Table/SelectedTable";
 import { useEffect, useState } from "react";
-import { redirect } from "next/navigation";
 import { api } from "~/trpc/react";
-import { DEFAULT_NUM_ROWS, DEFAULT_COLS } from "../defaults";
-
-type Base = InferSelectModel<typeof base>;
+import { useDefaultTableSetup } from "./Table/CreateDefaultTable";
+import { type Col, type Row, type Table } from "../defaults";
 
 interface AirtableProps {
   baseId: string;
 }
 
-type ColumnRow = InferSelectModel<typeof columns>;
-
 const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
-  const { data: base, error } = api.base.getById.useQuery({ id: baseId });
-  const { data: tables, isLoading } = api.table.getTablesByBase.useQuery({ baseId });
+  const { data: base } = api.base.getById.useQuery({ id: baseId });
+  const { newTable, newRows, newCols, handleCreateTable } =
+    useDefaultTableSetup(baseId);
+  const { data: tables, isLoading: tablesLoading } =
+    api.table.getTablesByBase.useQuery({ baseId });
 
-  const createColumns = api.table.createColumn.useMutation({
-    onSuccess: (newCol) => console.log("Created column:", newCol),
-  });
+  const [selectedTable, setSelectedTable] = useState<Table | null>(null);
+  const [selectedRows, setSelectedRows] = useState<Row[]>([]);
+  const [selectedCols, setSelectedCols] = useState<Col[]>([]);
 
-  const createRows = api.table.createRow.useMutation({
-    onSuccess: (newRow) => console.log("Created row:", newRow),
-  });
+  // Fetch columns and rows for the selected table
+  const { data: columns, isLoading: colsLoading } =
+    api.table.getColumnsByTable.useQuery(
+      { tableId: selectedTable?.id ?? 0 },
+      { enabled: !!selectedTable?.id },
+    );
 
-  const createTable = api.table.createTable.useMutation({
-    onSuccess: async (newTable) => {
-      console.log("Created table:", newTable);
+  const { data: rowList, isLoading: rowsLoading } =
+    api.table.getRowsByTable.useQuery(
+      { tableId: selectedTable?.id ?? 0 },
+      { enabled: !!selectedTable?.id },
+    );
 
-      if (!newTable) return;
-
-      // Create default cols
-      for (const col of DEFAULT_COLS) {
-        await createColumns.mutateAsync({
-          name: col.name,
-          type: col.type,
-          tableId: newTable.id,
-        });
-      }
-
-      // Create default rows
-      for (let i = 0; i < DEFAULT_NUM_ROWS; i++) {
-        await createRows.mutateAsync({ tableId: newTable.id });
-      }
-    },
-    onError: (error) => {
-      console.error("Error creating table:", error);
-      redirect("~/app");
-    },
-  });
-
-  const handleCreateTable = (tableName: string) => {
-    createTable.mutate({ baseId, name: tableName });
-  };
+  const isDataLoading = tablesLoading || colsLoading || rowsLoading;
 
   useEffect(() => {
-    if(!isLoading && tables && tables.length === 0) handleCreateTable("Table 1");
-  }, [isLoading, tables]);
-
-  useEffect(() => {
-    if (error) {
-      console.error("Error fetching base", error);
-      redirect("~/app");
+    if (!tablesLoading && tables) {
+      if (tables.length === 0) {
+        handleCreateTable("Table 1");
+      } else if (!selectedTable) {
+        setSelectedTable(tables[0]!);
+      }
     }
-  }, [error]);
+  }, [tables, tablesLoading, selectedTable, handleCreateTable]);
+
+  useEffect(() => {
+    if (columns) setSelectedCols(columns);
+    if (rowList) setSelectedRows(rowList);
+  }, [columns, rowList]);
+
+  useEffect(() => {
+    if (newRows) setSelectedRows(newRows);
+    if (newCols) setSelectedCols(newCols);
+  }, [newRows, newCols]);
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
@@ -176,7 +163,16 @@ const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
         </div>
 
         {/* Table Widget */}
-        <SelectedTable />
+        {!isDataLoading &&
+          selectedTable &&
+          selectedRows.length > 0 &&
+          selectedCols.length > 0 && (
+            <SelectedTable
+              table={selectedTable}
+              tableRows={selectedRows}
+              tableCols={selectedCols}
+            />
+          )}
       </div>
     </div>
   );

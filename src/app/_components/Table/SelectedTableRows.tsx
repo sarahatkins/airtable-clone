@@ -1,7 +1,7 @@
 // app/page.tsx
 "use client";
 
-import { useState, type SetStateAction } from "react";
+import React, { useEffect, useState, type SetStateAction } from "react";
 import { faker } from "@faker-js/faker";
 import { FileText, User, Plus } from "lucide-react";
 import {
@@ -15,81 +15,52 @@ import {
 } from "@tanstack/react-table";
 import EditableCell from "./TableComponents/EditableCell";
 import TableFilters from "./TableComponents/TableFilters";
+import type { Col, Row } from "~/app/defaults";
 
-const columns = [
-  {
-    accessorKey: "name",
-    header: "Name",
+interface SelectedRowsProps {
+  rows: Row[];
+  cols: Col[];
+}
+
+const SelectedTableRows: React.FC<SelectedRowsProps> = ({ rows, cols }) => {
+  const [data, setData] = useState<Row[]>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFilter[]>([]);
+  const columns = cols.map((col) => ({
+    accessorKey: col.name,
+    header: col.name,
     size: 120,
     cell: EditableCell,
     enableColumnFilter: true,
-    filterFn: "includesString",
-  },
-  {
-    accessorKey: "notes",
-    header: "Notes",
-    size: 120,
-    cell: EditableCell,
-  },
-  {
-    accessorKey: "assignee",
-    header: "Assignee",
-    size: 120,
-    cell: EditableCell,
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    size: 120,
-    cell: EditableCell,
-  },
-];
+  }));
 
-const SelectedTableRows = () => {
-  const generateFakeRow = () => ({
-    name: faker.person.fullName(),
-    notes: faker.lorem.sentence(),
-    assignee: faker.person.firstName(),
-    status: faker.helpers.arrayElement(["Open", "In Progress", "Done"]),
-  });
-
-  const [data, setData] = useState(() =>
-    Array.from({ length: 20 }, generateFakeRow),
-  );
-  const [columnFilters, setColumnFilters] = useState<ColumnFilter[]>([]);
+  useEffect(() => {
+    console.log("COLUMNS", columns, cols)
+  }, [columns])
+  
 
   const table = useReactTable({
     data,
     columns,
-    state: {
-      columnFilters,
-    },
-    getCoreRowModel: getCoreRowModel(),
+    state: { columnFilters },
     onColumnFiltersChange: setColumnFilters,
+    getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     columnResizeMode: "onChange",
     meta: {
-      updateData: <K extends keyof any>(
-        rowIndex: number,
-        columnId: K,
-        value: any[K],
-      ) =>
-        setData((prev: any) =>
-          prev.map((row: any, index: any) =>
-            index === rowIndex
-              ? {
-                  ...prev[rowIndex],
-                  [columnId]: value,
-                }
-              : row,
+      updateData: (rowIndex: number, columnId: string, value: any) =>
+        setData((prev) =>
+          prev.map((row, idx) =>
+            idx === rowIndex ? { ...row, [columnId]: value } : row,
           ),
         ),
-    } as any,
+    },
   });
 
-  console.log(table.getHeaderGroups());
+  useEffect(() => {
+    setData(rows);
+  }, [rows]);
 
   return (
     <div className="table w-full">

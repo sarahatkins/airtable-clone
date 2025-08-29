@@ -65,7 +65,7 @@ export const tableRouter = createTRPCRouter({
     }),
 
   getColumnsByTable: publicProcedure
-    .input(z.object({ tableId: z.string() }))
+    .input(z.object({ tableId: z.number() }))
     .query(async ({ input }) => {
       return db
         .select()
@@ -89,7 +89,7 @@ export const tableRouter = createTRPCRouter({
     }),
 
   getRowsByTable: publicProcedure
-    .input(z.object({ tableId: z.string() }))
+    .input(z.object({ tableId: z.number() }))
     .query(async ({ input }) => {
       return db
         .select()

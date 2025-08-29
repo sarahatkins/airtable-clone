@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search } from "lucide-react"; // using lucide-react for icons
+import { Search } from "lucide-react";
 import type { ColumnFilter } from "@tanstack/react-table";
 import FilterPopover from "./FilterPopover";
 
@@ -14,11 +14,11 @@ const TableFilters: React.FC<TableFiltersProps> = ({
   columnFilters,
   setColumnFilters,
 }) => {
-  const [taskName, setTaskName] = useState("");
+  const [taskName, setTaskName] = useState<any>("");
 
   // whenever columnFilters change externally, sync input
   useEffect(() => {
-    const existing = columnFilters.find((f) => f.id === "name")?.value || "";
+    const existing = columnFilters.find((f) => f.id === "Name")?.value || "";
     setTaskName(existing);
   }, [columnFilters]);
 
@@ -41,7 +41,7 @@ const TableFilters: React.FC<TableFiltersProps> = ({
           placeholder="Task name"
           className="w-full rounded-md border border-gray-300 bg-gray-50 py-2 pr-3 pl-8 text-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:outline-none"
           value={taskName}
-          onChange={(e) => onFilterChange("name", e.target.value)}
+          onChange={(e) => onFilterChange("Name", e.target.value)}
         />
       </div>
 
