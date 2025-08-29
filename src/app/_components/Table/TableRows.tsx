@@ -22,6 +22,8 @@ const columns = [
     header: "Name",
     size: 120,
     cell: EditableCell,
+    enableColumnFilter: true,
+    filterFn: "includesString",
   },
   {
     accessorKey: "notes",
@@ -52,7 +54,7 @@ const SelectedTableRows = () => {
   });
 
   const [data, setData] = useState(() =>
-    Array.from({ length: 5 }, generateFakeRow),
+    Array.from({ length: 20 }, generateFakeRow),
   );
   const [columnFilters, setColumnFilters] = useState<ColumnFilter[]>([]);
 
@@ -60,7 +62,7 @@ const SelectedTableRows = () => {
     data,
     columns,
     state: {
-      columnFilters
+      columnFilters,
     },
     getCoreRowModel: getCoreRowModel(),
     onColumnFiltersChange: setColumnFilters,
@@ -91,7 +93,10 @@ const SelectedTableRows = () => {
 
   return (
     <div className="table w-full">
-      <TableFilters columnFilters={columnFilters} setColumnFilters={setColumnFilters} />
+      <TableFilters
+        columnFilters={columnFilters}
+        setColumnFilters={setColumnFilters}
+      />
       {table.getHeaderGroups().map((headerGroup) => (
         <div className="tr flex" key={headerGroup.id}>
           {headerGroup.headers.map((header) => (
@@ -138,6 +143,32 @@ const SelectedTableRows = () => {
           ))}
         </div>
       ))}
+
+      <div className="mt-2 flex items-center gap-3">
+        {/* Page Info */}
+        <p className="text-sm text-gray-700">
+          Page {table.getState().pagination.pageIndex + 1} of{" "}
+          {table.getPageCount()}
+        </p>
+
+        {/* Pagination Buttons */}
+        <div className="inline-flex rounded-md shadow-sm" role="group">
+          <button
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+            className="rounded-l-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {"<"}
+          </button>
+          <button
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+            className="rounded-r-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {">"}
+          </button>
+        </div>
+      </div>
     </div>
 
     // <div className="flex flex-col h-full">

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Search } from "lucide-react"; // using lucide-react for icons
 import type { ColumnFilter } from "@tanstack/react-table";
+import FilterPopover from "./FilterPopover";
 
 interface TableFiltersProps {
   columnFilters: ColumnFilter[];
@@ -45,10 +46,10 @@ const TableFilters: React.FC<TableFiltersProps> = ({
       </div>
 
       {/* Custom FilterPopover component */}
-      {/* <FilterPopover
+      <FilterPopover
         columnFilters={columnFilters}
         setColumnFilters={setColumnFilters}
-      /> */}
+      />
     </div>
   );
 };
