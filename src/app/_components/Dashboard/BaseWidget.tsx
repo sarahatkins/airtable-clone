@@ -1,24 +1,35 @@
-import { type LucideIcon } from "lucide-react";
+import type { InferSelectModel } from "drizzle-orm";
+import { useSession } from "next-auth/react";
+import { redirect, useRouter } from "next/navigation";
+import { server } from "typescript";
+import type { base } from "~/server/db/schemas/tableSchema";
+import { api } from "~/trpc/server";
 
+type Base = InferSelectModel<typeof base>;
 
-interface WidgetProps {
-  name: string;
-  desc: string;
-  icon: LucideIcon;
-  color:string;
+interface BaseWidgetProps {
+  base: Base;
 }
-import type React from "react";
 
-const BaseWidget: React.FC<WidgetProps> = ({name, desc, icon: Icon, color}) => {
+const BaseWidget: React.FC<BaseWidgetProps> = ({base}) => {
+  
+  const router = useRouter();
+
+  const handleWidgetClick = () => {
+    router.push(`/table/${base.id}`);
+  };
+
   return (
-    <div className="cursor-pointer items-start space-x-3 rounded-lg bg-white p-4  border border-gray-300 hover:shadow-2xl">
-      {/* Icon */}
-      <div className="flex items-center mb-1">
-        <Icon className={`h-4 w-4 text-${color}`} />
-        <p className="font-semibold pl-2 text-sm">{name}</p>
+    <div
+      className="flex cursor-pointer items-center rounded-lg border border-gray-300 bg-white p-5 shadow-xs hover:shadow-lg"
+      onClick={handleWidgetClick}
+    >
+      <div className="flex h-9 w-10 items-center justify-center rounded-xl bg-green-700 p-7 text-xl text-white">
+        Un
       </div>
-      <div className="text-xs text-gray-500">
-        {desc}
+      <div className="ml-3">
+        <p className="font-medium">{base.name}</p>
+        <p className="text-xs text-gray-500">Opened 15 minutes ago</p>
       </div>
     </div>
   );

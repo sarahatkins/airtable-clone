@@ -19,6 +19,7 @@ export const base = createTable("base", (d) => ({
     .notNull()
     .$defaultFn(() => "Untitled Base"),
   createdAt: d.timestamp("created_at", { withTimezone: true }).defaultNow(),
+  lastOpened: d.timestamp("last_open", { withTimezone: true }).defaultNow(),
 }));
 
 // --------------------------------------
@@ -56,10 +57,16 @@ export const rows = createTable("rows", (d) => ({
 
 export const cellValues = createTable("cell_values", (d) => ({
   id: d.serial().primaryKey(),
-  rowId: d.integer().references(() => rows.id, { onDelete: "cascade" }).notNull(),
-  columnId: d.integer().references(() => columns.id, {
-    onDelete: "cascade",
-  }).notNull(),
+  rowId: d
+    .integer()
+    .references(() => rows.id, { onDelete: "cascade" })
+    .notNull(),
+  columnId: d
+    .integer()
+    .references(() => columns.id, {
+      onDelete: "cascade",
+    })
+    .notNull(),
   value: d.jsonb().notNull(),
 }));
 

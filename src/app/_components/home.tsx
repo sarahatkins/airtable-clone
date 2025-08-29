@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "~/trpc/react";
-import HomeWidget from "./Dashboard/HomeWidget";
+import BaseWidget from "./Dashboard/BaseWidget";
 import Image from "next/image";
 import Sidebar from "./Dashboard/Sidebar";
 import {
@@ -15,11 +15,30 @@ import {
   Sparkles,
   TableCellsSplit,
 } from "lucide-react";
-import BaseWidget from "./Dashboard/BaseWidget";
+import HomeWidget from "./Dashboard/HomeWidget";
+import { useSession } from "next-auth/react";
+import type { InferSelectModel } from "drizzle-orm";
+import type { base } from "~/server/db/schemas/tableSchema";
+
+type Base = InferSelectModel<typeof base>;
 
 // app/page.tsx
 export default function Dashboard() {
   const [expandedSidebar, setExpandedSidebar] = useState<boolean>(true);
+
+  const { data: session, status } = useSession();
+  const { data: bases, error } = api.base.getAll.useQuery(
+    { userId: session?.user.id ?? "" }, // pass empty string if session not ready
+    { enabled: !!session }, // only run query when session exists
+  );
+
+  const [baseList, setBaseList] = useState<Base[]>([]);
+
+  useEffect(() => {
+    if (bases) {
+      setBaseList(bases);
+    }
+  }, [bases]);
 
   return (
     <div className="flex h-screen flex-col bg-gray-50">
@@ -66,13 +85,13 @@ export default function Dashboard() {
             {/* Build app card */}
             <h1 className="text-2xl font-bold">Home</h1>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              <BaseWidget
+              <HomeWidget
                 name={"Start with Omni"}
                 desc={"Use AI to build a custom app tailored to your workflow."}
                 icon={Sparkles}
                 color="pink-600"
               />
-              <BaseWidget
+              <HomeWidget
                 name={"Start with templates"}
                 desc={
                   "Select a template to get started and customize as you go."
@@ -80,7 +99,7 @@ export default function Dashboard() {
                 icon={Grid2X2}
                 color="purple-950"
               />
-              <BaseWidget
+              <HomeWidget
                 name={"Quickly upload"}
                 desc={
                   "Easily migrate your existing projects in just a few minutes."
@@ -88,7 +107,7 @@ export default function Dashboard() {
                 icon={ArrowUp}
                 color="emerald-700"
               />
-              <BaseWidget
+              <HomeWidget
                 name={"Build an app on your own"}
                 desc={"Start with a blank app and build your ideal workflow."}
                 icon={TableCellsSplit}
@@ -117,7 +136,9 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <HomeWidget />
+                {baseList.map((b) => (
+                  <BaseWidget key={b.id} base={b} />
+                ))}
               </div>
             </div>
           </div>

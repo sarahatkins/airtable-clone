@@ -1,21 +1,24 @@
-import { redirect } from "next/navigation";
+import { type LucideIcon } from "lucide-react";
 
-interface HomeProps {}
 
-const HomeWidget: React.FC<HomeProps> = () => {
+interface WidgetProps {
+  name: string;
+  desc: string;
+  icon: LucideIcon;
+  color:string;
+}
+import type React from "react";
 
-  const handleWidgetClick = () => {
-    redirect("./airtable?id=123")
-  }
-
+const HomeWidget: React.FC<WidgetProps> = ({name, desc, icon: Icon, color}) => {
   return (
-    <div className="flex cursor-pointer items-center rounded-lg border border-gray-300 bg-white p-5 shadow-xs hover:shadow-lg" onClick={handleWidgetClick}>
-      <div className="flex h-9 w-10 items-center justify-center rounded-xl bg-green-700 p-7 text-xl text-white">
-        Un
+    <div className="cursor-pointer items-start space-x-3 rounded-lg bg-white p-4  border border-gray-300 hover:shadow-2xl">
+      {/* Icon */}
+      <div className="flex items-center mb-1">
+        <Icon className={`h-4 w-4 text-${color}`} />
+        <p className="font-semibold pl-2 text-sm">{name}</p>
       </div>
-      <div className="ml-3">
-        <p className="font-medium">Untitled Base</p>
-        <p className="text-xs text-gray-500">Opened 15 minutes ago</p>
+      <div className="text-xs text-gray-500">
+        {desc}
       </div>
     </div>
   );

@@ -1,0 +1,1 @@
+ALTER TABLE "airtable_base" ADD COLUMN "last_open" timestamp with time zone DEFAULT now();
