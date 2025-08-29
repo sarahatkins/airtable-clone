@@ -21,7 +21,7 @@ type ColumnRow = InferSelectModel<typeof columns>;
 type RowRow = InferSelectModel<typeof rows>;
 type CellValueRow = InferSelectModel<typeof cellValues>;
 
-export const airtableRouter = createTRPCRouter({
+export const tableRouter = createTRPCRouter({
   // ------------------ TABLES ------------------
   createTable: publicProcedure
     .input(z.object({ baseId: z.string(), name: z.string().min(1) }))
