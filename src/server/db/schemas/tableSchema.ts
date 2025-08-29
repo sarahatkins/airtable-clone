@@ -43,6 +43,7 @@ export const columns = createTable("columns", (d) => ({
   name: d.varchar({ length: 255 }).notNull(),
   type: d.text().notNull().default("text"),
   orderIndex: d.integer().notNull(),
+  primary: d.boolean(),
 }));
 
 export const rows = createTable("rows", (d) => ({

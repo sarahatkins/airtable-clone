@@ -9,6 +9,7 @@ import {
   ShoppingBag,
   Plus,
 } from "lucide-react";
+import CreateBaseButton from "./CreateBaseButton";
 
 interface SidebarProps {
   expanded: boolean;
@@ -60,10 +61,7 @@ const Sidebar: React.FC<SidebarProps> = ({ expanded }) => {
       </div>
 
       <div className="p-4">
-        <button className="flex w-full items-center justify-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-medium text-white shadow-sm transition-colors duration-200 hover:bg-blue-700">
-          <Plus className="h-4 w-4" />
-          {expanded && <span>Create</span>}
-        </button>
+        <CreateBaseButton expanded={expanded} />
       </div>
     </aside>
   );

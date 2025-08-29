@@ -5,7 +5,7 @@ interface HomeProps {}
 const HomeWidget: React.FC<HomeProps> = () => {
 
   const handleWidgetClick = () => {
-    redirect("./table")
+    redirect("./airtable?id=123")
   }
 
   return (

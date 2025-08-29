@@ -15,7 +15,6 @@ import { eq, type InferSelectModel, and } from "drizzle-orm";
 import { db } from "~/server/db";
 
 // Types
-type BaseRow = InferSelectModel<typeof base>;
 type TableRow = InferSelectModel<typeof table>;
 type ColumnRow = InferSelectModel<typeof columns>;
 type RowRow = InferSelectModel<typeof rows>;
@@ -47,7 +46,7 @@ export const tableRouter = createTRPCRouter({
   createColumn: publicProcedure
     .input(
       z.object({
-        tableId: z.string(),
+        tableId: z.number(),
         name: z.string().min(1),
         type: z.string(),
       }),
@@ -77,7 +76,7 @@ export const tableRouter = createTRPCRouter({
 
   // ------------------ ROWS ------------------
   createRow: publicProcedure
-    .input(z.object({ tableId: z.string() }))
+    .input(z.object({ tableId: z.number() }))
     .mutation(async ({ input }) => {
       const [newRow]: RowRow[] = await db
         .insert(rows)
