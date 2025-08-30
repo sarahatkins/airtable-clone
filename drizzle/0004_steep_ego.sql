@@ -1,0 +1,2 @@
+ALTER TABLE "airtable_cell_values" ADD COLUMN "tableId" integer NOT NULL;--> statement-breakpoint
+ALTER TABLE "airtable_cell_values" ADD CONSTRAINT "airtable_cell_values_tableId_airtable_tables_id_fk" FOREIGN KEY ("tableId") REFERENCES "public"."airtable_tables"("id") ON DELETE cascade ON UPDATE no action;

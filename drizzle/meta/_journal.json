@@ -29,6 +29,13 @@
       "when": 1756451947656,
       "tag": "0003_common_gunslinger",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1756525237363,
+      "tag": "0004_steep_ego",
+      "breakpoints": true
     }
   ]
 }

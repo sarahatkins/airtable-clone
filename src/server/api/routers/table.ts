@@ -11,7 +11,7 @@ import {
   rows,
   cellValues,
 } from "~/server/db/schemas/tableSchema"; // your Drizzle table
-import { eq, type InferSelectModel, and } from "drizzle-orm";
+import { eq, type InferSelectModel, and, inArray } from "drizzle-orm";
 import { db } from "~/server/db";
 
 // Types
@@ -100,7 +100,12 @@ export const tableRouter = createTRPCRouter({
   // ------------------ CELL VALUES ------------------
   setCellValue: publicProcedure
     .input(
-      z.object({ rowId: z.string(), columnId: z.string(), value: z.string() }),
+      z.object({
+        tableId: z.number(),
+        rowId: z.number(),
+        columnId: z.number(),
+        value: z.string(),
+      }),
     )
     .mutation(async ({ input }) => {
       // upsert pattern: check if exists
@@ -126,6 +131,7 @@ export const tableRouter = createTRPCRouter({
         const [newCell]: CellValueRow[] = await db
           .insert(cellValues)
           .values({
+            tableId: input.tableId,
             rowId: Number(input.rowId),
             columnId: Number(input.columnId),
             value: input.value,
@@ -135,12 +141,21 @@ export const tableRouter = createTRPCRouter({
       }
     }),
 
-  getCellsByRow: publicProcedure
-    .input(z.object({ rowId: z.string() }))
+  getCellsByTable: publicProcedure
+    .input(z.object({ tableId: z.number() }))
     .query(async ({ input }) => {
       return db
         .select()
         .from(cellValues)
-        .where(eq(cellValues.rowId, Number(input.rowId)));
+        .where(eq(cellValues.tableId, input.tableId)); // assuming you have tableId in cellValues
+    }),
+
+  getCellsByRows: publicProcedure
+    .input(z.object({ rowIds: z.array(z.number()) }))
+    .query(async ({ input }) => {
+      return db
+        .select()
+        .from(cellValues)
+        .where(inArray(cellValues.rowId, input.rowIds)); // fetch all cells for multiple rows in one call
     }),
 });

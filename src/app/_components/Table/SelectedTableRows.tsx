@@ -1,18 +1,27 @@
-import React, { type Dispatch, type SetStateAction } from "react";
-import { flexRender, type ColumnFilter, type Table } from "@tanstack/react-table";
+import React from "react";
+import { flexRender, type Table } from "@tanstack/react-table";
+import type { ColType, RowType } from "~/app/defaults";
 import TableFilters from "./TableComponents/TableFilters";
-import type { RowType, ColType } from "~/app/defaults";
 
 interface SelectedRowsProps {
   table: Table<any>;
   rows: RowType[];
   cols: ColType[];
-  columnFilters: ColumnFilter[];
-  setColumnFilters: Dispatch<SetStateAction<ColumnFilter[]>>;
+  columnFilters: any[];
+  setRows: React.Dispatch<React.SetStateAction<RowType[]>>;
+  setCols: React.Dispatch<React.SetStateAction<ColType[]>>;
+  setColumnFilters: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
-const SelectedTableRows: React.FC<SelectedRowsProps> = ({ table, rows, cols, columnFilters, setColumnFilters }) => {
-
+const SelectedTableRows: React.FC<SelectedRowsProps> = ({
+  table,
+  rows,
+  cols,
+  columnFilters,
+  setRows,
+  setCols,
+  setColumnFilters,
+}) => {
   return (
     <div className="table w-full">
       <TableFilters columnFilters={columnFilters} setColumnFilters={setColumnFilters} />

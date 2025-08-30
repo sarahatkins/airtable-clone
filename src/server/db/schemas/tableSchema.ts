@@ -57,6 +57,7 @@ export const rows = createTable("rows", (d) => ({
 
 export const cellValues = createTable("cell_values", (d) => ({
   id: d.serial().primaryKey(),
+  tableId: d.integer().references(() => table.id, {onDelete: "cascade"}),
   rowId: d
     .integer()
     .references(() => rows.id, { onDelete: "cascade" })

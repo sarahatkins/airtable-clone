@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -22,7 +22,7 @@ import {
   Search,
 } from "lucide-react";
 import TableMenu from "./TableMenu";
-
+import { api } from "~/trpc/react";
 interface SelectedTableProps {
   table: TableType;
   tableRows: RowType[];
@@ -34,20 +34,45 @@ const SelectedTable: React.FC<SelectedTableProps> = ({
   tableRows,
   tableCols,
 }) => {
-  const [rows, setRows] = useState<RowType[]>(tableRows);
+  const [rows, setRows] = useState<RowType[]>([]);
   const [cols, setCols] = useState<ColType[]>(tableCols);
   const [columnFilters, setColumnFilters] = useState<any[]>([]);
 
-  // Build columns from ColType[]
+  // Fetch all cell values for each row
+  const rowIds = tableRows.map((r) => r.id);
+  const { data: cellValues, isLoading: cellsLoading } =
+    api.table.getCellsByRows.useQuery(
+      { rowIds },
+      { enabled: rowIds.length > 0 },
+    );
+
+  // Hydrate rows with cell values when they load
+  useEffect(() => {
+    if (!cellValues) return;
+
+    const hydratedRows = tableRows.map((row) => {
+      const cellsForRow = cellValues.filter((cv) => cv.rowId === row.id);
+      const rowWithCells: any = { ...row };
+      cellsForRow.forEach((cell) => {
+        const col = tableCols.find((c) => c.id === cell.columnId);
+        if (col) rowWithCells[col.name] = cell.value;
+      });
+      return rowWithCells;
+    });
+
+    setRows(hydratedRows);
+  }, [cellValues, tableRows, tableCols]);
+
+  // Build react-table column definitions
   const columns = cols.map((col) => ({
     accessorKey: col.name,
     header: col.name,
     size: 120,
     cell: EditableCell,
     enableColumnFilter: true,
+    meta: { col }, // keep a reference to column info
   }));
 
-  // React Table instance
   const reactTable = useReactTable({
     data: rows,
     columns,
@@ -67,6 +92,8 @@ const SelectedTable: React.FC<SelectedTableProps> = ({
         ),
     },
   });
+
+  if (cellsLoading) return <div>Loading table...</div>;
 
   return (
     <div className="h-full w-full bg-gray-50 text-sm text-gray-700">
@@ -117,8 +144,10 @@ const SelectedTable: React.FC<SelectedTableProps> = ({
           table={reactTable}
           rows={rows}
           cols={cols}
-          setColumnFilters={setColumnFilters}
           columnFilters={columnFilters}
+          setRows={setRows}
+          setCols={setCols}
+          setColumnFilters={setColumnFilters}
         />
       </div>
     </div>

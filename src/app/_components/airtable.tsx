@@ -13,7 +13,6 @@ interface AirtableProps {
   baseId: string;
 }
 
-//  Goal: figure out why creating a new table requires you to reload
 // Goal: able to save values in a table
 //  Goal: Able to add rows and cols
 
@@ -45,9 +44,9 @@ const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
   const isDataLoading = tablesLoading || colsLoading || rowsLoading;
 
     useEffect(() => {
-      newTable && newRows.length === 3 && setSelectedTable(newTable)
-      if (newRows) setSelectedRows(newRows);
-      if (newCols) setSelectedCols(newCols);
+      createdDefault && newTable && newRows.length === 3 && setSelectedTable(newTable)
+      if (createdDefault && newRows) setSelectedRows(newRows);
+      if (createdDefault && newCols) setSelectedCols(newCols);
     }, [newTable, newRows, newCols])
 
 
@@ -58,7 +57,6 @@ const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
       handleCreateTable("Table 1");
       setCreatedDefault(true);
     } else if (tables && tables.length > 0 && !selectedTable) {
-      console.log('hello')
       setSelectedTable(tables[0]!);
     }
   }, [tablesLoading, tables, selectedTable]);
