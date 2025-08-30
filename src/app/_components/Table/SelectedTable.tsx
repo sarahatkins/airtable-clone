@@ -20,6 +20,7 @@ import {
   Palette,
   List,
   Search,
+  Plus,
 } from "lucide-react";
 import TableMenu from "./TableMenu";
 import { api } from "~/trpc/react";
@@ -34,10 +35,15 @@ const SelectedTable: React.FC<SelectedTableProps> = ({
   tableRows,
   tableCols,
 }) => {
+  const utils = api.useUtils();
   const [rows, setRows] = useState<RowType[]>([]);
   const [cols, setCols] = useState<ColType[]>(tableCols);
   const [columnFilters, setColumnFilters] = useState<any[]>([]);
-
+  const createRowMutation = api.table.createRow.useMutation({
+    onSuccess: () => {
+      utils.table.getRowsByTable.invalidate({ tableId: table.id });
+    },
+  });
   // Fetch all cell values for each row
   const rowIds = tableRows.map((r) => r.id);
   const { data: cellValues, isLoading: cellsLoading } =
@@ -92,6 +98,21 @@ const SelectedTable: React.FC<SelectedTableProps> = ({
         ),
     },
   });
+
+  const addNewRow = () => {
+    const newRow: RowType = {
+      id: Date.now(), // temp ID for frontend
+      tableId: table.id,
+      createdAt: new Date(),
+      ...cols.reduce((acc, col) => ({ ...acc, [col.name]: "" }), {}),
+    };
+
+    // Update frontend state
+    setRows((prev) => [...prev, newRow]);
+
+    // Persist to backend
+    createRowMutation.mutate({ tableId: table.id });
+  };
 
   if (cellsLoading) return <div>Loading table...</div>;
 
@@ -149,6 +170,15 @@ const SelectedTable: React.FC<SelectedTableProps> = ({
           setCols={setCols}
           setColumnFilters={setColumnFilters}
         />
+        <button
+          onClick={addNewRow}
+          className="flex items-center gap-1 rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
+        >
+          <Plus size={16} /> Add Row
+        </button>
+      </div>
+
+      <div className="border-t bg-white p-2">
       </div>
     </div>
   );
