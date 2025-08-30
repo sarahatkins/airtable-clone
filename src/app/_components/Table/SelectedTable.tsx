@@ -177,9 +177,6 @@ const SelectedTable: React.FC<SelectedTableProps> = ({
           <Plus size={16} /> Add Row
         </button>
       </div>
-
-      <div className="border-t bg-white p-2">
-      </div>
     </div>
   );
 };
