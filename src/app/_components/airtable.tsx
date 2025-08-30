@@ -7,11 +7,15 @@ import SelectedTable from "./Table/SelectedTable";
 import { useEffect, useState } from "react";
 import { api } from "~/trpc/react";
 import { useDefaultTableSetup } from "./Table/CreateDefaultTable";
-import { type Col, type Row, type Table } from "../defaults";
+import type { ColType, RowType, TableType } from "../defaults";
 
 interface AirtableProps {
   baseId: string;
 }
+
+//  Goal: figure out why creating a new table requires you to reload
+// Goal: able to save values in a table
+//  Goal: Able to add rows and cols
 
 const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
   const { data: base } = api.base.getById.useQuery({ id: baseId });
@@ -20,9 +24,10 @@ const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
   const { data: tables, isLoading: tablesLoading } =
     api.table.getTablesByBase.useQuery({ baseId });
 
-  const [selectedTable, setSelectedTable] = useState<Table | null>(null);
-  const [selectedRows, setSelectedRows] = useState<Row[]>([]);
-  const [selectedCols, setSelectedCols] = useState<Col[]>([]);
+  const [selectedTable, setSelectedTable] = useState<TableType | null>(null);
+  const [selectedRows, setSelectedRows] = useState<RowType[]>([]);
+  const [selectedCols, setSelectedCols] = useState<ColType[]>([]);
+  const [createdDefault, setCreatedDefault] = useState(false);
 
   // Fetch columns and rows for the selected table
   const { data: columns, isLoading: colsLoading } =
@@ -39,25 +44,31 @@ const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
 
   const isDataLoading = tablesLoading || colsLoading || rowsLoading;
 
+    useEffect(() => {
+      newTable && newRows.length === 3 && setSelectedTable(newTable)
+      if (newRows) setSelectedRows(newRows);
+      if (newCols) setSelectedCols(newCols);
+    }, [newTable, newRows, newCols])
+
+
   useEffect(() => {
-    if (!tablesLoading && tables) {
-      if (tables.length === 0) {
-        handleCreateTable("Table 1");
-      } else if (!selectedTable) {
-        setSelectedTable(tables[0]!);
-      }
+    if (tablesLoading) return;
+
+    if (tables && tables.length === 0 && !createdDefault) {
+      handleCreateTable("Table 1");
+      setCreatedDefault(true);
+    } else if (tables && tables.length > 0 && !selectedTable) {
+      console.log('hello')
+      setSelectedTable(tables[0]!);
     }
-  }, [tables, tablesLoading, selectedTable, handleCreateTable]);
+  }, [tablesLoading, tables, selectedTable]);
 
   useEffect(() => {
     if (columns) setSelectedCols(columns);
     if (rowList) setSelectedRows(rowList);
   }, [columns, rowList]);
 
-  useEffect(() => {
-    if (newRows) setSelectedRows(newRows);
-    if (newCols) setSelectedCols(newCols);
-  }, [newRows, newCols]);
+  
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">

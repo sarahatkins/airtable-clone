@@ -41,7 +41,7 @@ export default function Dashboard() {
   }, [bases]);
 
   return (
-    <div className="flex h-screen flex-col bg-gray-50">
+    <div className="flex h-screen flex-col bg-gray-50 overflow-hidden">
       {/* Header */}
       <header className="flex items-center justify-between border-b border-gray-300 bg-white px-6 py-4 shadow-sm">
         <div className="flex items-center">
@@ -80,8 +80,8 @@ export default function Dashboard() {
         <Sidebar expanded={expandedSidebar} />
 
         {/* Main content */}
-        <div className="flex flex-1 flex-col p-10">
-          <div className="flex-1 space-y-5 overflow-y-auto">
+        <div className="flex flex-1 flex-col p-10 overflow-y-auto">
+          <div className="flex-1 space-y-5 ">
             {/* Build app card */}
             <h1 className="text-2xl font-bold">Home</h1>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">

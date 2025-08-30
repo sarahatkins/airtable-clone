@@ -1,9 +1,9 @@
 import type { InferSelectModel } from "drizzle-orm";
 import type { columns, rows, table } from "~/server/db/schemas/tableSchema";
 
-export type Table = InferSelectModel<typeof table>;
-export type Col = InferSelectModel<typeof columns>;
-export type Row = InferSelectModel<typeof rows>;
+export type TableType = InferSelectModel<typeof table>;
+export type ColType = InferSelectModel<typeof columns>;
+export type RowType = InferSelectModel<typeof rows>;
 
 export enum STATUS {
   SingleLine = 'single_line',

@@ -1,18 +1,15 @@
-import type { Column, Row, Table } from "@tanstack/react-table";
 import { useEffect, useState } from "react";
 
 const EditableCell: React.FC<any> = ({ getValue, row, column, table }) => {
-  const initialValue = getValue();
+  const initialValue = getValue() ?? ""; // ensure not undefined
   const [value, setValue] = useState(initialValue);
 
-  // When the input is blurred, update the table data
   const onBlur = () => {
     table.options.meta?.updateData(row.index, column.id, value);
   };
 
-  // Sync external value changes
   useEffect(() => {
-    setValue(initialValue);
+    setValue(initialValue ?? "");
   }, [initialValue]);
 
   return (
