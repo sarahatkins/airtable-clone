@@ -114,7 +114,6 @@ const SelectedTable: React.FC<SelectedTableProps> = ({
     createRowMutation.mutate({ tableId: table.id });
   };
 
-  if (cellsLoading) return <div>Loading table...</div>;
 
   return (
     <div className="h-full w-full bg-gray-50 text-sm text-gray-700">
