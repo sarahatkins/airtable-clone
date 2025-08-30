@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import TableMenu from "./TableMenu";
 import { api } from "~/trpc/react";
+import CreateNewColButton from "./TableComponents/CreateNewCol";
 interface SelectedTableProps {
   table: TableType;
   tableRows: RowType[];
@@ -114,7 +115,6 @@ const SelectedTable: React.FC<SelectedTableProps> = ({
     createRowMutation.mutate({ tableId: table.id });
   };
 
-
   return (
     <div className="h-full w-full bg-gray-50 text-sm text-gray-700">
       {/* Header - Grid view and field views */}
@@ -156,6 +156,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({
           </button>
         </div>
       </div>
+      <CreateNewColButton dbTable={table} setCols={setCols} />
 
       {/* Body */}
       <div className="flex h-full">
