@@ -1,5 +1,5 @@
 import { Plus } from "lucide-react";
-import { useDefaultTableSetup } from "../CreateDefaultTable";
+import { useDefaultTableSetup } from "../../CreateDefaultTable";
 import { useEffect, useRef, useState } from "react";
 
 interface ButtonProps {

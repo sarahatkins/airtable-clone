@@ -8,13 +8,30 @@ import {
   type SetStateAction,
 } from "react";
 
+import {
+  Pencil,
+  EyeOff,
+  Settings,
+  Copy,
+  Calendar,
+  Info,
+  Lock,
+  Trash,
+  X,
+  Upload,
+} from "lucide-react";
+import MenuItem from "./modals/MenuItem";
+import TableRenameModal from "./modals/TableRenameModal";
+import { table } from "console";
 interface ButtonProps {
+  tableId: number;
   setSelectedTable: any;
   name: string;
   showRename?: boolean;
 }
 
 const SetTableButton: React.FC<ButtonProps> = ({
+  tableId,
   name,
   setSelectedTable,
   showRename = false,
@@ -28,6 +45,7 @@ const SetTableButton: React.FC<ButtonProps> = ({
     const handleClickOutside = (event: any) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
         setShowEditModal(false);
+        setShowRenameModal(false);
       }
     };
 
@@ -52,47 +70,62 @@ const SetTableButton: React.FC<ButtonProps> = ({
           className="absolute z-50 mt-2 w-72 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
         >
           {/* Header */}
-          <div className="mb-2 border-b pb-2">
-            <p className="text-sm font-medium text-gray-500">
-              Add a blank table
-            </p>
-            <button className="w-full rounded-md px-3 py-2 text-left hover:bg-gray-100">
-              ➕ Create with AI
-            </button>
-            <button className="w-full rounded-md px-3 py-2 text-left hover:bg-gray-100">
-              ✏️ Start from scratch
-            </button>
-          </div>
-
-          {/* Sources */}
-          <div>
-            <p className="mb-1 text-sm font-medium text-gray-500">
-              Add from other sources
-            </p>
-            {[
-              "Airtable base",
-              "CSV file",
-              "Google Calendar",
-              "Google Sheets",
-              "Microsoft Excel",
-              "Salesforce",
-              "Smartsheet",
-            ].map((item, idx) => (
-              <button
-                key={idx}
-                className="w-full rounded-md px-3 py-2 text-left text-sm hover:bg-gray-100"
-              >
-                {item}
-              </button>
-            ))}
-            <button className="w-full rounded-md px-3 py-2 text-left text-sm text-blue-600 hover:bg-gray-100">
-              25 more sources...
-            </button>
-          </div>
+          <ul className="text-sm text-gray-700">
+            <MenuItem
+              icon={<Upload className="h-4 w-4" />}
+              label="Import data"
+            />
+            <li className="my-1 border-t border-gray-200" />;
+            <MenuItem
+              icon={<Pencil className="h-4 w-4" />}
+              label="Rename table"
+              onClick={() => {
+                setShowRenameModal(true);
+                setShowEditModal(false);
+              }}
+            />
+            <MenuItem
+              icon={<EyeOff className="h-4 w-4" />}
+              label="Hide table"
+            />
+            <MenuItem
+              icon={<Settings className="h-4 w-4" />}
+              label="Manage fields"
+            />
+            <MenuItem
+              icon={<Copy className="h-4 w-4" />}
+              label="Duplicate table"
+            />
+            <li className="my-1 border-t border-gray-200" />;
+            <MenuItem
+              icon={<Calendar className="h-4 w-4" />}
+              label="Configure date dependencies"
+            />
+            <li className="my-1 border-t border-gray-200" />;
+            <MenuItem
+              icon={<Info className="h-4 w-4" />}
+              label="Edit table description"
+            />
+            <MenuItem
+              icon={<Lock className="h-4 w-4" />}
+              label="Edit table permissions"
+            />
+            <li className="my-1 border-t border-gray-200" />;
+            <MenuItem icon={<X className="h-4 w-4" />} label="Clear data" />
+            <MenuItem
+              icon={<Trash className="h-4 w-4 text-red-600" />}
+              label="Delete table"
+              textColor="text-red-600"
+            />
+          </ul>
         </div>
       )}
+
+        <TableRenameModal tableId={tableId} isOpen={showRenameModal} onClose={() => setShowRenameModal(false)} currentName={name}/>
     </div>
   );
 };
+
+
 
 export default SetTableButton;

@@ -8,7 +8,7 @@ import { api } from "~/trpc/react";
 import {
   clearPendingColEditsForCol,
   getPendingColEditsForCol,
-} from "../helper/PendingEdits";
+} from "../../helper/PendingEdits";
 
 interface ColButtonProps {
   dbTable: TableType;

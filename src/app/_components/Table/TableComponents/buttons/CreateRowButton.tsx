@@ -9,7 +9,7 @@ import { api } from "~/trpc/react";
 import {
   clearPendingEditsForRow,
   getPendingEditsForRow,
-} from "../helper/PendingEdits";
+} from "../../helper/PendingEdits";
 
 interface ColButtonProps {
   dbTable: TableType;

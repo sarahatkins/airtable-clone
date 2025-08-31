@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { api } from "~/trpc/react";
 import { useDefaultTableSetup } from "./Table/CreateDefaultTable";
 import type { TableType } from "../defaults";
-import AddTableButton from "./Table/TableComponents/AddTableButton";
+import AddTableButton from "./Table/TableComponents/buttons/AddTableButton";
 import SetTableButton from "./Table/TableComponents/SetTableButton";
 
 interface AirtableProps {
@@ -127,7 +127,7 @@ const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
           <div className="flex items-center gap-3">
             {/* Active table */}
             {!tablesLoading && tables && tables.map((t, idx) => 
-              <SetTableButton key={idx} setSelectedTable={() => setSelectedTable(t)} name={t.name} />
+              <SetTableButton key={idx} setSelectedTable={() => setSelectedTable(t)} name={t.name} tableId={t.id} />
             )}
 
             {/* Divider */}

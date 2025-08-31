@@ -7,8 +7,8 @@ import {
 import type { ColType, RowType, TableType } from "~/app/defaults";
 import EditableCell from "./TableComponents/EditableCell";
 import { api } from "~/trpc/react";
-import CreateRowButton from "./TableComponents/CreateRowButton";
-import CreateColButton from "./TableComponents/CreateColButton";
+import CreateRowButton from "./TableComponents/buttons/CreateRowButton";
+import CreateColButton from "./TableComponents/buttons/CreateColButton";
 
 interface DataGridProps {
   table: TableType;
