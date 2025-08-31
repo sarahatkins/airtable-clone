@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   flexRender,
   getCoreRowModel,
@@ -34,7 +34,7 @@ const DataGrid: React.FC<DataGridProps> = ({
     enableColumnFilter: true,
     meta: { col }, // keep a reference to column info
   }));
-
+  const tableRef = useRef<any>(null);
   const reactTable = useReactTable({
     data: rows,
     columns: reactColumns,
@@ -86,8 +86,8 @@ const DataGrid: React.FC<DataGridProps> = ({
   }, [cellValues]);
 
   return (
-    <div className="h-[500px] w-full overflow-auto">
-      <div className="table min-w-max bg-gray-50 text-sm font-normal text-gray-900">
+    <div className="h-full w-full overflow-auto">
+      <div className="table min-w-max text-sm font-normal text-gray-900">
         {/* Header */}
         <div className="flex items-center justify-between px-2 py-2">
           <CreateRowButton dbTable={table} cols={cols} setRows={setRows} />
@@ -160,7 +160,7 @@ const DataGrid: React.FC<DataGridProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-500">
+        <div className="absolute bottom-0 border-t border-gray-400 bg-gray-50 px-3 py-2 text-xs text-gray-500">
           {rows.length} record{rows.length !== 1 ? "s" : ""}
         </div>
       </div>

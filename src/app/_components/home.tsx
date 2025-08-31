@@ -80,7 +80,7 @@ export default function Dashboard() {
         <Sidebar expanded={expandedSidebar} />
 
         {/* Main content */}
-        <div className="flex flex-1 flex-col p-10 overflow-y-auto">
+        <div className="flex flex-1 flex-col p-10">
           <div className="flex-1 space-y-5 ">
             {/* Build app card */}
             <h1 className="text-2xl font-bold">Home</h1>

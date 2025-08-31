@@ -48,7 +48,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
   }, [rowsLoading, loadedRows]);
 
   return (
-    <div className="h-full w-full bg-gray-50 text-sm text-gray-700">
+    <div className="overflow-hidden h-full w-full bg-sky-50 text-sm text-gray-700">
       {/* Header - Grid view and field views */}
       <div className="flex h-11 w-full items-center justify-between border-b border-gray-200 bg-white px-4 text-sm">
         {/* Left section */}
@@ -101,6 +101,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
             setCols={setCols}
           />
         )}
+        
       </div>
     </div>
   );

@@ -52,10 +52,10 @@ const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
   }, [selectedTable])
 
   return (
-    <div className="flex h-screen  bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-sky-50">
       {/* Back Sidebar */}
       <div className="flex h-full w-15 flex-col border-r border-gray-200 bg-white pt-2">
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1">
           <div className="p-2">
             <button className="flex w-full justify-center text-gray-700 hover:bg-gray-100">
               <Image
