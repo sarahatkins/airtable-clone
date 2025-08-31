@@ -1,13 +1,12 @@
 import { useCallback, useState } from "react";
 import { api } from "~/trpc/react";
 import { DEFAULT_COLS, DEFAULT_NUM_ROWS } from "~/app/defaults";
-import { useRouter } from "next/router";
 
 export function useDefaultTableSetup(baseId: string) {
-
   const [newRows, setNewRows] = useState<any[]>([]);
   const [newCols, setNewCols] = useState<any[]>([]);
-  const [newTable, setNewTable] = useState<any>()
+  const [newTable, setNewTable] = useState<any>();
+  const [finishedTableSetup, setFinishedTableSetup] = useState<boolean>(false);
 
   // --- default newRows/newCols hook ---
   const createColumn = api.table.createColumn.useMutation({
@@ -26,16 +25,21 @@ export function useDefaultTableSetup(baseId: string) {
 
   const createDefaultTable = useCallback(
     async (tableId: number) => {
-      for (const col of DEFAULT_COLS) {
-        await createColumn.mutateAsync({
-          name: col.name,
-          type: col.type,
-          tableId,
-        });
-      }
+      try {
+        for (const col of DEFAULT_COLS) {
+          await createColumn.mutateAsync({
+            name: col.name,
+            type: col.type,
+            tableId,
+          });
+        }
 
-      for (let i = 0; i < DEFAULT_NUM_ROWS; i++) {
-        await createRow.mutateAsync({ tableId });
+        for (let i = 0; i < DEFAULT_NUM_ROWS; i++) {
+          await createRow.mutateAsync({ tableId });
+        }
+        setFinishedTableSetup(true);
+      } catch (error) {
+        console.error("Issue with default table setup", error);
       }
     },
     [createColumn, createRow],
@@ -67,6 +71,7 @@ export function useDefaultTableSetup(baseId: string) {
     newTable,
     newRows,
     newCols,
+    finishedTableSetup,
     handleCreateTable,
   };
 }

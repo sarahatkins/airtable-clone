@@ -2,49 +2,43 @@ import React, { useState, type Dispatch, type SetStateAction } from "react";
 import {
   STATUS,
   type ColType,
-  type RowType,
   type TableType,
 } from "~/app/defaults";
 import { api } from "~/trpc/react";
 import {
   clearPendingColEditsForCol,
   getPendingColEditsForCol,
-} from "./PendingEdits";
+} from "../helper/PendingEdits";
 
 interface ColButtonProps {
   dbTable: TableType;
   setCols: Dispatch<SetStateAction<ColType[]>>;
-  // setRows: Dispatch<SetStateAction<RowType[]>>;
 }
 
-const CreateNewColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
-  const utils = api.useUtils();
+const CreateColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
   const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
   const [newColumnType, setNewColumnType] = useState<STATUS | null>();
   const [newColumnName, setNewColumnName] = useState("");
   const { mutate: setCellValue } = api.table.setCellValue.useMutation({
     onSuccess: () => {
-      utils.table.getRowsByTable.invalidate({ tableId: dbTable.id });
+      console.log('New cell created!')
     },
   });
+
   const createColMutation = api.table.createColumn.useMutation({
     onSuccess: (newCol) => {
-      if(!newCol) return;
-      console.log("Created new column", newCol);
-
-      // Replace temp col (-1) with real one
+      if (!newCol) return;
       setCols((prev: ColType[]) =>
         prev.map((col) => (col.id === -1 ? { ...col, id: newCol.id } : col)),
       );
 
-      // 🔁 Replay pending edits for that column
+      // Check for pending and replace default id
       const pending = getPendingColEditsForCol(-1);
-      console.log(pending)
       pending.forEach((edit) => {
         setCellValue({
           tableId: edit.tableId,
           rowId: edit.rowId,
-          columnId: newCol.id, // now the real colId
+          columnId: newCol.id,
           value: edit.value,
         });
       });
@@ -72,7 +66,9 @@ const CreateNewColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
     };
 
     // Add column optimistically
-    setCols((prev: ColType[]) => [...prev, newCol]);
+    setCols((prev: ColType[]) => {
+      return [...prev, newCol];
+    });
 
     closeAddColumn();
 
@@ -142,4 +138,4 @@ const CreateNewColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
   );
 };
 
-export default CreateNewColButton;
+export default CreateColButton;

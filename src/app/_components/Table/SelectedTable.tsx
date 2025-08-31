@@ -1,14 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  useReactTable,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-} from "@tanstack/react-table";
 import type { TableType, ColType, RowType } from "~/app/defaults";
-import SelectedTableRows from "./SelectedTableRows";
-import EditableCell from "./TableComponents/EditableCell";
 import {
   Menu,
   Table,
@@ -20,132 +11,41 @@ import {
   Palette,
   List,
   Search,
-  Plus,
 } from "lucide-react";
 import TableMenu from "./TableMenu";
 import { api } from "~/trpc/react";
-import CreateNewColButton from "./TableComponents/CreateNewCol";
-import {
-  clearPendingEditsForRow,
-  getPendingEditsForRow,
-} from "./TableComponents/PendingEdits";
+import DataGrid from "./DataGrid";
 interface SelectedTableProps {
-  table: TableType;
-  tableRows: RowType[];
-  tableCols: ColType[];
+  selectedTable: TableType;
 }
 
-const SelectedTable: React.FC<SelectedTableProps> = ({
-  table,
-  tableRows,
-  tableCols,
-}) => {
-  const utils = api.useUtils();
-  const [rows, setRows] = useState<RowType[]>([]);
-  const [cols, setCols] = useState<ColType[]>(tableCols);
-  const [columnFilters, setColumnFilters] = useState<any[]>([]);
-  const { mutate: setCellValue } = api.table.setCellValue.useMutation({
-    onSuccess: () => {
-      utils.table.getRowsByTable.invalidate({ tableId: table.id });
-    },
-  });
-  const createRowMutation = api.table.createRow.useMutation({
-    onSuccess: (newRow) => {
-      newRow &&
-        setRows((prev) =>
-          prev.map((row) => (row.id === -1 ? { ...row, id: newRow.id } : row)),
-        );
-
-      // Check for any pending edits on this row
-      const pending = getPendingEditsForRow(-1); // custom helper
-      newRow &&
-        pending.forEach((edit) => {
-          setCellValue({
-            tableId: edit.tableId,
-            rowId: newRow.id,
-            columnId: edit.columnId,
-            value: edit.value,
-          });
-        });
-
-      clearPendingEditsForRow(-1);
-    },
-  });
-
-  // Fetch all cell values for each row
-  const rowIds = tableRows.map((r) => r.id);
-  const { data: cellValues, isLoading: cellsLoading } =
-    api.table.getCellsByRows.useQuery(
-      { rowIds },
-      { enabled: rowIds.length > 0 },
+const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
+  const { data: loadedCols, isLoading: colsLoading } =
+    api.table.getColumnsByTable.useQuery(
+      { tableId: selectedTable?.id ?? 0 },
+      { enabled: !!selectedTable?.id },
+    );
+  const { data: loadedRows, isLoading: rowsLoading } =
+    api.table.getRowsByTable.useQuery(
+      { tableId: selectedTable?.id ?? 0 },
+      { enabled: !!selectedTable?.id },
     );
 
-  // Hydrate rows with cell values when they load
+  const isDataLoading = colsLoading || rowsLoading;
+  const [rows, setRows] = useState<RowType[]>([]);
+  const [cols, setCols] = useState<ColType[]>([]);
+
   useEffect(() => {
-    if (!cellValues) return;
+    if (colsLoading) return; // still loading? wait
+    if (!loadedCols) return; // no data? don't update
+    setCols(loadedCols);
+  }, [colsLoading, loadedCols]);
 
-    const hydratedRows = tableRows.map((row) => {
-      const cellsForRow = cellValues.filter((cv) => cv.rowId === row.id);
-      const rowWithCells: any = { ...row };
-      cellsForRow.forEach((cell) => {
-        const col = tableCols.find((c) => c.id === cell.columnId);
-        if (col) rowWithCells[col.name] = cell.value;
-      });
-      return rowWithCells;
-    });
-
-    setRows((prev) => {
-      const localUnsynced = prev.filter(
-        (r) => !tableRows.some((tr) => tr.id === r.id),
-      );
-      return [...hydratedRows, ...localUnsynced];
-    });
-  }, [cellValues, tableRows, tableCols]);
-
-  // Build react-table column definitions
-  const columns = cols.map((col) => ({
-    accessorKey: col.name,
-    header: col.name,
-    size: 120,
-    cell: EditableCell,
-    enableColumnFilter: true,
-    meta: { col }, // keep a reference to column info
-  }));
-
-  const reactTable = useReactTable({
-    data: rows,
-    columns,
-    state: { columnFilters },
-    onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    columnResizeMode: "onChange",
-    meta: {
-      updateData: (rowIndex: number, columnId: string, value: any) =>
-        setRows((prev) =>
-          prev.map((row, idx) =>
-            idx === rowIndex ? { ...row, [columnId]: value } : row,
-          ),
-        ),
-    },
-  });
-
-  const addNewRow = () => {
-    const newRow: RowType = {
-      id: -1, // temp ID for frontend
-      tableId: table.id,
-      createdAt: new Date(),
-      ...cols.reduce((acc, col) => ({ ...acc, [col.name]: "" }), {}),
-    };
-
-    // Update frontend state
-    setRows((prev) => [...prev, newRow]);
-
-    // Persist to backend
-    createRowMutation.mutate({ tableId: table.id });
-  };
+  useEffect(() => {
+    if (rowsLoading) return; // still loading? wait
+    if (!loadedRows) return; // no data? don't update
+    setRows(loadedRows);
+  }, [rowsLoading, loadedRows]);
 
   return (
     <div className="h-full w-full bg-gray-50 text-sm text-gray-700">
@@ -188,26 +88,19 @@ const SelectedTable: React.FC<SelectedTableProps> = ({
           </button>
         </div>
       </div>
-      <CreateNewColButton dbTable={table} setCols={setCols} />
 
       {/* Body */}
       <div className="flex h-full">
         <TableMenu />
-        <SelectedTableRows
-          table={reactTable}
-          rows={rows}
-          cols={cols}
-          columnFilters={columnFilters}
-          setRows={setRows}
-          setCols={setCols}
-          setColumnFilters={setColumnFilters}
-        />
-        <button
-          onClick={addNewRow}
-          className="flex items-center gap-1 rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
-        >
-          <Plus size={16} /> Add Row
-        </button>
+        {!isDataLoading && (
+          <DataGrid
+            table={selectedTable}
+            rows={rows}
+            cols={cols}
+            setRows={setRows}
+            setCols={setCols}
+          />
+        )}
       </div>
     </div>
   );

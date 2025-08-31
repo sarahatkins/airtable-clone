@@ -5,6 +5,8 @@ export type TableType = InferSelectModel<typeof table>;
 export type ColType = InferSelectModel<typeof columns>;
 export type RowType = InferSelectModel<typeof rows>;
 
+export const DEFAULT_PENDING_KEY = -1;
+
 export enum STATUS {
   SingleLine = 'single_line',
   MultiLine = 'multi_line',

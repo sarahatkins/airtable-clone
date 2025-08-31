@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
-import { addPendingColEdit, addPendingRowEdit } from "./PendingEdits";
+import { addPendingColEdit, addPendingRowEdit } from "../helper/PendingEdits";
 
 interface EditableCellProps {
   getValue: () => any;
@@ -15,10 +15,9 @@ const EditableCell: React.FC<EditableCellProps> = ({
   column,
   table,
 }) => {
-  const utils = api.useUtils();
   const { mutate: setCellValue } = api.table.setCellValue.useMutation({
     onSuccess: () => {
-      utils.table.getRowsByTable.invalidate({ tableId: row.original.tableId });
+      console.log("New cell created")
     },
   });
 
@@ -48,16 +47,15 @@ const EditableCell: React.FC<EditableCellProps> = ({
         return;
       }
       if (colId === -1) {
-        console.log('hey')
         addPendingColEdit({
           tableId: row.original.tableId,
           rowId: rowId,
           columnId: colId,
           value,
         });
+
         return;
       }
-      console.log(rowId, colId);
 
       // Otherwise save immediately
       setCellValue({

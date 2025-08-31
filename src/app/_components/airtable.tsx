@@ -7,14 +7,13 @@ import SelectedTable from "./Table/SelectedTable";
 import { useEffect, useState } from "react";
 import { api } from "~/trpc/react";
 import { useDefaultTableSetup } from "./Table/CreateDefaultTable";
-import type { ColType, RowType, TableType } from "../defaults";
+import type { TableType } from "../defaults";
 
 interface AirtableProps {
   baseId: string;
 }
 
 /* GOALS
-- fix the loading issue when you create a new  col so that it allows you to immediately enter a value
 - ability to create multiple tables
 - ability to create and save views
 - filtering and sorting via backend as opposed to frontend
@@ -22,37 +21,18 @@ interface AirtableProps {
 
 const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
   const { data: base } = api.base.getById.useQuery({ id: baseId });
-  const { newTable, newRows, newCols, handleCreateTable } =
+  const { newTable, finishedTableSetup, handleCreateTable } =
     useDefaultTableSetup(baseId);
   const { data: tables, isLoading: tablesLoading } =
     api.table.getTablesByBase.useQuery({ baseId });
 
   const [selectedTable, setSelectedTable] = useState<TableType | null>(null);
-  const [selectedRows, setSelectedRows] = useState<RowType[]>([]);
-  const [selectedCols, setSelectedCols] = useState<ColType[]>([]);
   const [createdDefault, setCreatedDefault] = useState(false);
 
   // Fetch columns and rows for the selected table
-  const { data: columns, isLoading: colsLoading } =
-    api.table.getColumnsByTable.useQuery(
-      { tableId: selectedTable?.id ?? 0 },
-      { enabled: !!selectedTable?.id },
-    );
-
-  const { data: rowList, isLoading: rowsLoading } =
-    api.table.getRowsByTable.useQuery(
-      { tableId: selectedTable?.id ?? 0 },
-      { enabled: !!selectedTable?.id },
-    );
-
-  const isDataLoading = tablesLoading || colsLoading || rowsLoading;
-
-    useEffect(() => {
-      createdDefault && newTable && newRows.length === 3 && setSelectedTable(newTable)
-      if (createdDefault && newRows) setSelectedRows(newRows);
-      if (createdDefault && newCols) setSelectedCols(newCols);
-    }, [newTable, newRows, newCols])
-
+  useEffect(() => {
+    createdDefault && finishedTableSetup && setSelectedTable(newTable);
+  }, [newTable, finishedTableSetup]);
 
   useEffect(() => {
     if (tablesLoading) return;
@@ -63,14 +43,7 @@ const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
     } else if (tables && tables.length > 0 && !selectedTable) {
       setSelectedTable(tables[0]!);
     }
-  }, [tablesLoading, tables, selectedTable]);
-
-  useEffect(() => {
-    if (columns) setSelectedCols(columns);
-    if (rowList) setSelectedRows(rowList);
-  }, [columns, rowList]);
-
-  
+  }, [tablesLoading, tables, selectedTable, createdDefault]);
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
@@ -176,16 +149,9 @@ const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
         </div>
 
         {/* Table Widget */}
-        {!isDataLoading &&
-          selectedTable &&
-          selectedRows.length > 0 &&
-          selectedCols.length > 0 && (
-            <SelectedTable
-              table={selectedTable}
-              tableRows={selectedRows}
-              tableCols={selectedCols}
-            />
-          )}
+        {!tablesLoading && selectedTable && (
+          <SelectedTable selectedTable={selectedTable} />
+        )}
       </div>
     </div>
   );
