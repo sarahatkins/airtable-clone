@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
-import { addPendingEdit } from "./PendingEdits";
+import { addPendingColEdit, addPendingRowEdit } from "./PendingEdits";
 
 interface EditableCellProps {
   getValue: () => any;
@@ -38,16 +38,26 @@ const EditableCell: React.FC<EditableCellProps> = ({
       const colId = column.columnDef.meta?.col.id;
 
       // If still -1, store as pending
-      if (rowId === -1 || colId === -1) {
-        addPendingEdit({
+      if (rowId === -1) {
+        addPendingRowEdit({
           tableId: row.original.tableId,
-          rowIndex: row.index,
+          rowIndex: rowId,
           columnId: colId,
           value,
         });
         return;
       }
-      console.log(rowId, colId)
+      if (colId === -1) {
+        console.log('hey')
+        addPendingColEdit({
+          tableId: row.original.tableId,
+          rowId: rowId,
+          columnId: colId,
+          value,
+        });
+        return;
+      }
+      console.log(rowId, colId);
 
       // Otherwise save immediately
       setCellValue({

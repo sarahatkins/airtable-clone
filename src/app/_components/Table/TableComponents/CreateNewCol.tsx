@@ -6,6 +6,10 @@ import {
   type TableType,
 } from "~/app/defaults";
 import { api } from "~/trpc/react";
+import {
+  clearPendingColEditsForCol,
+  getPendingColEditsForCol,
+} from "./PendingEdits";
 
 interface ColButtonProps {
   dbTable: TableType;
@@ -14,19 +18,37 @@ interface ColButtonProps {
 }
 
 const CreateNewColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
+  const utils = api.useUtils();
   const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
   const [newColumnType, setNewColumnType] = useState<STATUS | null>();
   const [newColumnName, setNewColumnName] = useState("");
+  const { mutate: setCellValue } = api.table.setCellValue.useMutation({
+    onSuccess: () => {
+      utils.table.getRowsByTable.invalidate({ tableId: dbTable.id });
+    },
+  });
   const createColMutation = api.table.createColumn.useMutation({
     onSuccess: (newCol) => {
+      if(!newCol) return;
       console.log("Created new column", newCol);
-      newCol && setCols((prev: ColType[]) =>
-        prev.map((col) =>
-          col.id === -1
-            ? { ...col, id: newCol.id } // Update the column's id with the backend's id
-            : col,
-        ),
+
+      // Replace temp col (-1) with real one
+      setCols((prev: ColType[]) =>
+        prev.map((col) => (col.id === -1 ? { ...col, id: newCol.id } : col)),
       );
+
+      // 🔁 Replay pending edits for that column
+      const pending = getPendingColEditsForCol(-1);
+      console.log(pending)
+      pending.forEach((edit) => {
+        setCellValue({
+          tableId: edit.tableId,
+          rowId: edit.rowId,
+          columnId: newCol.id, // now the real colId
+          value: edit.value,
+        });
+      });
+      clearPendingColEditsForCol(-1);
     },
   });
 
@@ -48,10 +70,14 @@ const CreateNewColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
       orderIndex: 0,
       primary: false,
     };
+
+    // Add column optimistically
     setCols((prev: ColType[]) => [...prev, newCol]);
 
     closeAddColumn();
-    createColMutation.mutateAsync({
+
+    // Ask backend to create it
+    createColMutation.mutate({
       tableId: dbTable.id,
       name: newColumnName,
       type: newColumnType,

@@ -14,7 +14,7 @@ interface AirtableProps {
 }
 
 /* GOALS
-- fix the loading issue when you create a new row and col so that it allows you to immediately enter a value
+- fix the loading issue when you create a new  col so that it allows you to immediately enter a value
 - ability to create multiple tables
 - ability to create and save views
 - filtering and sorting via backend as opposed to frontend
