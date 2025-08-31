@@ -72,7 +72,7 @@ const EditableCell: React.FC<EditableCellProps> = ({
       value={value}
       onChange={(e) => setValue(e.target.value)}
       onBlur={onBlur}
-      className="w-[85%] truncate rounded border border-gray-300 bg-gray-50 px-2 py-1 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+      className="w-full border border-transparent bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-5 focus:ring-blue-500 focus:outline-none"
     />
   );
 };

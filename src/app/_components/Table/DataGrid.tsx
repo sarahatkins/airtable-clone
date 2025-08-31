@@ -29,7 +29,7 @@ const DataGrid: React.FC<DataGridProps> = ({
   const reactColumns = cols.map((col) => ({
     accessorKey: col.name,
     header: col.name,
-    size: 120,
+    size: 200,
     cell: EditableCell,
     enableColumnFilter: true,
     meta: { col }, // keep a reference to column info
@@ -86,66 +86,83 @@ const DataGrid: React.FC<DataGridProps> = ({
   }, [cellValues]);
 
   return (
-    <div className="table w-full">
-      {/* <TableFilters columnFilters={columnFilters} setColumnFilters={setColumnFilters} /> */}
-      <CreateRowButton dbTable={table} cols={cols} setRows={setRows} />
-      <CreateColButton dbTable={table} setCols={setCols} />
-      {/* Header */}
-      {reactTable.getHeaderGroups().map((headerGroup) => (
-        <div className="tr flex" key={headerGroup.id}>
-          {headerGroup.headers.map((header) => (
+    <div className="h-[500px] w-full overflow-auto">
+      <div className="table min-w-max bg-gray-50 text-sm font-normal text-gray-900">
+        {/* Header */}
+        <div className="flex items-center justify-between px-2 py-2">
+          <CreateRowButton dbTable={table} cols={cols} setRows={setRows} />
+          <CreateColButton dbTable={table} setCols={setCols} />
+        </div>
+        <div className="border-t border-b border-gray-200 bg-white">
+          {reactTable.getHeaderGroups().map((headerGroup) => (
             <div
-              className="th relative flex items-center border-b px-2 py-1"
-              style={{ width: header.getSize() }}
-              key={header.id}
+              className="tr flex border-b border-gray-200"
+              key={headerGroup.id}
             >
-              {flexRender(header.column.columnDef.header, header.getContext())}
-              {header.column.getCanSort() && (
-                <button
-                  onClick={header.column.getToggleSortingHandler()}
-                  className="ml-2 text-xs text-gray-600 hover:text-black"
+              {headerGroup.headers.map((header) => (
+                <div
+                  className="th relative flex items-center border-r border-gray-200 bg-white px-3 py-2 text-sm font-semibold"
+                  style={{ width: header.getSize() }}
+                  key={header.id}
                 >
-                  ⇅
-                </button>
-              )}
-              {
-                {
-                  asc: " 🔼",
-                  desc: " 🔽",
-                }[header.column.getIsSorted() as string]
-              }
-              <div
-                onMouseDown={header.getResizeHandler()}
-                onTouchStart={header.getResizeHandler()}
-                className={`absolute top-0 right-0 h-full w-1 cursor-col-resize select-none ${
-                  header.column.getIsResizing()
-                    ? "bg-blue-500"
-                    : "bg-transparent"
-                }`}
-              />
+                  {flexRender(
+                    header.column.columnDef.header,
+                    header.getContext(),
+                  )}
+                  {/* Sorting & Resize */}
+                  {header.column.getCanSort() && (
+                    <button
+                      onClick={header.column.getToggleSortingHandler()}
+                      className="text-b ml-1 text-xs hover:text-gray-700"
+                    >
+                      ⇅
+                    </button>
+                  )}
+                  {
+                    {
+                      asc: " 🔼",
+                      desc: " 🔽",
+                    }[header.column.getIsSorted() as string]
+                  }
+                  <div
+                    onMouseDown={header.getResizeHandler()}
+                    onTouchStart={header.getResizeHandler()}
+                    className={`absolute top-0 right-0 h-full w-1 cursor-col-resize select-none ${
+                      header.column.getIsResizing()
+                        ? "bg-blue-500"
+                        : "bg-transparent"
+                    }`}
+                  />
+                </div>
+              ))}
             </div>
           ))}
         </div>
-      ))}
 
-      {/* Rows */}
-      {reactTable.getRowModel().rows.map((row) => (
-        <div className="tr flex" key={row.id}>
-          {row.getVisibleCells().map((cell) => (
+        {/* Rows */}
+        <div className="bg-white">
+          {reactTable.getRowModel().rows.map((row) => (
             <div
-              className="td border-b px-2 py-1"
-              style={{ width: cell.column.getSize() }}
-              key={cell.id}
+              className="tr flex items-center transition-colors hover:bg-blue-50"
+              key={row.id}
             >
-              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+              {row.getVisibleCells().map((cell) => (
+                <div
+                  className="td overflow-hidden border-r border-b border-gray-200 text-ellipsis whitespace-nowrap"
+                  style={{ width: cell.column.getSize() }}
+                  key={cell.id}
+                >
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </div>
+              ))}
             </div>
           ))}
         </div>
-      ))}
 
-      {/* Footer */}
-      <div className="px-3 py-1 text-xs text-gray-500">
-        {rows.length} record{rows.length !== 1 ? "s" : ""}
+        {/* Footer */}
+        <div className="border-t border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-500">
+          {rows.length} record{rows.length !== 1 ? "s" : ""}
+        </div>
       </div>
     </div>
   );
