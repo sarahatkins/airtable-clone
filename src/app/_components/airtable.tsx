@@ -8,6 +8,8 @@ import { useEffect, useState } from "react";
 import { api } from "~/trpc/react";
 import { useDefaultTableSetup } from "./Table/CreateDefaultTable";
 import type { TableType } from "../defaults";
+import AddTableButton from "./Table/TableComponents/AddTableButton";
+import SetTableButton from "./Table/TableComponents/SetTableButton";
 
 interface AirtableProps {
   baseId: string;
@@ -45,8 +47,12 @@ const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
     }
   }, [tablesLoading, tables, selectedTable, createdDefault]);
 
+  useEffect(() => {
+    console.log("Selected table changed...", selectedTable)
+  }, [selectedTable])
+
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex h-screen  bg-gray-50">
       {/* Back Sidebar */}
       <div className="flex h-full w-15 flex-col border-r border-gray-200 bg-white pt-2">
         <div className="flex-1 overflow-y-auto">
@@ -120,25 +126,15 @@ const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
           {/* Left section: tables */}
           <div className="flex items-center gap-3">
             {/* Active table */}
-            <button className="flex items-center rounded px-2 py-1 font-semibold text-gray-900 hover:bg-gray-100">
-              Table 1
-              <ChevronDown className="ml-1 h-4 w-4 text-gray-500" />
-            </button>
-
-            {/* Inactive table */}
-            <button className="flex items-center rounded px-2 py-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700">
-              Table 2
-              <ChevronDown className="ml-1 h-4 w-4 text-gray-400" />
-            </button>
+            {!tablesLoading && tables && tables.map((t, idx) => 
+              <SetTableButton key={idx} setSelectedTable={() => setSelectedTable(t)} name={t.name} />
+            )}
 
             {/* Divider */}
             <div className="h-5 w-px bg-gray-300"></div>
 
             {/* Add / import */}
-            <button className="flex items-center gap-1 rounded px-2 py-1 text-gray-600 hover:bg-gray-100 hover:text-gray-800">
-              <Plus className="h-4 w-4" />
-              Add or import
-            </button>
+            <AddTableButton baseId={baseId} />
           </div>
 
           {/* Right section: Tools */}
