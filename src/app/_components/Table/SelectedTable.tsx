@@ -25,6 +25,10 @@ import {
 import TableMenu from "./TableMenu";
 import { api } from "~/trpc/react";
 import CreateNewColButton from "./TableComponents/CreateNewCol";
+import {
+  clearPendingEditsForRow,
+  getPendingEditsForRow,
+} from "./TableComponents/PendingEdits";
 interface SelectedTableProps {
   table: TableType;
   tableRows: RowType[];
@@ -40,11 +44,34 @@ const SelectedTable: React.FC<SelectedTableProps> = ({
   const [rows, setRows] = useState<RowType[]>([]);
   const [cols, setCols] = useState<ColType[]>(tableCols);
   const [columnFilters, setColumnFilters] = useState<any[]>([]);
-  const createRowMutation = api.table.createRow.useMutation({
+  const { mutate: setCellValue } = api.table.setCellValue.useMutation({
     onSuccess: () => {
       utils.table.getRowsByTable.invalidate({ tableId: table.id });
     },
   });
+  const createRowMutation = api.table.createRow.useMutation({
+    onSuccess: (newRow) => {
+      newRow &&
+        setRows((prev) =>
+          prev.map((row) => (row.id === -1 ? { ...row, id: newRow.id } : row)),
+        );
+
+      // Check for any pending edits on this row
+      const pending = getPendingEditsForRow(-1); // custom helper
+      newRow &&
+        pending.forEach((edit) => {
+          setCellValue({
+            tableId: edit.tableId,
+            rowId: newRow.id,
+            columnId: edit.columnId,
+            value: edit.value,
+          });
+        });
+
+      clearPendingEditsForRow(-1);
+    },
+  });
+
   // Fetch all cell values for each row
   const rowIds = tableRows.map((r) => r.id);
   const { data: cellValues, isLoading: cellsLoading } =
@@ -67,7 +94,12 @@ const SelectedTable: React.FC<SelectedTableProps> = ({
       return rowWithCells;
     });
 
-    setRows(hydratedRows);
+    setRows((prev) => {
+      const localUnsynced = prev.filter(
+        (r) => !tableRows.some((tr) => tr.id === r.id),
+      );
+      return [...hydratedRows, ...localUnsynced];
+    });
   }, [cellValues, tableRows, tableCols]);
 
   // Build react-table column definitions
@@ -102,7 +134,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({
 
   const addNewRow = () => {
     const newRow: RowType = {
-      id: Date.now(), // temp ID for frontend
+      id: -1, // temp ID for frontend
       tableId: table.id,
       createdAt: new Date(),
       ...cols.reduce((acc, col) => ({ ...acc, [col.name]: "" }), {}),

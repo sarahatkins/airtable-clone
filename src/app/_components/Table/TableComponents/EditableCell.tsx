@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
+import { addPendingEdit } from "./PendingEdits";
 
 interface EditableCellProps {
   getValue: () => any;
@@ -8,7 +9,12 @@ interface EditableCellProps {
   table: any;
 }
 
-const EditableCell: React.FC<EditableCellProps> = ({ getValue, row, column, table }) => {
+const EditableCell: React.FC<EditableCellProps> = ({
+  getValue,
+  row,
+  column,
+  table,
+}) => {
   const utils = api.useUtils();
   const { mutate: setCellValue } = api.table.setCellValue.useMutation({
     onSuccess: () => {
@@ -26,12 +32,28 @@ const EditableCell: React.FC<EditableCellProps> = ({ getValue, row, column, tabl
 
   const onBlur = () => {
     table.options.meta?.updateData(row.index, column.id, value);
-    
+
     if (value !== initialValue) {
+      const rowId = row.original.id;
+      const colId = column.columnDef.meta?.col.id;
+
+      // If still -1, store as pending
+      if (rowId === -1 || colId === -1) {
+        addPendingEdit({
+          tableId: row.original.tableId,
+          rowIndex: row.index,
+          columnId: colId,
+          value,
+        });
+        return;
+      }
+      console.log(rowId, colId)
+
+      // Otherwise save immediately
       setCellValue({
         tableId: row.original.tableId,
-        rowId: row.original.id,
-        columnId: column.columnDef.meta?.col.id,
+        rowId,
+        columnId: colId,
         value,
       });
     }

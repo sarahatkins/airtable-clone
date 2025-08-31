@@ -13,8 +13,12 @@ interface AirtableProps {
   baseId: string;
 }
 
-// Goal: able to save values in a table
-//  Goal: Able to add rows and cols
+/* GOALS
+- fix the loading issue when you create a new row and col so that it allows you to immediately enter a value
+- ability to create multiple tables
+- ability to create and save views
+- filtering and sorting via backend as opposed to frontend
+*/
 
 const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
   const { data: base } = api.base.getById.useQuery({ id: baseId });
