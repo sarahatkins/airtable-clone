@@ -6,12 +6,9 @@ import {
 } from "@tanstack/react-table";
 import type { ColType, RowType, TableType, ViewType } from "~/app/defaults";
 import EditableCell from "./TableComponents/EditableCell";
-import CreateRowButton from "./TableComponents/buttons/CreateRowButton";
-import CreateColButton from "./TableComponents/buttons/CreateColButton";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { trpcClient } from "~/trpc/query-client";
 import HundredThousandButton from "./TableComponents/buttons/100kButton";
+import CreateColButton from "./TableComponents/buttons/CreateColButton";
 
 interface DataGridProps {
   table: TableType;
@@ -22,15 +19,18 @@ interface DataGridProps {
   setCols: React.Dispatch<React.SetStateAction<ColType[]>>;
 }
 
+const ROW_HEIGHT = 41;
 
-type Row = { id: number } & Record<string, string | number>;
-
-const COL_COUNT = 12;            // tweak as needed
-const ROW_HEIGHT = 41;           // keep this >= content height
-
-const DataGrid: React.FC<DataGridProps> = ({table, view, rows, cols, setRows, setCols}) => {
+const DataGrid: React.FC<DataGridProps> = ({
+  table,
+  view,
+  rows,
+  cols,
+  setRows,
+  setCols,
+}) => {
   const parentRef = useRef<HTMLDivElement>(null);
-    const reactColumns = useMemo(
+  const reactColumns = useMemo(
     () =>
       cols.map((col) => ({
         accessorKey: col.name,
@@ -47,7 +47,6 @@ const DataGrid: React.FC<DataGridProps> = ({table, view, rows, cols, setRows, se
     data: rows,
     columns: reactColumns,
     getCoreRowModel: getCoreRowModel(),
-    // Important for widths:
     // @ts-ignore
     columnResizeMode: "onChange",
   });
@@ -61,14 +60,14 @@ const DataGrid: React.FC<DataGridProps> = ({table, view, rows, cols, setRows, se
   });
 
   const totalWidth = useMemo(
-    () => reactColumns.reduce((sum, c) => sum + (c.getSize?.() ?? 150), 0),
-    [table]
+    () => reactColumns.reduce((sum, c) => sum + (c.getSize?.() ?? 150) + 150, 0),
+    [table],
   );
 
   return (
     <div className="flex h-screen w-full flex-col">
       {/* Toolbar + sticky header wrapper (sticky keeps header visible while vertical-scrolling) */}
-      <div className="sticky top-0 z-20 bg-white border-b border-gray-200">
+      <div className="sticky top-0 z-20 border-b border-gray-200 bg-white">
         <div className="flex items-center gap-2 px-2 py-2">
           <HundredThousandButton tableId={table.id} />
           <div className="text-xs text-gray-500">
@@ -78,18 +77,33 @@ const DataGrid: React.FC<DataGridProps> = ({table, view, rows, cols, setRows, se
 
         {/* Header: put it in an overflow-x container so it scrolls horizontally with the body */}
         <div className="overflow-auto">
-          <div style={{ width: Math.max(totalWidth, 800) }}>
+          <div style={{ width: Math.max(totalWidth+200, 800) }}>
             {reactTable.getHeaderGroups().map((hg) => (
-              <div key={hg.id} className="flex border-t border-b border-gray-200">
+              <div
+                key={hg.id}
+                className="flex border-t border-b border-gray-200"
+              >
                 {hg.headers.map((header) => (
                   <div
                     key={header.id}
-                    className="px-3 py-2 text-sm font-semibold border-r border-gray-200 bg-white"
+                    className="border-r border-gray-200 bg-white px-3 py-2 text-sm font-semibold"
                     style={{ width: header.getSize() }}
                   >
-                    {flexRender(header.column.columnDef.header, header.getContext())}
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext(),
+                    )}
                   </div>
                 ))}
+
+                {/* Extra header cell at the end */}
+                <div
+                  key="column_add"
+                  className="cursor-pointer flex items-center justify-center border-r border-gray-200 bg-white hover:bg-gray-200"
+                  style={{ minWidth: "120px" }} // give it some space
+                >
+                  <CreateColButton dbTable={table} setCols={setCols} />
+                </div>
               </div>
             ))}
           </div>
@@ -128,7 +142,7 @@ const DataGrid: React.FC<DataGridProps> = ({table, view, rows, cols, setRows, se
                 {r.getVisibleCells().map((cell) => (
                   <div
                     key={cell.id}
-                    className=" whitespace-nowrap text-ellipsis overflow-hidden border-r border-gray-200"
+                    className="overflow-hidden border-r border-gray-200 text-ellipsis whitespace-nowrap"
                     style={{ width: cell.column.getSize() }}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -141,8 +155,7 @@ const DataGrid: React.FC<DataGridProps> = ({table, view, rows, cols, setRows, se
       </div>
     </div>
   );
-}
-
+};
 
 export default DataGrid;
 
@@ -157,18 +170,18 @@ export default DataGrid;
 //   const parentRef = useRef<HTMLDivElement>(null);
 
 //   // React Table columns
-  // const reactColumns = useMemo(
-  //   () =>
-  //     cols.map((col) => ({
-  //       accessorKey: col.name,
-  //       header: col.name,
-  //       size: 200,
-  //       cell: EditableCell,
-  //       enableColumnFilter: true,
-  //       meta: { col },
-  //     })),
-  //   [cols],
-  // );
+// const reactColumns = useMemo(
+//   () =>
+//     cols.map((col) => ({
+//       accessorKey: col.name,
+//       header: col.name,
+//       size: 200,
+//       cell: EditableCell,
+//       enableColumnFilter: true,
+//       meta: { col },
+//     })),
+//   [cols],
+// );
 
 //   // React Table instance
 //   const reactTable = useReactTable({
@@ -255,88 +268,88 @@ export default DataGrid;
 //     query.isFetchingNextPage,
 //   ]);
 
-  // return (
-  //   <div className="flex h-full w-full flex-col">
-  //     {/* Header */}
-  //     <div className="sticky top-0 z-20 flex flex-col border-b border-gray-200 bg-white">
-  //       <div className="flex items-center justify-between px-2 py-2">
-          
-  //         <CreateRowButton dbTable={table} cols={cols} setRows={setRows} />
-  //         <CreateColButton dbTable={table} setCols={setCols} />
+// return (
+//   <div className="flex h-full w-full flex-col">
+//     {/* Header */}
+//     <div className="sticky top-0 z-20 flex flex-col border-b border-gray-200 bg-white">
+//       <div className="flex items-center justify-between px-2 py-2">
 
-  //       </div>
-  //       <div>
-  //         {reactTable.getHeaderGroups().map((headerGroup) => (
-  //           <div
-  //             className="tr flex border-b border-gray-200"
-  //             key={headerGroup.id}
-  //           >
-  //             {headerGroup.headers.map((header) => (
-  //               <div
-  //                 className="th relative flex items-center border-r border-gray-200 bg-white px-3 py-2 text-sm font-semibold"
-  //                 style={{ width: header.getSize() }}
-  //                 key={header.id}
-  //               >
-  //                 {flexRender(
-  //                   header.column.columnDef.header,
-  //                   header.getContext(),
-  //                 )}
-  //               </div>
-  //             ))}
-  //           </div>
-  //         ))}
-  //       </div>
-  //     </div>
+//         <CreateRowButton dbTable={table} cols={cols} setRows={setRows} />
+//         <CreateColButton dbTable={table} setCols={setCols} />
 
-  //     {/* Scrollable virtual rows */}
-  //     <div ref={parentRef} className="relative w-full flex-1 overflow-auto">
-  //       <div
-  //         style={{
-  //           height: `${rowVirtualizer.getTotalSize()}px`,
-  //           width: "100%",
-  //           position: "relative",
-  //         }}
-  //       >
-  //         {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-  //           const row = hydratedRows[virtualRow.index];
-  //           if (!row) return null;
+//       </div>
+//       <div>
+//         {reactTable.getHeaderGroups().map((headerGroup) => (
+//           <div
+//             className="tr flex border-b border-gray-200"
+//             key={headerGroup.id}
+//           >
+//             {headerGroup.headers.map((header) => (
+//               <div
+//                 className="th relative flex items-center border-r border-gray-200 bg-white px-3 py-2 text-sm font-semibold"
+//                 style={{ width: header.getSize() }}
+//                 key={header.id}
+//               >
+//                 {flexRender(
+//                   header.column.columnDef.header,
+//                   header.getContext(),
+//                 )}
+//               </div>
+//             ))}
+//           </div>
+//         ))}
+//       </div>
+//     </div>
 
-  //           const rowIndex = virtualRow.index;
-  //           const tableRow = reactTable.getRowModel().rows[rowIndex];
+//     {/* Scrollable virtual rows */}
+//     <div ref={parentRef} className="relative w-full flex-1 overflow-auto">
+//       <div
+//         style={{
+//           height: `${rowVirtualizer.getTotalSize()}px`,
+//           width: "100%",
+//           position: "relative",
+//         }}
+//       >
+//         {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+//           const row = hydratedRows[virtualRow.index];
+//           if (!row) return null;
 
-  //           return (
-  //             <div
-  //               key={row.id}
-  //               className="tr flex items-center border-b border-gray-200 transition-colors hover:bg-blue-50"
-  //               style={{
-  //                 position: "absolute",
-  //                 top: 0,
-  //                 left: 0,
-  //                 width: "100%",
-  //                 height: `${virtualRow.size}px`,
-  //                 transform: `translateY(${virtualRow.start}px)`,
-  //               }}
-  //             >
-  //               {tableRow &&
-  //                 tableRow.getVisibleCells().map((cell) => (
-  //                   <div
-  //                     className="td overflow-hidden border-r border-b border-gray-200 text-ellipsis whitespace-nowrap"
-  //                     style={{ width: cell.column.getSize() }}
-  //                     key={cell.id}
-  //                   >
-  //                     {flexRender(
-  //                       cell.column.columnDef.cell,
-  //                       cell.getContext(),
-  //                     )}
-  //                   </div>
-  //                 ))}
-  //             </div>
-  //           );
-  //         })}
-  //       </div>
-  //     </div>
-  //   </div>
-  // );
+//           const rowIndex = virtualRow.index;
+//           const tableRow = reactTable.getRowModel().rows[rowIndex];
+
+//           return (
+//             <div
+//               key={row.id}
+//               className="tr flex items-center border-b border-gray-200 transition-colors hover:bg-blue-50"
+//               style={{
+//                 position: "absolute",
+//                 top: 0,
+//                 left: 0,
+//                 width: "100%",
+//                 height: `${virtualRow.size}px`,
+//                 transform: `translateY(${virtualRow.start}px)`,
+//               }}
+//             >
+//               {tableRow &&
+//                 tableRow.getVisibleCells().map((cell) => (
+//                   <div
+//                     className="td overflow-hidden border-r border-b border-gray-200 text-ellipsis whitespace-nowrap"
+//                     style={{ width: cell.column.getSize() }}
+//                     key={cell.id}
+//                   >
+//                     {flexRender(
+//                       cell.column.columnDef.cell,
+//                       cell.getContext(),
+//                     )}
+//                   </div>
+//                 ))}
+//             </div>
+//           );
+//         })}
+//       </div>
+//     </div>
+//   </div>
+// );
 // };
 
 // export default DataGrid;

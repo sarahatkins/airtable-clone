@@ -17,14 +17,12 @@ interface AirtableProps {
 }
 
 /* GOALS
-- 100k rows & infinite scroll
-*/
+- generate data for 100k rows
+- filtering
 
-/* DONE
-- reload the header at the top when a new table is added
-- when creating a new table -> load in better
-- reload views when new view is added
-- back button
+Extra:
+- sorting
+- clean up code
 */
 
 const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
