@@ -7,11 +7,46 @@ import type {
   views,
 } from "~/server/db/schemas/tableSchema";
 
+// --------------------------------------------------
+// ------------- TYPES ------------------------------
+// --------------------------------------------------
+
 export type TableType = InferSelectModel<typeof table>;
 export type ColType = InferSelectModel<typeof columns>;
 export type RowType = InferSelectModel<typeof rows>;
 export type CellType = InferSelectModel<typeof cellValues>;
 export type ViewType = InferSelectModel<typeof views>;
+export type ViewConfigType = {
+  sorting: SortingType[];
+  filters: FilterType[];
+  hiddenColumns: HiddenColType[];
+};
+
+export type SortingType = {
+  columnId: number;
+  direction: "asc" | "desc";
+};
+
+export type FilterType = {
+  columnId: number;
+  operator:
+    | "equals"
+    | "notEquals"
+    | "contains"
+    | "notContains"
+    | "startsWith"
+    | "endsWith"
+    | "greaterThan"
+    | "lessThan";
+  value: string | number | boolean;
+  joiner?: "and" | "or"; // default AND
+};
+
+export type HiddenColType = number;
+
+// --------------------------------------------------
+// ------------- CONSTS -----------------------------
+// --------------------------------------------------
 
 export const DEFAULT_PENDING_KEY = -1;
 
@@ -46,3 +81,9 @@ export const DEFAULT_COLS = [
     type: STATUS.Select,
   },
 ];
+
+export const DEFAULT_VIEW_CONFIG: ViewConfigType = {
+  sorting: [],
+  filters: [],
+  hiddenColumns: [],
+};

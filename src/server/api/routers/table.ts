@@ -14,7 +14,14 @@ import {
 } from "~/server/db/schemas/tableSchema"; // your Drizzle table
 import { eq, type InferSelectModel, and, inArray } from "drizzle-orm";
 import { db } from "~/server/db";
-import type { CellType, ColType, RowType, TableType, ViewType } from "~/app/defaults";
+import {
+  DEFAULT_VIEW_CONFIG,
+  type CellType,
+  type ColType,
+  type RowType,
+  type TableType,
+  type ViewType,
+} from "~/app/defaults";
 
 // Types
 
@@ -95,15 +102,22 @@ export const tableRouter = createTRPCRouter({
         .where(eq(rows.tableId, Number(input.tableId)));
     }),
 
-    // ------------------ ROWS ------------------
+  // ------------------ ROWS ------------------
   createView: publicProcedure
-    .input(z.object({ tableId: z.number(), name: z.string() }))
+    .input(
+      z.object({
+        tableId: z.number(),
+        name: z.string(),
+        config: z.any().optional(),
+      }),
+    )
     .mutation(async ({ input }) => {
       const [newView]: ViewType[] = await db
         .insert(views)
         .values({
           tableId: input.tableId,
           name: input.name,
+          config: input.config ?? DEFAULT_VIEW_CONFIG,
         })
         .returning();
       return newView;
@@ -112,10 +126,23 @@ export const tableRouter = createTRPCRouter({
   getViewByTable: publicProcedure
     .input(z.object({ tableId: z.number() }))
     .query(async ({ input }) => {
-      return db
-        .select()
-        .from(views)
-        .where(eq(views.tableId, input.tableId));
+      return db.select().from(views).where(eq(views.tableId, input.tableId));
+    }),
+
+  updateViewConfig: publicProcedure
+    .input(
+      z.object({
+        viewId: z.number(),
+        config: z.any(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const [updatedView] = await db
+        .update(views)
+        .set({ config: input.config })
+        .where(eq(views.id, input.viewId))
+        .returning();
+      return updatedView;
     }),
 
   // ------------------ CELL VALUES ------------------

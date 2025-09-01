@@ -11,7 +11,7 @@ import type React from "react";
 
 const HomeWidget: React.FC<WidgetProps> = ({name, desc, icon: Icon, color}) => {
   return (
-    <div className="cursor-pointer items-start space-x-3 rounded-lg bg-white p-4  border border-gray-300 hover:shadow-2xl">
+    <div className="cursor-pointer items-start space-x-3 rounded-lg bg-white p-4  border border-gray-300 hover:shadow">
       {/* Icon */}
       <div className="flex items-center mb-1">
         <Icon className={`h-4 w-4 text-${color}`} />

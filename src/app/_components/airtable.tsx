@@ -4,12 +4,13 @@
 import { Plus, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import SelectedTable from "./Table/SelectedTable";
-import { useEffect, useState, type SetStateAction } from "react";
+import { useEffect, useState } from "react";
 import { api } from "~/trpc/react";
 import { useDefaultTableSetup } from "./Table/CreateDefaultTable";
 import type { TableType } from "../defaults";
 import AddTableButton from "./Table/TableComponents/buttons/AddTableButton";
 import SetTableButton from "./Table/TableComponents/buttons/SetTableButton";
+import { useRouter } from "next/navigation";
 
 interface AirtableProps {
   baseId: string;
@@ -28,7 +29,6 @@ EXTRA:
 - delete view
 */
 
-
 /* DONE
 - reload the header at the top when a new table is added
 - when creating a new table -> load in better
@@ -37,6 +37,7 @@ EXTRA:
 */
 
 const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
+  const router = useRouter();
   const { data: base } = api.base.getById.useQuery({ id: baseId });
   const { newTable, finishedTableSetup, handleCreateTable } =
     useDefaultTableSetup(baseId);
@@ -47,9 +48,6 @@ const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
   const [createdDefault, setCreatedDefault] = useState<boolean>(false);
   const [isTableSetup, setIsTableSetup] = useState<boolean>(true);
 
-  useEffect(() => {
-    console.log('TABLE SET???', isTableSetup)
-  }, [isTableSetup])
   // Fetch columns and rows for the selected table
   useEffect(() => {
     createdDefault && finishedTableSetup && setSelectedTable(newTable);
@@ -67,20 +65,23 @@ const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
   }, [tablesLoading, tables, selectedTable, createdDefault]);
 
   useEffect(() => {
-    console.log("new table added...")
-  }, [tables])
+    console.log("new table added...");
+  }, [tables]);
 
   useEffect(() => {
-    console.log("Selected table changed...", selectedTable)
-  }, [selectedTable])
+    console.log("Selected table changed...", selectedTable);
+  }, [selectedTable]);
 
   return (
     <div className="flex h-screen overflow-hidden bg-sky-50">
       {/* Back Sidebar */}
-      <div className="flex h-full w-15 flex-col border-r border-gray-200 bg-white pt-2">
+      <div className="flex h-full w-15 shrink-0 flex-col border-r border-gray-200 bg-white pt-2">
         <div className="flex-1">
           <div className="p-2">
-            <button className="flex w-full justify-center text-gray-700 hover:bg-gray-100">
+            <button
+              className="flex w-full justify-center text-gray-700 hover:bg-gray-100"
+              onClick={() => router.replace("/")}
+            >
               <Image
                 src="/airtable-logo-bw.svg"
                 alt="Google"
@@ -146,15 +147,26 @@ const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
           {/* Left section: tables */}
           <div className="flex items-center gap-3">
             {/* Active table */}
-            {!tablesLoading && tables && tables.map((t, idx) => 
-              <SetTableButton key={idx} setSelectedTable={() => setSelectedTable(t)} name={t.name} tableId={t.id} />
-            )}
+            {!tablesLoading &&
+              tables &&
+              tables.map((t, idx) => (
+                <SetTableButton
+                  key={idx}
+                  setSelectedTable={() => setSelectedTable(t)}
+                  name={t.name}
+                  tableId={t.id}
+                />
+              ))}
 
             {/* Divider */}
             <div className="h-5 w-px bg-gray-300"></div>
 
             {/* Add / import */}
-            <AddTableButton baseId={baseId} setSelectedTable={setSelectedTable} setFinishedTableSetup={setIsTableSetup} />
+            <AddTableButton
+              baseId={baseId}
+              setSelectedTable={setSelectedTable}
+              setFinishedTableSetup={setIsTableSetup}
+            />
           </div>
 
           {/* Right section: Tools */}

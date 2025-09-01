@@ -21,7 +21,7 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({base}) => {
 
   return (
     <div
-      className="flex cursor-pointer items-center rounded-lg border border-gray-300 bg-white p-5 shadow-xs hover:shadow-lg"
+      className="flex cursor-pointer items-center rounded-lg border border-gray-300 bg-white p-5 hover:shadow"
       onClick={handleWidgetClick}
     >
       <div className="flex h-9 w-10 items-center justify-center rounded-xl bg-green-700 p-7 text-xl text-white">

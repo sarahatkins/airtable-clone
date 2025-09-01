@@ -1,4 +1,5 @@
 // table doc
+import { DEFAULT_VIEW_CONFIG } from "~/app/defaults";
 import { createTable, users } from "./userSchema";
 
 // --------------------------------------
@@ -77,5 +78,5 @@ export const views = createTable("views", (d) => ({
     onDelete: "cascade",
   }),
   name: d.text().notNull(),
-  config: d.jsonb().notNull().default("{}"),
+  config: d.jsonb().notNull().default(`${DEFAULT_VIEW_CONFIG}`),
 }));

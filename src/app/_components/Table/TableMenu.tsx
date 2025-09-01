@@ -31,7 +31,7 @@ const TableMenu: React.FC<MenuProps> = ({ tableId }) => {
   }, [views, viewsLoading]);
 
   return (
-    <div className="flex h-full w-60 flex-col border-r border-gray-200 bg-white">
+    <div className="flex h-full w-60 flex-col border-r border-gray-200 bg-white shrink-0">
       <div className="flex-1 overflow-y-auto">
         <div className="p-2">
           <CreateViewButton tableId={tableId} />
