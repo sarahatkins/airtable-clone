@@ -8,7 +8,7 @@ export function useDefaultTableSetup(baseId: string) {
   const [newTable, setNewTable] = useState<any>();
   const [finishedTableSetup, setFinishedTableSetup] = useState<boolean>(false);
 
-  // --- default newRows/newCols hook ---
+  // --- default newRows/newCols/newGrid hook ---
   const createColumn = api.table.createColumn.useMutation({
     onSuccess: (newCol) => {
       console.log("Created column:", newCol);
@@ -22,6 +22,12 @@ export function useDefaultTableSetup(baseId: string) {
       setNewRows((prev) => [...prev, newRow]);
     },
   });
+
+  const createView = api.table.createView.useMutation({
+    onSuccess: (newView) => {
+      console.log("Created view", newView)
+    }
+  })
 
   const createDefaultTable = useCallback(
     async (tableId: number) => {
@@ -37,6 +43,8 @@ export function useDefaultTableSetup(baseId: string) {
         for (let i = 0; i < DEFAULT_NUM_ROWS; i++) {
           await createRow.mutateAsync({ tableId });
         }
+
+        await createView.mutateAsync({tableId, name: "Grid view"})
         setFinishedTableSetup(true);
       } catch (error) {
         console.error("Issue with default table setup", error);

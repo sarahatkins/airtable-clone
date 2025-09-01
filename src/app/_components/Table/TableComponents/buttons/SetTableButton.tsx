@@ -75,7 +75,7 @@ const SetTableButton: React.FC<ButtonProps> = ({
               icon={<Upload className="h-4 w-4" />}
               label="Import data"
             />
-            <li className="my-1 border-t border-gray-200" />;
+            <li className="my-1 border-t border-gray-200" />
             <MenuItem
               icon={<Pencil className="h-4 w-4" />}
               label="Rename table"
@@ -96,12 +96,12 @@ const SetTableButton: React.FC<ButtonProps> = ({
               icon={<Copy className="h-4 w-4" />}
               label="Duplicate table"
             />
-            <li className="my-1 border-t border-gray-200" />;
+            <li className="my-1 border-t border-gray-200" />
             <MenuItem
               icon={<Calendar className="h-4 w-4" />}
               label="Configure date dependencies"
             />
-            <li className="my-1 border-t border-gray-200" />;
+            <li className="my-1 border-t border-gray-200" />
             <MenuItem
               icon={<Info className="h-4 w-4" />}
               label="Edit table description"
@@ -110,7 +110,7 @@ const SetTableButton: React.FC<ButtonProps> = ({
               icon={<Lock className="h-4 w-4" />}
               label="Edit table permissions"
             />
-            <li className="my-1 border-t border-gray-200" />;
+            <li className="my-1 border-t border-gray-200" />
             <MenuItem icon={<X className="h-4 w-4" />} label="Clear data" />
             <MenuItem
               icon={<Trash className="h-4 w-4 text-red-600" />}

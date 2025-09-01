@@ -1,12 +1,14 @@
-import { Plus } from "lucide-react";
+import { Pencil, Plus } from "lucide-react";
 import { useDefaultTableSetup } from "../../CreateDefaultTable";
 import { useEffect, useRef, useState } from "react";
 
 interface ButtonProps {
   baseId: string;
+  setSelectedTable: any;
+
 }
 
-const AddTableButton: React.FC<ButtonProps> = ({ baseId }) => {
+const AddTableButton: React.FC<ButtonProps> = ({ baseId, setSelectedTable }) => {
   // Create default table
   const { newTable, finishedTableSetup, handleCreateTable } =
     useDefaultTableSetup(baseId);
@@ -33,6 +35,11 @@ const AddTableButton: React.FC<ButtonProps> = ({ baseId }) => {
     handleCreateTable("Table x");
   };
 
+  useEffect(() => {
+    if(!newTable) return;
+    setSelectedTable(newTable)
+  }, [newTable])
+
   return (
     <div className="relative inline-block text-left">
       <button
@@ -53,11 +60,11 @@ const AddTableButton: React.FC<ButtonProps> = ({ baseId }) => {
             <p className="text-sm font-medium text-gray-500">
               Add a blank table
             </p>
-            <button className="w-full rounded-md px-3 py-2 text-left hover:bg-gray-100">
-              ➕ Create with AI
+            <button className="w-full items-center flex rounded-md px-3 py-2 text-left hover:bg-gray-100">
+              <Plus width={15} className="mr-2"/> Create with AI
             </button>
-            <button className="w-full rounded-md px-3 py-2 text-left hover:bg-gray-100" onClick={handleAddTable}>
-              ✏️ Start from scratch
+            <button className="w-full flex rounded-md px-3 py-2 text-left hover:bg-gray-100" onClick={handleAddTable}>
+              <Pencil width={15} className="mr-2"/> Start from scratch
             </button>
           </div>
 

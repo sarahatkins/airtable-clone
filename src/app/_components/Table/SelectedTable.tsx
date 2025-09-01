@@ -36,19 +36,19 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
   const [cols, setCols] = useState<ColType[]>([]);
 
   useEffect(() => {
-    if (colsLoading) return; // still loading? wait
-    if (!loadedCols) return; // no data? don't update
+    if (colsLoading) return; 
+    if (!loadedCols) return;
     setCols(loadedCols);
   }, [colsLoading, loadedCols]);
 
   useEffect(() => {
-    if (rowsLoading) return; // still loading? wait
-    if (!loadedRows) return; // no data? don't update
+    if (rowsLoading) return;
+    if (!loadedRows) return;
     setRows(loadedRows);
   }, [rowsLoading, loadedRows]);
 
   return (
-    <div className="overflow-hidden h-full w-full bg-sky-50 text-sm text-gray-700">
+    <div className="h-full w-full overflow-hidden bg-sky-50 text-sm text-gray-700">
       {/* Header - Grid view and field views */}
       <div className="flex h-11 w-full items-center justify-between border-b border-gray-200 bg-white px-4 text-sm">
         {/* Left section */}
@@ -91,7 +91,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
 
       {/* Body */}
       <div className="flex h-full">
-        <TableMenu />
+        <TableMenu tableId={selectedTable.id} />
         {!isDataLoading && (
           <DataGrid
             table={selectedTable}
@@ -101,7 +101,6 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
             setCols={setCols}
           />
         )}
-        
       </div>
     </div>
   );

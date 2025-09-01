@@ -10,22 +10,20 @@ import {
   columns,
   rows,
   cellValues,
+  views,
 } from "~/server/db/schemas/tableSchema"; // your Drizzle table
 import { eq, type InferSelectModel, and, inArray } from "drizzle-orm";
 import { db } from "~/server/db";
+import type { CellType, ColType, RowType, TableType, ViewType } from "~/app/defaults";
 
 // Types
-type TableRow = InferSelectModel<typeof table>;
-type ColumnRow = InferSelectModel<typeof columns>;
-type RowRow = InferSelectModel<typeof rows>;
-type CellValueRow = InferSelectModel<typeof cellValues>;
 
 export const tableRouter = createTRPCRouter({
   // ------------------ TABLES ------------------
   createTable: publicProcedure
     .input(z.object({ baseId: z.string(), name: z.string().min(1) }))
     .mutation(async ({ input }) => {
-      const [newTable]: TableRow[] = await db
+      const [newTable]: TableType[] = await db
         .insert(table)
         .values({
           baseId: input.baseId,
@@ -52,7 +50,7 @@ export const tableRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input }) => {
-      const [newColumn]: ColumnRow[] = await db
+      const [newColumn]: ColType[] = await db
         .insert(columns)
         .values({
           tableId: Number(input.tableId),
@@ -78,7 +76,7 @@ export const tableRouter = createTRPCRouter({
   createRow: publicProcedure
     .input(z.object({ tableId: z.number() }))
     .mutation(async ({ input }) => {
-      const [newRow]: RowRow[] = await db
+      const [newRow]: RowType[] = await db
         .insert(rows)
         .values({
           tableId: Number(input.tableId),
@@ -95,6 +93,29 @@ export const tableRouter = createTRPCRouter({
         .select()
         .from(rows)
         .where(eq(rows.tableId, Number(input.tableId)));
+    }),
+
+    // ------------------ ROWS ------------------
+  createView: publicProcedure
+    .input(z.object({ tableId: z.number(), name: z.string() }))
+    .mutation(async ({ input }) => {
+      const [newView]: ViewType[] = await db
+        .insert(views)
+        .values({
+          tableId: input.tableId,
+          name: input.name,
+        })
+        .returning();
+      return newView;
+    }),
+
+  getViewByTable: publicProcedure
+    .input(z.object({ tableId: z.number() }))
+    .query(async ({ input }) => {
+      return db
+        .select()
+        .from(views)
+        .where(eq(views.tableId, input.tableId));
     }),
 
   // ------------------ CELL VALUES ------------------
@@ -121,14 +142,14 @@ export const tableRouter = createTRPCRouter({
         .limit(1);
 
       if (existing && existing[0] && existing.length > 0) {
-        const [updated]: CellValueRow[] = await db
+        const [updated]: CellType[] = await db
           .update(cellValues)
           .set({ value: input.value })
           .where(eq(cellValues.id, existing[0].id))
           .returning();
         return updated;
       } else {
-        const [newCell]: CellValueRow[] = await db
+        const [newCell]: CellType[] = await db
           .insert(cellValues)
           .values({
             tableId: input.tableId,

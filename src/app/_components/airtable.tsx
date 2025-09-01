@@ -16,9 +16,18 @@ interface AirtableProps {
 }
 
 /* GOALS
-- ability to create multiple tables
-- ability to create and save views
-- filtering and sorting via backend as opposed to frontend
+ - reload the header at the top when a new table is added
+ - reload views when new view is added
+ - implement views properly
+      - add sorting in backend and implement in front
+      - add filtering in back end and implement in front
+      - ability to hide fields
+      - add searching
+  EXTRA:
+  - back button
+  - log out
+  - delete table
+  - delete view
 */
 
 const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
@@ -108,9 +117,6 @@ const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
 
             {/* Right section */}
             <div className="flex items-center gap-4">
-              <div className="rounded border px-2 py-0.5 text-xs text-gray-500">
-                Trial: 13 days left
-              </div>
               <button className="rounded border border-gray-300 px-3 py-1 text-sm hover:bg-gray-50">
                 Launch
               </button>
@@ -134,7 +140,7 @@ const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
             <div className="h-5 w-px bg-gray-300"></div>
 
             {/* Add / import */}
-            <AddTableButton baseId={baseId} />
+            <AddTableButton baseId={baseId} setSelectedTable={setSelectedTable} />
           </div>
 
           {/* Right section: Tools */}

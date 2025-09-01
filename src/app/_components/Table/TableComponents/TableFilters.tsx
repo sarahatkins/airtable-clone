@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import type { ColumnFilter } from "@tanstack/react-table";
-import FilterPopover from "./FilterPopover";
+import FilterPopover from "./modals/FilterPopover";
 
 interface TableFiltersProps {
   columnFilters: ColumnFilter[];
