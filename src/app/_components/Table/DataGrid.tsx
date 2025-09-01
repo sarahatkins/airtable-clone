@@ -34,7 +34,7 @@ const DataGrid: React.FC<DataGridProps> = ({
     enableColumnFilter: true,
     meta: { col }, // keep a reference to column info
   }));
-  const tableRef = useRef<any>(null);
+
   const reactTable = useReactTable({
     data: rows,
     columns: reactColumns,

@@ -39,7 +39,6 @@ const SetTableButton: React.FC<ButtonProps> = ({
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [showRenameModal, setShowRenameModal] = useState<boolean>(showRename);
   const modalRef = useRef<any>(null);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const handleClickOutside = (event: any) => {
@@ -52,14 +51,9 @@ const SetTableButton: React.FC<ButtonProps> = ({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-  const handleContextMenu = (event: any) => {
-    event.preventDefault(); // prevent browser context menu
-    setPosition({ x: event.clientX, y: event.clientY });
-    setShowEditModal(true);
-  };
 
   return (
-    <div onContextMenu={handleContextMenu} onClick={(val) => setSelectedTable(val)}>
+    <div onClick={(val) => setSelectedTable(val)}>
       <button className="flex items-center rounded px-2 py-1 font-semibold text-gray-900 hover:bg-gray-100">
         {name}
         <ChevronDown className="ml-1 h-4 w-4 text-gray-500" />
@@ -121,11 +115,14 @@ const SetTableButton: React.FC<ButtonProps> = ({
         </div>
       )}
 
-        <TableRenameModal tableId={tableId} isOpen={showRenameModal} onClose={() => setShowRenameModal(false)} currentName={name}/>
+      <TableRenameModal
+        tableId={tableId}
+        isOpen={showRenameModal}
+        onClose={() => setShowRenameModal(false)}
+        currentName={name}
+      />
     </div>
   );
 };
-
-
 
 export default SetTableButton;

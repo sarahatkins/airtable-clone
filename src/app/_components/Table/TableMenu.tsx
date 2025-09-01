@@ -1,7 +1,7 @@
 // app/page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import {
   Search,
   Plus,
@@ -12,26 +12,23 @@ import {
 } from "lucide-react";
 import CreateViewButton from "./TableComponents/buttons/CreateViewButton";
 import GridViewButton from "./TableComponents/buttons/GridViewButton";
-import { api } from "~/trpc/react";
+import type { ViewType } from "~/app/defaults";
 
 interface MenuProps {
   tableId: number;
+  views: ViewType[];
+  selectedView: ViewType;
+  setSelectedView: Dispatch<SetStateAction<ViewType | null>>;
 }
 
-const TableMenu: React.FC<MenuProps> = ({ tableId }) => {
-  const [selectedView, setSelectedView] = useState<number>(0);
-  const { data: views, isLoading: viewsLoading } =
-    api.table.getViewByTable.useQuery({ tableId });
-
-  useEffect(() => {
-    if (viewsLoading) return;
-    if (!views) return;
-
-    setSelectedView(views[0]?.id!);
-  }, [views, viewsLoading]);
-
+const TableMenu: React.FC<MenuProps> = ({
+  tableId,
+  views,
+  selectedView,
+  setSelectedView,
+}) => {
   return (
-    <div className="flex h-full w-60 flex-col border-r border-gray-200 bg-white shrink-0">
+    <div className="flex h-full w-60 shrink-0 flex-col border-r border-gray-200 bg-white">
       <div className="flex-1 overflow-y-auto">
         <div className="p-2">
           <CreateViewButton tableId={tableId} />
@@ -41,18 +38,16 @@ const TableMenu: React.FC<MenuProps> = ({ tableId }) => {
           </div>
         </div>
         <div className="mt-4">
-          {!viewsLoading &&
-            views &&
-            views.map((v) => {
-              return (
-                <GridViewButton
-                  key={v.id}
-                  view={v}
-                  selected={v.id === selectedView}
-                  setSelectedView={setSelectedView}
-                />
-              );
-            })}
+          {views.map((v) => {
+            return (
+              <GridViewButton
+                key={v.id}
+                view={v}
+                selected={v.id === selectedView.id}
+                setSelectedView={setSelectedView}
+              />
+            );
+          })}
         </div>
       </div>
     </div>

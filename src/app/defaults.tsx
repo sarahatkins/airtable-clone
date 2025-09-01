@@ -29,20 +29,23 @@ export type SortingType = {
 
 export type FilterType = {
   columnId: number;
-  operator:
-    | "equals"
-    | "notEquals"
-    | "contains"
-    | "notContains"
-    | "startsWith"
-    | "endsWith"
-    | "greaterThan"
-    | "lessThan";
+  operator: FilterOperator;
   value: string | number | boolean;
-  joiner?: "and" | "or"; // default AND
+  joiner?: FilterJoiner; // default AND
 };
 
 export type HiddenColType = number;
+
+export type FilterOperator =
+  | "equals"
+  | "notEquals"
+  | "contains"
+  | "notContains"
+  | "startsWith"
+  | "endsWith"
+  | "greaterThan"
+  | "lessThan";
+export type FilterJoiner = | "and" | "or"; 
 
 // --------------------------------------------------
 // ------------- CONSTS -----------------------------
