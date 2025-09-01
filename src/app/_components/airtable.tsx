@@ -4,30 +4,36 @@
 import { Plus, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import SelectedTable from "./Table/SelectedTable";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type SetStateAction } from "react";
 import { api } from "~/trpc/react";
 import { useDefaultTableSetup } from "./Table/CreateDefaultTable";
 import type { TableType } from "../defaults";
 import AddTableButton from "./Table/TableComponents/buttons/AddTableButton";
-import SetTableButton from "./Table/TableComponents/SetTableButton";
+import SetTableButton from "./Table/TableComponents/buttons/SetTableButton";
 
 interface AirtableProps {
   baseId: string;
 }
 
 /* GOALS
- - reload the header at the top when a new table is added
- - reload views when new view is added
- - implement views properly
-      - add sorting in backend and implement in front
-      - add filtering in back end and implement in front
-      - ability to hide fields
-      - add searching
-  EXTRA:
-  - back button
-  - log out
-  - delete table
-  - delete view
+- implement views properly
+- add sorting in backend and implement in front
+- add filtering in back end and implement in front
+- ability to hide fields
+- add searching
+EXTRA:
+- back button
+- log out
+- delete table
+- delete view
+*/
+
+
+/* DONE
+- reload the header at the top when a new table is added
+- when creating a new table -> load in better
+- reload views when new view is added
+
 */
 
 const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
@@ -38,8 +44,12 @@ const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
     api.table.getTablesByBase.useQuery({ baseId });
 
   const [selectedTable, setSelectedTable] = useState<TableType | null>(null);
-  const [createdDefault, setCreatedDefault] = useState(false);
+  const [createdDefault, setCreatedDefault] = useState<boolean>(false);
+  const [isTableSetup, setIsTableSetup] = useState<boolean>(true);
 
+  useEffect(() => {
+    console.log('TABLE SET???', isTableSetup)
+  }, [isTableSetup])
   // Fetch columns and rows for the selected table
   useEffect(() => {
     createdDefault && finishedTableSetup && setSelectedTable(newTable);
@@ -55,6 +65,10 @@ const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
       setSelectedTable(tables[0]!);
     }
   }, [tablesLoading, tables, selectedTable, createdDefault]);
+
+  useEffect(() => {
+    console.log("new table added...")
+  }, [tables])
 
   useEffect(() => {
     console.log("Selected table changed...", selectedTable)
@@ -140,7 +154,7 @@ const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
             <div className="h-5 w-px bg-gray-300"></div>
 
             {/* Add / import */}
-            <AddTableButton baseId={baseId} setSelectedTable={setSelectedTable} />
+            <AddTableButton baseId={baseId} setSelectedTable={setSelectedTable} setFinishedTableSetup={setIsTableSetup} />
           </div>
 
           {/* Right section: Tools */}
@@ -151,7 +165,7 @@ const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
         </div>
 
         {/* Table Widget */}
-        {!tablesLoading && selectedTable && (
+        {!tablesLoading && isTableSetup && selectedTable && (
           <SelectedTable selectedTable={selectedTable} />
         )}
       </div>

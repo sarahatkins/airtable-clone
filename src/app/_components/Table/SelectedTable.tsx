@@ -36,14 +36,17 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
   const [cols, setCols] = useState<ColType[]>([]);
 
   useEffect(() => {
-    if (colsLoading) return; 
+    if (colsLoading) return;
     if (!loadedCols) return;
+    console.log("COLS", loadedCols);
+
     setCols(loadedCols);
   }, [colsLoading, loadedCols]);
 
   useEffect(() => {
     if (rowsLoading) return;
     if (!loadedRows) return;
+    console.log("ROWS", loadedRows);
     setRows(loadedRows);
   }, [rowsLoading, loadedRows]);
 

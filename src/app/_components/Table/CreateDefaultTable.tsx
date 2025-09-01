@@ -1,8 +1,10 @@
 import { useCallback, useState } from "react";
 import { api } from "~/trpc/react";
 import { DEFAULT_COLS, DEFAULT_NUM_ROWS } from "~/app/defaults";
+import { utils } from "prettier/doc.js";
 
 export function useDefaultTableSetup(baseId: string) {
+  const utils = api.useUtils();
   const [newRows, setNewRows] = useState<any[]>([]);
   const [newCols, setNewCols] = useState<any[]>([]);
   const [newTable, setNewTable] = useState<any>();
@@ -62,6 +64,7 @@ export function useDefaultTableSetup(baseId: string) {
 
       // create defaults immediately after table is created
       await createDefaultTable(newTable.id);
+      utils.table.getTablesByBase.invalidate({baseId})
     },
     onError: (error) => {
       console.error("Error creating table:", error);

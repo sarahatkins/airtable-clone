@@ -1,14 +1,24 @@
 import { Pencil, Plus } from "lucide-react";
 import { useDefaultTableSetup } from "../../CreateDefaultTable";
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 
 interface ButtonProps {
   baseId: string;
   setSelectedTable: any;
-
+  setFinishedTableSetup: Dispatch<SetStateAction<boolean>>;
 }
 
-const AddTableButton: React.FC<ButtonProps> = ({ baseId, setSelectedTable }) => {
+const AddTableButton: React.FC<ButtonProps> = ({
+  baseId,
+  setSelectedTable,
+  setFinishedTableSetup,
+}) => {
   // Create default table
   const { newTable, finishedTableSetup, handleCreateTable } =
     useDefaultTableSetup(baseId);
@@ -29,23 +39,30 @@ const AddTableButton: React.FC<ButtonProps> = ({ baseId, setSelectedTable }) => 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-  // Click -> lil pop up -> create form scratch
-  // New table loads with a pop-up that allows you to rename
+
   const handleAddTable = () => {
     handleCreateTable("Table x");
+    setFinishedTableSetup(false);
+    setShowModal(false);
   };
 
   useEffect(() => {
-    if(!newTable) return;
-    setSelectedTable(newTable)
-  }, [newTable])
+    if (!newTable) return;
+    setSelectedTable(newTable);
+  }, [newTable]);
+
+  useEffect(() => {
+    if(finishedTableSetup) setFinishedTableSetup(true);
+  }, [finishedTableSetup])
 
   return (
     <div className="relative inline-block text-left">
       <button
         ref={buttonRef}
         className="flex items-center gap-1 rounded px-2 py-1 text-gray-600 hover:bg-gray-100 hover:text-gray-800"
-        onClick={() => setShowModal(!showModal)}
+        onClick={() => {
+          setShowModal(!showModal);
+        }}
       >
         <Plus className="h-4 w-4" />
         Add or import
@@ -60,11 +77,14 @@ const AddTableButton: React.FC<ButtonProps> = ({ baseId, setSelectedTable }) => 
             <p className="text-sm font-medium text-gray-500">
               Add a blank table
             </p>
-            <button className="w-full items-center flex rounded-md px-3 py-2 text-left hover:bg-gray-100">
-              <Plus width={15} className="mr-2"/> Create with AI
+            <button className="flex w-full items-center rounded-md px-3 py-2 text-left hover:bg-gray-100">
+              <Pencil width={15} className="mr-2" /> Create with AI
             </button>
-            <button className="w-full flex rounded-md px-3 py-2 text-left hover:bg-gray-100" onClick={handleAddTable}>
-              <Pencil width={15} className="mr-2"/> Start from scratch
+            <button
+              className="flex w-full rounded-md px-3 py-2 text-left hover:bg-gray-100"
+              onClick={handleAddTable}
+            >
+              <Plus width={15} className="mr-2" /> Start from scratch
             </button>
           </div>
 

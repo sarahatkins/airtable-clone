@@ -28,13 +28,16 @@ const ViewNameModal: React.FC<ViewNameModalProps> = ({
   onClose,
   tableId,
 }) => {
+  const utils = api.useUtils()
   const [name, setName] = useState(currentName);
   const modalRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<any>(null);
 
   const createView = api.table.createView.useMutation({
     onSuccess: (newView) => {
+      if (!newView) return;
       console.log("Created view", newView);
+      utils.table.getViewByTable.invalidate({tableId: newView.tableId!})
     },
   });
 
