@@ -93,6 +93,29 @@ export const tableRouter = createTRPCRouter({
       return newRow;
     }),
 
+  createRows: publicProcedure
+    .input(
+      z.object({
+        tableId: z.number(),
+        count: z.number(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const newRows = Array.from({ length: input.count }, () => ({
+        tableId: input.tableId,
+        createdAt: new Date(),
+      }));
+
+      // Explicitly tell Drizzle not to return inserted rows
+      // Done in chunks
+      for (let i = 0; i < newRows.length; i += 1000) {
+        const chunk = newRows.slice(i, i + 1000);
+        await db.insert(rows).values(chunk);
+      }
+
+      return { success: true, inserted: input.count };
+    }),
+
   getRowsByTable: publicProcedure
     .input(z.object({ tableId: z.number() }))
     .query(async ({ input }) => {
@@ -205,5 +228,76 @@ export const tableRouter = createTRPCRouter({
         .select()
         .from(cellValues)
         .where(inArray(cellValues.rowId, input.rowIds)); // fetch all cells for multiple rows in one call
+    }),
+
+  getCellsByView: publicProcedure
+    .input(
+      z.object({
+        viewId: z.number(),
+        limit: z.number().default(100),
+        cursor: z.number().optional(),
+      }),
+    )
+    .query(async ({ input }) => {
+      // 1. Get view config
+      // const view = await db.query.views.findFirst({
+      //   where: eq(views.id, input.viewId),
+      // });
+      // if (!view) throw new Error("View not found");
+      // const config = view.config as {
+      //   filters?: {
+      //     field: string;
+      //     operator: string;
+      //     value: string;
+      //   }[];
+      // };
+      // // 2. Build base row query
+      // let rowQuery = db
+      //   .select()
+      //   .from(rows)
+      //   .where(eq(rows.tableId, view.tableId));
+      // if (input.cursor) {
+      //   // cursor-based pagination (fetch rows with id > cursor)
+      //   rowQuery = rowQuery.where(gt(rows.id, input.cursor));
+      // }
+      // // 3. Apply filters
+      // if (config?.filters?.length) {
+      //   for (const f of config.filters) {
+      //     switch (f.operator) {
+      //       case "equals":
+      //         rowQuery = rowQuery.where(eq(rows[f.field], f.value));
+      //         break;
+      //       case "not_equals":
+      //         rowQuery = rowQuery.where(ne(rows[f.field], f.value));
+      //         break;
+      //       case "contains":
+      //         rowQuery = rowQuery.where(ilike(rows[f.field], `%${f.value}%`));
+      //         break;
+      //       case "does_not_contain":
+      //         rowQuery = rowQuery.where(
+      //           notIlike(rows[f.field], `%${f.value}%`),
+      //         );
+      //         break;
+      //     }
+      //   }
+      // }
+      // // 4. Limit (pagination)
+      // rowQuery = rowQuery.limit(input.limit + 1); // fetch 1 extra for "hasMore"
+      // const filteredRows = await rowQuery;
+      // if (!filteredRows.length)
+      //   return { rows: [], cells: [], nextCursor: null };
+      // const rowIds = filteredRows.map((r) => r.id);
+      // const cells = await db
+      //   .select()
+      //   .from(cellValues)
+      //   .where(inArray(cellValues.rowId, rowIds));
+      // return {
+      //   rows: filteredRows.slice(0, input.limit), // return only limit
+      //   cells,
+      //   nextCursor:
+      //     filteredRows.length > input.limit
+      //       ? filteredRows[input.limit - 1].id
+      //       : null,
+      // };
     }),
 });

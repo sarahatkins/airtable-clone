@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   type TableType,
   type ColType,
@@ -23,11 +23,13 @@ import { api } from "~/trpc/react";
 import DataGrid from "./DataGrid";
 import FilterButton from "./TableComponents/buttons/FilterButton";
 import { views } from "~/server/db/schemas/tableSchema";
+import { useVirtualizer } from "@tanstack/react-virtual";
 interface SelectedTableProps {
   selectedTable: TableType;
 }
 
 const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
+  const parentRef = useRef<any>(null);
   const { data: loadedCols, isLoading: colsLoading } =
     api.table.getColumnsByTable.useQuery(
       { tableId: selectedTable?.id ?? 0 },
@@ -46,6 +48,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
     );
 
   const isDataLoading = colsLoading || rowsLoading || viewsLoading;
+
   const [rows, setRows] = useState<RowType[]>([]);
   const [cols, setCols] = useState<ColType[]>([]);
   const [views, setViews] = useState<ViewType[] | null>(null);
@@ -94,13 +97,14 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
 
         {/* Right section */}
         <div className="flex items-center gap-5 text-gray-600">
-          {!isDataLoading && (
+          {!isDataLoading && currentView && (
             <>
               <button className="flex items-center gap-1 hover:text-gray-900">
                 <EyeOff className="h-4 w-4" /> Hide fields
               </button>
               <FilterButton
                 tableId={selectedTable.id}
+                viewId={currentView?.id}
                 cols={cols}
                 filter={viewConfig.filters}
                 setConfig={setViewConfig}
@@ -127,19 +131,22 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
 
       {/* Body */}
       <div className="flex h-full">
-        {!viewsLoading && views && currentView && (
-          <TableMenu
-            tableId={selectedTable.id}
-            views={views}
-            setSelectedView={setCurrentView}
-            selectedView={currentView}
-          />
-        )}
-        {!isDataLoading && (
+        {
+          /*!viewsLoading && */ views && currentView && (
+            <TableMenu
+              tableId={selectedTable.id}
+              views={views}
+              setSelectedView={setCurrentView}
+              selectedView={currentView}
+            />
+          )
+        }
+        {!isDataLoading && currentView && (
           <DataGrid
             table={selectedTable}
             rows={rows}
             cols={cols}
+            view={currentView}
             setRows={setRows}
             setCols={setCols}
           />

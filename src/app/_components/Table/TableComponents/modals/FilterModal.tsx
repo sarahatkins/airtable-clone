@@ -94,7 +94,6 @@ const FilterModal: React.FC<FilterModalProps> = ({
   }, []);
 
   useEffect(() => {
-    console.log("filter", conditions);
     setFilter(conditions);
   }, [conditions, setFilter]);
 

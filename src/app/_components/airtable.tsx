@@ -17,23 +17,14 @@ interface AirtableProps {
 }
 
 /* GOALS
-- implement views properly
-- add sorting in backend and implement in front
-- add filtering in back end and implement in front
-- ability to hide fields
-- add searching
-EXTRA:
-- back button
-- log out
-- delete table
-- delete view
+- 100k rows & infinite scroll
 */
 
 /* DONE
 - reload the header at the top when a new table is added
 - when creating a new table -> load in better
 - reload views when new view is added
-
+- back button
 */
 
 const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
@@ -64,13 +55,6 @@ const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
     }
   }, [tablesLoading, tables, selectedTable, createdDefault]);
 
-  useEffect(() => {
-    console.log("new table added...");
-  }, [tables]);
-
-  useEffect(() => {
-    console.log("Selected table changed...", selectedTable);
-  }, [selectedTable]);
 
   return (
     <div className="flex h-screen overflow-hidden bg-sky-50">

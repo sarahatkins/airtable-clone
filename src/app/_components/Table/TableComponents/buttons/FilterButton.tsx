@@ -2,10 +2,12 @@ import { Filter } from "lucide-react";
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import FilterModal from "../modals/FilterModal";
 import type { ColType, FilterType, ViewConfigType } from "~/app/defaults";
+import { api } from "~/trpc/react";
 
 interface ButtonProps {
   tableId: number;
   cols: ColType[];
+  viewId: number;
   filter: FilterType[];
   setConfig: Dispatch<SetStateAction<ViewConfigType>>;
 }
@@ -14,14 +16,28 @@ const FilterButton: React.FC<ButtonProps> = ({
   tableId,
   cols,
   filter,
+  viewId,
   setConfig,
 }) => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [newFilter, setNewFilter] = useState<FilterType[]>(filter);
+  const updateConfig = api.table.updateViewConfig.useMutation({
+    onSuccess: (newViewConfig) => {
+      console.log("new filter");
+    },
+  });
 
   useEffect(() => {
-    console.log("NEW FILTER ALERT",newFilter)
-    setConfig((prev) => ({ ...prev, filters: newFilter }));
+    setConfig((prev) => {
+      const newConfig = { ...prev, filters: newFilter };
+
+      updateConfig.mutate({
+        viewId,
+        config: newConfig,
+      });
+
+      return newConfig;
+    });
   }, [newFilter]);
 
   return (
