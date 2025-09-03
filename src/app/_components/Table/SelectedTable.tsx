@@ -48,7 +48,6 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
       { enabled: !!selectedTable?.id },
     );
 
-  const [rows, setRows] = useState<RowType[]>([]);
   const [cols, setCols] = useState<ColType[]>([]);
   const [views, setViews] = useState<ViewType[] | null>(null);
   const [currentView, setCurrentView] = useState<ViewType | null>(null);
@@ -68,32 +67,8 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
     setViewConfig(loadedViews[0]?.config as ViewConfigType);
   }, [viewsLoading, loadedViews]);
 
-  // Fetch rows + cells for the selected view
-  const { data: viewData, isLoading: viewLoading } =
-    api.table.getCellsByView.useQuery(
-      { viewId: currentView?.id ?? 0 },
-      { enabled: !!currentView?.id },
-    );
+  const isDataLoading = colsLoading || viewsLoading;
 
-  const isDataLoading = colsLoading || viewsLoading || viewLoading;
-
-  useEffect(() => {
-    if (!viewData) return;
-
-    // Hydrate rows with cell values
-    const { rows: filteredRows, cells } = viewData;
-    const hydratedRows = filteredRows.map((row: RowType) => {
-      const rowCells = cells.filter((c) => c.rowId === row.id);
-      let rowWithCells: any = { ...row };
-      rowCells.forEach((cell) => {
-        const col = cols.find((c) => c.id === cell.columnId);
-        if (col) rowWithCells[col.name] = cell.value;
-      });
-      rowWithCells = {...rows, tableId: selectedTable.id, id: row.id};
-      return rowWithCells;
-    });
-    setRows(hydratedRows);
-  }, [viewData, cols]);
 
   return (
     <div className="h-full w-full overflow-hidden bg-gray-50 text-sm text-gray-700">
@@ -160,10 +135,8 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
         {!isDataLoading && currentView && (
           <DataGrid
             table={selectedTable}
-            rows={rows}
             cols={cols}
             view={currentView}
-            setRows={setRows}
             setCols={setCols}
           />
         )}

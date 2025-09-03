@@ -1,4 +1,10 @@
-import React, { useRef, useMemo, useState, startTransition } from "react";
+import React, {
+  useRef,
+  useMemo,
+  useState,
+  startTransition,
+  useEffect,
+} from "react";
 import {
   flexRender,
   getCoreRowModel,
@@ -9,31 +15,52 @@ import EditableCell from "./TableComponents/EditableCell";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import HundredThousandButton from "./TableComponents/buttons/100kButton";
 import CreateColButton from "./TableComponents/buttons/CreateColButton";
+import { api } from "~/trpc/react";
 
 interface DataGridProps {
   table: TableType;
   view: ViewType;
-  rows: RowType[];
   cols: ColType[];
-  setRows: React.Dispatch<React.SetStateAction<RowType[]>>;
   setCols: React.Dispatch<React.SetStateAction<ColType[]>>;
 }
 
 const ROW_HEIGHT = 41;
 
-const DataGrid: React.FC<DataGridProps> = ({
-  table,
-  view,
-  rows,
-  cols,
-  setRows,
-  setCols,
-}) => {
+const DataGrid: React.FC<DataGridProps> = ({ table, view, cols, setCols }) => {
+  // Fetch rows + cells for the selected view
+  const [rows, setRows] = useState<any[]>([]);
+
+  const { data: viewData, isLoading: viewLoading } =
+    api.table.getCellsByView.useQuery(
+      { viewId: view?.id ?? 0 },
+      { enabled: !!view?.id },
+    );
+
+  useEffect(() => {
+    if (!viewData) return;
+
+    const { rows: filteredRows, cells } = viewData;
+
+    const hydratedRows = filteredRows.map((row: RowType) => {
+      const rowCells = cells.filter((c) => c.rowId === row.id);
+      const rowWithCells: any = { ...row, tableId: table.id }; // add tableId here
+      rowCells.forEach((cell) => {
+        const col = cols.find((c) => c.id === cell.columnId);
+        if (col) {
+          rowWithCells[`col_${col.id}`] = cell.value; // safer accessor
+        }
+      });
+      return rowWithCells;
+    });
+
+    setRows(hydratedRows);
+  }, [viewData, cols, table.id]);
+
   const parentRef = useRef<HTMLDivElement>(null);
   const reactColumns = useMemo(
     () =>
       cols.map((col) => ({
-        accessorKey: col.name,
+        accessorKey: `col_${col.id}`,
         header: col.name,
         size: 200,
         cell: EditableCell,
@@ -77,7 +104,7 @@ const DataGrid: React.FC<DataGridProps> = ({
 
         {/* Header: put it in an overflow-x container so it scrolls horizontally with the body */}
         <div className="overflow-auto">
-          <div style={{ width: Math.max(totalWidth+200, 800) }}>
+          <div style={{ width: Math.max(totalWidth + 200, 800) }}>
             {reactTable.getHeaderGroups().map((hg) => (
               <div
                 key={hg.id}
@@ -99,7 +126,7 @@ const DataGrid: React.FC<DataGridProps> = ({
                 {/* Extra header cell at the end */}
                 <div
                   key="column_add"
-                  className="cursor-pointer flex items-center justify-center border-r border-gray-200 bg-white hover:bg-neutral-50"
+                  className="flex cursor-pointer items-center justify-center border-r border-gray-200 bg-white hover:bg-neutral-50"
                   style={{ minWidth: "120px" }} // give it some space
                 >
                   <CreateColButton dbTable={table} setCols={setCols} />
@@ -111,10 +138,7 @@ const DataGrid: React.FC<DataGridProps> = ({
       </div>
 
       {/* Body: one scroll container for both directions */}
-      <div
-        ref={parentRef}
-        className="relative flex-1 overflow-auto bg-white"
-      >
+      <div ref={parentRef} className="relative flex-1 overflow-auto bg-white">
         {/* Inner spacer must be as wide as the total table to enable horizontal scroll */}
         <div
           style={{
