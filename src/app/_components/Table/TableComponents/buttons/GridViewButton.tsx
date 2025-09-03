@@ -9,7 +9,7 @@ interface ButtonProps {
 
 const GridViewButton: React.FC<ButtonProps> = ({ view, selected, setSelectedView }) => {
   return (
-    <button className={`flex w-full items-center ${selected ? "bg-gray-100" : "bg-transparent"} px-3 py-2 font-medium text-black cursor-pointer hover:bg-gray-100`} onClick={() => setSelectedView(view.id)}>
+    <button className={`flex w-full items-center ${selected ? "bg-gray-100" : "bg-transparent"} px-3 py-2 font-medium text-black cursor-pointer hover:bg-gray-100`} onClick={() => setSelectedView(view)}>
       {view.name}
     </button>
   );

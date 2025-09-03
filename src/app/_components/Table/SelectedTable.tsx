@@ -30,17 +30,11 @@ interface SelectedTableProps {
 }
 
 const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
-  const parentRef = useRef<any>(null);
-  const { data: loadedCols, isLoading: colsLoading } =
+  const { data: loadedCols, isLoading: colsLoading, refetch: refetchCols } =
     api.table.getColumnsByTable.useQuery(
       { tableId: selectedTable?.id ?? 0 },
       { enabled: !!selectedTable?.id },
     );
-  // const { data: loadedRows, isLoading: rowsLoading } =
-  //   api.table.getRowsByTable.useQuery(
-  //     { tableId: selectedTable?.id ?? 0 },
-  //     { enabled: !!selectedTable?.id },
-  //   );
 
   const { data: loadedViews, isLoading: viewsLoading } =
     api.table.getViewByTable.useQuery(
@@ -61,11 +55,16 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
   useEffect(() => {
     if (viewsLoading) return;
     if (!loadedViews) return;
-
+    console.log("loading views")
     setViews(loadedViews);
     setCurrentView(loadedViews[0]!);
     setViewConfig(loadedViews[0]?.config as ViewConfigType);
   }, [viewsLoading, loadedViews]);
+
+  useEffect(() => {
+    console.log("changed view", currentView)
+    refetchCols();
+  }, [currentView])
 
   const isDataLoading = colsLoading || viewsLoading;
 
