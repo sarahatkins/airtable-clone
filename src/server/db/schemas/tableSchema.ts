@@ -27,7 +27,7 @@ export const base = createTable("base", (d) => ({
 // ----- TABLE SCHEMA -------------------
 // --------------------------------------
 export const table = createTable("tables", (d) => ({
-  id: d.serial("id").notNull().primaryKey(),
+  id: d.serial().notNull().primaryKey(),
   baseId: d
     .varchar({ length: 255 })
     .notNull()

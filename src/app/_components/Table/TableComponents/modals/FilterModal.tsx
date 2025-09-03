@@ -102,7 +102,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
   return (
     <div
       ref={modalRef}
-      className="absolute right-0 z-10 mt-2 w-[500px] rounded-lg border border-gray-200 bg-white shadow-xl"
+      className="absolute right-0 z-60 mt-2 w-[500px] rounded-lg border border-gray-200 bg-white shadow-xl"
     >
       {/* Content */}
       <div className="space-y-3 px-4 py-3">

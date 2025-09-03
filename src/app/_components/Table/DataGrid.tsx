@@ -60,14 +60,14 @@ const DataGrid: React.FC<DataGridProps> = ({
   });
 
   const totalWidth = useMemo(
-    () => reactColumns.reduce((sum, c) => sum + (c.getSize?.() ?? 150) + 150, 0),
+    () => reactColumns.reduce((sum, c) => sum + (c.size ?? 150) + 150, 0),
     [table],
   );
 
   return (
     <div className="flex h-screen w-full flex-col">
       {/* Toolbar + sticky header wrapper (sticky keeps header visible while vertical-scrolling) */}
-      <div className="sticky top-0 z-20 border-b border-gray-200 bg-white">
+      <div className="sticky top-0 z-20 border-b border-gray-200 bg-transparent">
         <div className="flex items-center gap-2 px-2 py-2">
           <HundredThousandButton tableId={table.id} />
           <div className="text-xs text-gray-500">
@@ -99,7 +99,7 @@ const DataGrid: React.FC<DataGridProps> = ({
                 {/* Extra header cell at the end */}
                 <div
                   key="column_add"
-                  className="cursor-pointer flex items-center justify-center border-r border-gray-200 bg-white hover:bg-gray-200"
+                  className="cursor-pointer flex items-center justify-center border-r border-gray-200 bg-white hover:bg-neutral-50"
                   style={{ minWidth: "120px" }} // give it some space
                 >
                   <CreateColButton dbTable={table} setCols={setCols} />
@@ -113,7 +113,7 @@ const DataGrid: React.FC<DataGridProps> = ({
       {/* Body: one scroll container for both directions */}
       <div
         ref={parentRef}
-        className="relative flex-1 overflow-auto bg-transparent"
+        className="relative flex-1 overflow-auto bg-white"
       >
         {/* Inner spacer must be as wide as the total table to enable horizontal scroll */}
         <div
@@ -129,7 +129,7 @@ const DataGrid: React.FC<DataGridProps> = ({
             return (
               <div
                 key={r.id}
-                className="flex items-center border-b border-gray-200 hover:bg-blue-50"
+                className="flex items-center border-b border-gray-200 hover:bg-neutral-50"
                 style={{
                   position: "absolute",
                   top: 0,

@@ -17,7 +17,7 @@ const EditableCell: React.FC<EditableCellProps> = ({
 }) => {
   const { mutate: setCellValue } = api.table.setCellValue.useMutation({
     onSuccess: () => {
-      console.log("New cell created")
+      console.log("New cell created");
     },
   });
 
@@ -56,7 +56,9 @@ const EditableCell: React.FC<EditableCellProps> = ({
 
         return;
       }
-
+      console.log("ROW", row);
+      console.log("TABLE", table);
+      console.log("COL", column)
       // Otherwise save immediately
       setCellValue({
         tableId: row.original.tableId,
@@ -72,7 +74,7 @@ const EditableCell: React.FC<EditableCellProps> = ({
       value={value}
       onChange={(e) => setValue(e.target.value)}
       onBlur={onBlur}
-      className="w-full border border-transparent bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-5 focus:ring-blue-500 focus:outline-none"
+      className="w-full cursor-default border border-transparent bg-transparent px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-5 focus:ring-blue-500 focus:outline-none"
     />
   );
 };

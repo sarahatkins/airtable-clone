@@ -24,6 +24,7 @@ import DataGrid from "./DataGrid";
 import FilterButton from "./TableComponents/buttons/FilterButton";
 import { views } from "~/server/db/schemas/tableSchema";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { table } from "console";
 interface SelectedTableProps {
   selectedTable: TableType;
 }
@@ -35,19 +36,17 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
       { tableId: selectedTable?.id ?? 0 },
       { enabled: !!selectedTable?.id },
     );
-  const { data: loadedRows, isLoading: rowsLoading } =
-    api.table.getRowsByTable.useQuery(
-      { tableId: selectedTable?.id ?? 0 },
-      { enabled: !!selectedTable?.id },
-    );
+  // const { data: loadedRows, isLoading: rowsLoading } =
+  //   api.table.getRowsByTable.useQuery(
+  //     { tableId: selectedTable?.id ?? 0 },
+  //     { enabled: !!selectedTable?.id },
+  //   );
 
   const { data: loadedViews, isLoading: viewsLoading } =
     api.table.getViewByTable.useQuery(
       { tableId: selectedTable?.id ?? 0 },
       { enabled: !!selectedTable?.id },
     );
-
-  const isDataLoading = colsLoading || rowsLoading || viewsLoading;
 
   const [rows, setRows] = useState<RowType[]>([]);
   const [cols, setCols] = useState<ColType[]>([]);
@@ -57,18 +56,8 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
     useState<ViewConfigType>(DEFAULT_VIEW_CONFIG);
 
   useEffect(() => {
-    if (colsLoading) return;
-    if (!loadedCols) return;
-
-    setCols(loadedCols);
+    if (!colsLoading && loadedCols) setCols(loadedCols);
   }, [colsLoading, loadedCols]);
-
-  useEffect(() => {
-    if (rowsLoading) return;
-    if (!loadedRows) return;
-
-    setRows(loadedRows);
-  }, [rowsLoading, loadedRows]);
 
   useEffect(() => {
     if (viewsLoading) return;
@@ -79,8 +68,35 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
     setViewConfig(loadedViews[0]?.config as ViewConfigType);
   }, [viewsLoading, loadedViews]);
 
+  // Fetch rows + cells for the selected view
+  const { data: viewData, isLoading: viewLoading } =
+    api.table.getCellsByView.useQuery(
+      { viewId: currentView?.id ?? 0 },
+      { enabled: !!currentView?.id },
+    );
+
+  const isDataLoading = colsLoading || viewsLoading || viewLoading;
+
+  useEffect(() => {
+    if (!viewData) return;
+
+    // Hydrate rows with cell values
+    const { rows: filteredRows, cells } = viewData;
+    const hydratedRows = filteredRows.map((row: RowType) => {
+      const rowCells = cells.filter((c) => c.rowId === row.id);
+      let rowWithCells: any = { ...row };
+      rowCells.forEach((cell) => {
+        const col = cols.find((c) => c.id === cell.columnId);
+        if (col) rowWithCells[col.name] = cell.value;
+      });
+      rowWithCells = {...rows, tableId: selectedTable.id, id: row.id};
+      return rowWithCells;
+    });
+    setRows(hydratedRows);
+  }, [viewData, cols]);
+
   return (
-    <div className="h-full w-full overflow-hidden bg-sky-50 text-sm text-gray-700">
+    <div className="h-full w-full overflow-hidden bg-gray-50 text-sm text-gray-700">
       {/* Header - Grid view and field views */}
       <div className="flex h-11 w-full items-center justify-between border-b border-gray-200 bg-white px-4 text-sm">
         {/* Left section */}

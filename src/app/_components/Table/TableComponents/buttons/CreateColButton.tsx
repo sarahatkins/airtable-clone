@@ -87,7 +87,7 @@ const CreateColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
         onClick={openAddColumn}
         className="cursor-pointer"
       >
-        <Plus />
+        <Plus height={18}/>
       </button>
       {isAddColumnOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
