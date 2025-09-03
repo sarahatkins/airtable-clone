@@ -5,7 +5,6 @@ import type { ColType, FilterType, ViewConfigType } from "~/app/defaults";
 import { api } from "~/trpc/react";
 
 interface ButtonProps {
-  tableId: number;
   cols: ColType[];
   viewId: number;
   filter: FilterType[];
@@ -13,7 +12,6 @@ interface ButtonProps {
 }
 
 const FilterButton: React.FC<ButtonProps> = ({
-  tableId,
   cols,
   filter,
   viewId,
@@ -53,7 +51,6 @@ const FilterButton: React.FC<ButtonProps> = ({
       <FilterModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        tableId={tableId}
         cols={cols}
         currentFilter={newFilter}
         setFilter={setNewFilter}

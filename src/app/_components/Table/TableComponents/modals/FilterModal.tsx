@@ -8,7 +8,6 @@ import React, {
 } from "react";
 import type {
   ColType,
-  FilterJoiner,
   FilterOperator,
   FilterType,
 } from "~/app/defaults";
@@ -16,7 +15,6 @@ import type {
 interface FilterModalProps {
   isOpen: boolean;
   onClose: any;
-  tableId: number;
   setFilter: Dispatch<SetStateAction<FilterType[]>>;
   currentFilter: FilterType[];
   cols: ColType[];
@@ -36,7 +34,6 @@ const filterOperators: { label: string; value: FilterOperator }[] = [
 const FilterModal: React.FC<FilterModalProps> = ({
   isOpen,
   onClose,
-  tableId,
   currentFilter,
   setFilter,
   cols,

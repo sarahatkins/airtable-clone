@@ -1,4 +1,5 @@
 import type { InferSelectModel } from "drizzle-orm";
+import { Baseline, LetterText, CircleChevronDown, ListEnd, User, File, Calendar, SquareMousePointer } from "lucide-react";
 import type {
   cellValues,
   columns,
@@ -62,6 +63,16 @@ export enum STATUS {
   Number = "number",
   User = "user",
 }
+
+export const typeToIconMap: Record<STATUS, any> = {
+  [STATUS.SingleLine]: Baseline,
+  [STATUS.MultiLine]: LetterText,
+  [STATUS.Checkbox]: SquareMousePointer,
+  [STATUS.Select]: CircleChevronDown,
+  [STATUS.Date]: Calendar,
+  [STATUS.Number]: ListEnd,
+  [STATUS.User]: User,
+};
 
 export const DEFAULT_NUM_ROWS = 3;
 

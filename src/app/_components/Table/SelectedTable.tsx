@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type SetStateAction } from "react";
 import {
   type TableType,
   type ColType,
@@ -25,16 +25,20 @@ import FilterButton from "./TableComponents/buttons/FilterButton";
 import { views } from "~/server/db/schemas/tableSchema";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { table } from "console";
+import SortButton from "./TableComponents/buttons/SortButton";
 interface SelectedTableProps {
   selectedTable: TableType;
 }
 
 const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
-  const { data: loadedCols, isLoading: colsLoading, refetch: refetchCols } =
-    api.table.getColumnsByTable.useQuery(
-      { tableId: selectedTable?.id ?? 0 },
-      { enabled: !!selectedTable?.id },
-    );
+  const {
+    data: loadedCols,
+    isLoading: colsLoading,
+    refetch: refetchCols,
+  } = api.table.getColumnsByTable.useQuery(
+    { tableId: selectedTable?.id ?? 0 },
+    { enabled: !!selectedTable?.id },
+  );
 
   const { data: loadedViews, isLoading: viewsLoading } =
     api.table.getViewByTable.useQuery(
@@ -50,24 +54,24 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
 
   useEffect(() => {
     if (!colsLoading && loadedCols) setCols(loadedCols);
+    console.log("loaded", loadedCols);
   }, [colsLoading, loadedCols]);
 
   useEffect(() => {
     if (viewsLoading) return;
     if (!loadedViews) return;
-    console.log("loading views")
+    console.log("loading views");
     setViews(loadedViews);
     setCurrentView(loadedViews[0]!);
     setViewConfig(loadedViews[0]?.config as ViewConfigType);
   }, [viewsLoading, loadedViews]);
 
   useEffect(() => {
-    console.log("changed view", currentView)
+    console.log("changed view", currentView);
     refetchCols();
-  }, [currentView])
+  }, [currentView, viewConfig]);
 
   const isDataLoading = colsLoading || viewsLoading;
-
 
   return (
     <div className="h-full w-full overflow-hidden bg-gray-50 text-sm text-gray-700">
@@ -87,13 +91,12 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
 
         {/* Right section */}
         <div className="flex items-center gap-5 text-gray-600">
-          {!isDataLoading && currentView && (
+          {!isDataLoading && currentView && cols && (
             <>
               <button className="flex items-center gap-1 hover:text-gray-900">
                 <EyeOff className="h-4 w-4" /> Hide fields
               </button>
               <FilterButton
-                tableId={selectedTable.id}
                 viewId={currentView?.id}
                 cols={cols}
                 filter={viewConfig.filters}
@@ -102,9 +105,12 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
               <button className="flex items-center gap-1 hover:text-gray-900">
                 <LayoutGrid className="h-4 w-4" /> Group
               </button>
-              <button className="flex items-center gap-1 hover:text-gray-900">
-                <ArrowDownUp className="h-4 w-4" /> Sort
-              </button>
+              <SortButton
+                viewId={currentView?.id}
+                cols={cols}
+                sorts={viewConfig.sorting}
+                setConfig={setViewConfig}
+              />
               <button className="flex items-center gap-1 hover:text-gray-900">
                 <Palette className="h-4 w-4" /> Color
               </button>

@@ -12,7 +12,16 @@ import {
   cellValues,
   views,
 } from "~/server/db/schemas/tableSchema"; // your Drizzle table
-import { eq, type InferSelectModel, and, inArray, gt, sql } from "drizzle-orm";
+import {
+  eq,
+  type InferSelectModel,
+  and,
+  inArray,
+  gt,
+  sql,
+  asc,
+  desc,
+} from "drizzle-orm";
 import { db } from "~/server/db";
 import {
   DEFAULT_VIEW_CONFIG,
@@ -20,9 +29,11 @@ import {
   type ColType,
   type RowType,
   type TableType,
+  type ViewConfigType,
   type ViewType,
 } from "~/app/defaults";
 import { operatorMap } from "./helpers/filterHelpers";
+import { alias } from "drizzle-orm/pg-core";
 
 // Types
 
@@ -231,87 +242,196 @@ export const tableRouter = createTRPCRouter({
         .where(inArray(cellValues.rowId, input.rowIds)); // fetch all cells for multiple rows in one call
     }),
 
+  // getCellsByView: publicProcedure
+  //   .input(
+  //     z.object({
+  //       viewId: z.number(),
+  //       limit: z.number().default(100),
+  //       cursor: z.number().optional(),
+  //     }),
+  //   )
+  //   .query(async ({ input }) => {
+  //     // 1. Fetch the view + config
+  //     const [view] = await db
+  //       .select()
+  //       .from(views)
+  //       .where(eq(views.id, input.viewId))
+  //       .limit(1);
 
-getCellsByView: publicProcedure
-  .input(
-    z.object({
-      viewId: z.number(),
-      limit: z.number().default(100),
-      cursor: z.number().optional(),
-    }),
-  )
-  .query(async ({ input }) => {
-    // 1. Fetch the view + config
-    const [view] = await db
-      .select()
-      .from(views)
-      .where(eq(views.id, input.viewId))
-      .limit(1);
+  //     if (!view || !view.tableId) throw new Error("View not found");
 
-    if (!view || !view.tableId) throw new Error("View not found");
+  //     const config = view.config as {
+  //       filters?: {
+  //         columnId: number;
+  //         operator: keyof typeof operatorMap;
+  //         value: string | number;
+  //       }[];
+  //     };
 
-    const config = view.config as {
-      filters?: {
-        columnId: number;
-        operator: keyof typeof operatorMap;
-        value: string | number;
-      }[];
-    };
+  //     // 2. Collect conditions
+  //     const conditions: any[] = [eq(rows.tableId, view.tableId)];
 
-    // 2. Collect conditions
-    const conditions: any[] = [eq(rows.tableId, view.tableId)];
+  //     if (input.cursor) {
+  //       conditions.push(gt(rows.id, input.cursor));
+  //     }
 
-    if (input.cursor) {
-      conditions.push(gt(rows.id, input.cursor));
-    }
+  //     // If filters exist, push filter conditions (on cellValues)
+  //     let useJoin = false;
+  //     if (config?.filters?.length) {
+  //       useJoin = true;
+  //       for (const f of config.filters) {
+  //         const operatorFn = operatorMap[f.operator];
+  //         if (operatorFn) {
+  //           conditions.push(operatorFn(cellValues.value, f.value));
+  //           conditions.push(eq(cellValues.columnId, f.columnId)); // filter must match correct column
+  //         }
+  //       }
+  //     }
 
-    // If filters exist, push filter conditions (on cellValues)
-    let useJoin = false;
-    if (config?.filters?.length) {
-      useJoin = true;
-      for (const f of config.filters) {
-        const operatorFn = operatorMap[f.operator];
-        if (operatorFn) {
-          conditions.push(operatorFn(sql`${cellValues.value}::text`, f.value));
-          conditions.push(eq(cellValues.columnId, f.columnId)); // filter must match correct column
+  //     // 3. Build row query
+  //     let rowQuery: any = db
+  //       .select({ id: rows.id }) // only need IDs here
+  //       .from(rows);
+
+  //     if (useJoin) {
+  //       rowQuery = rowQuery.innerJoin(cellValues, eq(rows.id, cellValues.rowId));
+  //     }
+
+  //     rowQuery = rowQuery
+  //       .where(and(...conditions))
+  //       .limit(input.limit + 1);
+
+  //     const filteredRows = await rowQuery;
+
+  //     if (!filteredRows.length) {
+  //       return { rows: [], cells: [], nextCursor: null };
+  //     }
+
+  //     const rowIds = filteredRows.map((r: RowType) => r.id);
+
+  //     // 4. Fetch all cells for the filtered rows
+  //     const cells = await db
+  //       .select()
+  //       .from(cellValues)
+  //       .where(inArray(cellValues.rowId, rowIds));
+
+  //     return {
+  //       rows: filteredRows.slice(0, input.limit),
+  //       cells,
+  //       nextCursor:
+  //         filteredRows.length > input.limit
+  //           ? filteredRows[input.limit - 1]?.id
+  //           : null,
+  //     };
+  //   }),
+
+  getCellsByView: publicProcedure
+    .input(
+      z.object({
+        viewId: z.number(),
+        limit: z.number().default(100),
+        cursor: z.number().optional(),
+      }),
+    )
+    .query(async ({ input }) => {
+      const [view] = await db
+        .select()
+        .from(views)
+        .where(eq(views.id, input.viewId))
+        .limit(1);
+
+      if (!view || !view.tableId) throw new Error("View not found");
+
+      const config = view.config as ViewConfigType;
+
+      const filters = config.filters ?? [];
+      const sorting = config.sorting ?? [];
+
+      const conditions: any[] = [eq(rows.tableId, view.tableId)];
+
+      if (input.cursor) {
+        conditions.push(gt(rows.id, input.cursor));
+      }
+
+      // ========== Filtering ==========
+      let filterJoinNeeded = false;
+
+      if (filters.length > 0) {
+        filterJoinNeeded = true;
+
+        for (const filter of filters) {
+          const operatorFn = operatorMap[filter.operator];
+          if (!operatorFn) continue;
+
+          // Apply filter using helper
+          conditions.push(
+            operatorFn(sql`${cellValues.value}::text`, filter.value),
+          );
+          conditions.push(eq(cellValues.columnId, filter.columnId));
         }
       }
-    }
 
-    // 3. Build row query
-    let rowQuery: any = db
-      .select({ id: rows.id }) // only need IDs here
-      .from(rows);
+      // ========== Sorting ==========
+      const sortAliases = sorting.map((s, i) => alias(cellValues, `sort_${i}`));
 
-    if (useJoin) {
-      rowQuery = rowQuery.innerJoin(cellValues, eq(rows.id, cellValues.rowId));
-    }
+      let rowQuery: any = db.select({ id: rows.id }).from(rows);
 
-    rowQuery = rowQuery
-      .where(and(...conditions))
-      .limit(input.limit + 1);
+      // Add LEFT JOINs for sorting
+      sortAliases.forEach((aliasRef, i) => {
+        rowQuery = rowQuery.leftJoin(
+          aliasRef,
+          and(
+            eq(rows.id, aliasRef.rowId),
+            eq(aliasRef.columnId, sorting[i]!.columnId),
+          ),
+        );
+      });
 
-    const filteredRows = await rowQuery;
+      // Add INNER JOIN for filtering if needed
+      if (filterJoinNeeded) {
+        rowQuery = rowQuery.innerJoin(
+          cellValues,
+          eq(rows.id, cellValues.rowId),
+        );
+      }
 
-    if (!filteredRows.length) {
-      return { rows: [], cells: [], nextCursor: null };
-    }
+      // Add WHERE
+      rowQuery = rowQuery.where(and(...conditions));
 
-    const rowIds = filteredRows.map((r: RowType) => r.id);
+      // Add ORDER BY from sorting
+      sorting.forEach((sort, i) => {
+        const aliasRef = sortAliases[i];
+        rowQuery = rowQuery.orderBy(
+          sort.direction === "asc"
+            ? asc(sql`${aliasRef!.value}::text`) // or cast to ::numeric if needed
+            : desc(sql`${aliasRef!.value}::text`),
+        );
+      });
 
-    // 4. Fetch all cells for the filtered rows
-    const cells = await db
-      .select()
-      .from(cellValues)
-      .where(inArray(cellValues.rowId, rowIds));
+      // Add pagination limit
+      rowQuery = rowQuery.limit(input.limit + 1);
 
-    return {
-      rows: filteredRows.slice(0, input.limit),
-      cells,
-      nextCursor:
-        filteredRows.length > input.limit
-          ? filteredRows[input.limit - 1]?.id
-          : null,
-    };
-  }), 
+      const filteredRows = await rowQuery;
+
+      if (!filteredRows.length) {
+        return { rows: [], cells: [], nextCursor: null };
+      }
+
+      const rowIds = filteredRows.map((r: RowType) => r.id);
+
+      // Fetch cell values for these rows
+      const cells = await db
+        .select()
+        .from(cellValues)
+        .where(inArray(cellValues.rowId, rowIds));
+
+      return {
+        rows: filteredRows.slice(0, input.limit),
+        cells,
+        nextCursor:
+          filteredRows.length > input.limit
+            ? filteredRows[input.limit - 1]?.id
+            : null,
+      };
+    }),
 });
