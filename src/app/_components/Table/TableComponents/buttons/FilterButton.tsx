@@ -20,7 +20,7 @@ const FilterButton: React.FC<ButtonProps> = ({
   const [showModal, setShowModal] = useState<boolean>(false);
   const [newFilter, setNewFilter] = useState<FilterType[]>(filter);
   const updateConfig = api.table.updateViewConfig.useMutation({
-    onSuccess: (newViewConfig) => {
+    onSuccess: () => {
       console.log("new filter");
     },
   });
@@ -36,7 +36,7 @@ const FilterButton: React.FC<ButtonProps> = ({
 
       return newConfig;
     });
-  }, [newFilter]);
+  }, [newFilter, setConfig, updateConfig, viewId]);
 
   return (
     <div className="relative inline-block">

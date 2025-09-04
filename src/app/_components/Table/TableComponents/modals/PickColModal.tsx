@@ -1,22 +1,12 @@
 // components/SortModal.tsx
 import {
-  useEffect,
   useRef,
   useState,
-  type Dispatch,
-  type SetStateAction,
 } from "react";
 import {
-  Baseline,
-  LetterText,
-  User,
-  ListEnd,
-  File,
-  CircleChevronDown,
   Info,
   Search,
 } from "lucide-react";
-import type { ColType } from "~/app/defaults";
 
 interface ModalProps {
   isOpen: boolean;
@@ -51,7 +41,7 @@ const PickColModal: React.FC<ModalProps> = ({
           <div className="flex items-center gap-1">
             Sort by <Info className="h-4 w-4 text-gray-400" />
           </div>
-          <button className="text-xs text-blue-600 hover:underline">
+          <button className="text-xs text-blue-600 hover:underline" onClick={onClose}>
             Copy from a view
           </button>
         </div>

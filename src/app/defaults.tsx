@@ -1,5 +1,5 @@
 import type { InferSelectModel } from "drizzle-orm";
-import { Baseline, LetterText, CircleChevronDown, ListEnd, User, File, Calendar, SquareMousePointer } from "lucide-react";
+import { Baseline, LetterText, CircleChevronDown, ListEnd, User, Calendar, SquareMousePointer, type LucideIcon } from "lucide-react";
 import type {
   cellValues,
   columns,
@@ -64,7 +64,7 @@ export enum STATUS {
   User = "user",
 }
 
-export const typeToIconMap: Record<STATUS, any> = {
+export const typeToIconMap: Record<STATUS, LucideIcon> = {
   [STATUS.SingleLine]: Baseline,
   [STATUS.MultiLine]: LetterText,
   [STATUS.Checkbox]: SquareMousePointer,

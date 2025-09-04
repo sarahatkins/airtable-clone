@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { base } from "~/server/db/schemas/tableSchema"; // your Drizzle table
 import { eq, type InferSelectModel } from "drizzle-orm";
 import { db } from "~/server/db";
@@ -27,7 +27,7 @@ export const baseRouter = createTRPCRouter({
   // Get all base for a user
   getAll: protectedProcedure
     .input(z.object({ userId: z.string().min(1) })) // assuming you store ownership
-    .query(async ({ input }) => {
+    .query(async ({ }) => {
       const res = await db.select().from(base).orderBy(base.id);
 
       return res;

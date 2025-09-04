@@ -2,7 +2,6 @@ import React, {
   useRef,
   useMemo,
   useState,
-  startTransition,
   useEffect,
 } from "react";
 import {
@@ -30,7 +29,7 @@ const DataGrid: React.FC<DataGridProps> = ({ table, view, cols, setCols }) => {
   // Fetch rows + cells for the selected view
   const [rows, setRows] = useState<any[]>([]);
 
-  const { data: viewData, isLoading: viewLoading, refetch: refetchViewData } =
+  const { data: viewData, refetch: refetchViewData } =
     api.table.getCellsByView.useQuery(
       { viewId: view?.id ?? 0 },
       { enabled: !!view?.id },
@@ -74,7 +73,6 @@ const DataGrid: React.FC<DataGridProps> = ({ table, view, cols, setCols }) => {
     data: rows,
     columns: reactColumns,
     getCoreRowModel: getCoreRowModel(),
-    // @ts-ignore
     columnResizeMode: "onChange",
   });
 

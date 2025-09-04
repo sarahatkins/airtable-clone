@@ -15,7 +15,7 @@ const SortButton: React.FC<ButtonProps> = ({ viewId, cols, sorts, setConfig }) =
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [newSort, setNewSort] = useState<SortingType[]>(sorts);
    const updateConfig = api.table.updateViewConfig.useMutation({
-      onSuccess: (newViewConfig) => {
+      onSuccess: () => {
         console.log("new sort");
       },
     });
@@ -31,7 +31,7 @@ const SortButton: React.FC<ButtonProps> = ({ viewId, cols, sorts, setConfig }) =
     
           return newConfig;
         });
-      }, [newSort]);
+      }, [newSort, setConfig, updateConfig, viewId]);
 
   return (
     <div className="relative inline-block">

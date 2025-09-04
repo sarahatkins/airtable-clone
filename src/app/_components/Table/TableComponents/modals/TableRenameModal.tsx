@@ -1,17 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import MenuItem from "./MenuItem";
 import {
-  Calendar,
-  Copy,
-  EyeOff,
-  Info,
   Mail,
-  Pencil,
   Plus,
-  Settings,
-  Trash,
-  Upload,
-  X,
 } from "lucide-react";
 
 interface RenameModalProps {
@@ -31,6 +21,7 @@ const TableRenameModal: React.FC<RenameModalProps> = ({
   const [recordLabel, setRecordLabel] = useState("Record");
   const modalRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<any>(null);
+  console.log(tableId);
   // Close on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

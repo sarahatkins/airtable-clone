@@ -1,14 +1,9 @@
 // app/page.tsx
 "use client";
 
-import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { type Dispatch, type SetStateAction } from "react";
 import {
   Search,
-  Plus,
-  ChevronDown,
-  User,
-  FileText,
-  CheckCircle,
 } from "lucide-react";
 import CreateViewButton from "./TableComponents/buttons/CreateViewButton";
 import GridViewButton from "./TableComponents/buttons/GridViewButton";

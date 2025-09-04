@@ -9,7 +9,6 @@ import {
   AlignJustify,
   ArrowUp,
   ChevronDown,
-  Grid,
   Grid2X2,
   Search,
   Sparkles,
@@ -26,8 +25,8 @@ type Base = InferSelectModel<typeof base>;
 export default function Dashboard() {
   const [expandedSidebar, setExpandedSidebar] = useState<boolean>(true);
 
-  const { data: session, status } = useSession();
-  const { data: bases, error } = api.base.getAll.useQuery(
+  const { data: session } = useSession();
+  const { data: bases } = api.base.getAll.useQuery(
     { userId: session?.user.id ?? "" }, // pass empty string if session not ready
     { enabled: !!session }, // only run query when session exists
   );

@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState, type SetStateAction } from "react";
+import { useEffect,  useState } from "react";
 import {
   type TableType,
   type ColType,
-  type RowType,
   type ViewType,
   type ViewConfigType,
   DEFAULT_VIEW_CONFIG,
@@ -13,7 +12,6 @@ import {
   ChevronDown,
   EyeOff,
   LayoutGrid,
-  ArrowDownUp,
   Palette,
   List,
   Search,
@@ -22,9 +20,6 @@ import TableMenu from "./TableMenu";
 import { api } from "~/trpc/react";
 import DataGrid from "./DataGrid";
 import FilterButton from "./TableComponents/buttons/FilterButton";
-import { views } from "~/server/db/schemas/tableSchema";
-import { useVirtualizer } from "@tanstack/react-virtual";
-import { table } from "console";
 import SortButton from "./TableComponents/buttons/SortButton";
 interface SelectedTableProps {
   selectedTable: TableType;

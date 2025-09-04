@@ -1,11 +1,8 @@
-import type { Table } from "drizzle-orm";
 import { ChevronDown } from "lucide-react";
 import {
   useEffect,
   useRef,
   useState,
-  type Dispatch,
-  type SetStateAction,
 } from "react";
 
 import {
@@ -22,7 +19,6 @@ import {
 } from "lucide-react";
 import MenuItem from "../modals/MenuItem";
 import TableRenameModal from "../modals/TableRenameModal";
-import { table } from "console";
 interface ButtonProps {
   tableId: number;
   setSelectedTable: any;

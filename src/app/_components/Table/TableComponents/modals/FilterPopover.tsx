@@ -9,47 +9,47 @@ interface FilterPopoverProps {
   setColumnFilters: React.Dispatch<React.SetStateAction<ColumnFilter[]>>;
 }
 
-interface StatusItemProps {
-  status: { id: string; name: string; color: string };
-  setColumnFilters: React.Dispatch<React.SetStateAction<ColumnFilter[]>>;
-  isActive: boolean;
-}
+// interface StatusItemProps {
+//   status: { id: string; name: string; color: string };
+//   setColumnFilters: React.Dispatch<React.SetStateAction<ColumnFilter[]>>;
+//   isActive: boolean;
+// }
 
-const StatusItem: React.FC<StatusItemProps> = ({ status, setColumnFilters, isActive }) => {
-  return (
-    <div
-      className={`flex items-center cursor-pointer rounded-md font-semibold px-2 py-1.5 text-sm transition-colors ${
-        isActive ? "bg-gray-800 text-white" : "hover:bg-gray-800 hover:text-white"
-      }`}
-      onClick={() =>
-        setColumnFilters((prev) => {
-          const statuses = prev.find((filter) => filter.id === "status")?.value as string[] | undefined;
-          if (!statuses) {
-            return prev.concat({
-              id: "status",
-              value: [status.id],
-            });
-          }
+// const StatusItem: React.FC<StatusItemProps> = ({ status, setColumnFilters, isActive }) => {
+//   return (
+//     <div
+//       className={`flex items-center cursor-pointer rounded-md font-semibold px-2 py-1.5 text-sm transition-colors ${
+//         isActive ? "bg-gray-800 text-white" : "hover:bg-gray-800 hover:text-white"
+//       }`}
+//       onClick={() =>
+//         setColumnFilters((prev) => {
+//           const statuses = prev.find((filter) => filter.id === "status")?.value as string[] | undefined;
+//           if (!statuses) {
+//             return prev.concat({
+//               id: "status",
+//               value: [status.id],
+//             });
+//           }
 
-          return prev.map((f) =>
-            f.id === "status"
-              ? {
-                  ...f,
-                  value: isActive
-                    ? statuses.filter((s) => s !== status.id)
-                    : statuses.concat(status.id),
-                }
-              : f
-          );
-        })
-      }
-    >
-      {status.name}
-    </div>
-  );
-};
+//           return prev.map((f) =>
+//             f.id === "status"
+//               ? {
+//                   ...f,
+//                   value: isActive
+//                     ? statuses.filter((s) => s !== status.id)
+//                     : statuses.concat(status.id),
+//                 }
+//               : f
+//           );
+//         })
+//       }
+//     >
+//       {status.name}
+//     </div>
+//   );
+// };
 
-const FilterPopover: React.FC<FilterPopoverProps> = ({ columnFilters, setColumnFilters }) => {
+const FilterPopover: React.FC<FilterPopoverProps> = ({ columnFilters }) => {
   const [open, setOpen] = useState(false);
   const filterStatuses = (columnFilters.find((f) => f.id === "status")?.value as string[]) || [];
 

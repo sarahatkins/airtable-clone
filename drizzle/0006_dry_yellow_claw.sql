@@ -1,0 +1,1 @@
+ALTER TABLE "airtable_user" ADD COLUMN "email_verified" timestamp with time zone DEFAULT now();

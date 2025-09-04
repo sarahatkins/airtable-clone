@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react";
 import { api } from "~/trpc/react";
 import { DEFAULT_COLS, DEFAULT_NUM_ROWS } from "~/app/defaults";
-import { utils } from "prettier/doc.js";
 
 export function useDefaultTableSetup(baseId: string) {
   const utils = api.useUtils();

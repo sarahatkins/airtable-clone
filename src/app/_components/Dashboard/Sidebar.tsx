@@ -7,7 +7,6 @@ import {
   BookOpen,
   Import,
   ShoppingBag,
-  Plus,
 } from "lucide-react";
 import CreateBaseButton from "./CreateBaseButton";
 

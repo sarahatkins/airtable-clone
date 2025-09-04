@@ -1,11 +1,9 @@
 import { z } from "zod";
 import {
   createTRPCRouter,
-  protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
 import {
-  base,
   table,
   columns,
   rows,
@@ -14,7 +12,6 @@ import {
 } from "~/server/db/schemas/tableSchema"; // your Drizzle table
 import {
   eq,
-  type InferSelectModel,
   and,
   inArray,
   gt,

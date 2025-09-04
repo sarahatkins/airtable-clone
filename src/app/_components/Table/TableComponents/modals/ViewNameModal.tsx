@@ -1,17 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import MenuItem from "./MenuItem";
 import {
-  Calendar,
-  Copy,
-  EyeOff,
-  Info,
   Mail,
-  Pencil,
   Plus,
-  Settings,
-  Trash,
-  Upload,
-  X,
 } from "lucide-react";
 import { api } from "~/trpc/react";
 

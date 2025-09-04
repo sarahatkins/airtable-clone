@@ -43,6 +43,13 @@
       "when": 1756959777946,
       "tag": "0005_burly_senator_kelly",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1756968616531,
+      "tag": "0006_dry_yellow_claw",
+      "breakpoints": true
     }
   ]
 }

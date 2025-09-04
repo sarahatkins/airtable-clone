@@ -1,4 +1,4 @@
-import { relations, sql } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import { index, pgTableCreator, primaryKey } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
 
@@ -18,6 +18,9 @@ export const users = createTable("user", (d) => ({
     .$defaultFn(() => crypto.randomUUID()),
   name: d.varchar({ length: 255 }),
   email: d.varchar({ length: 255 }).notNull(),
+  emailVerified: d
+    .timestamp("email_verified", { withTimezone: true })
+    .defaultNow(),
   image: d.varchar({ length: 255 }),
   createdAt: d.timestamp("created_at", { withTimezone: true }).defaultNow(),
   lastLoginAt: d.timestamp("last_login_at", { withTimezone: true }),

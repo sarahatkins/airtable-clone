@@ -1,9 +1,6 @@
 import type { InferSelectModel } from "drizzle-orm";
-import { useSession } from "next-auth/react";
-import { redirect, useRouter } from "next/navigation";
-import { server } from "typescript";
+import { useRouter } from "next/navigation";
 import type { base } from "~/server/db/schemas/tableSchema";
-import { api } from "~/trpc/server";
 
 type Base = InferSelectModel<typeof base>;
 
@@ -11,8 +8,7 @@ interface BaseWidgetProps {
   base: Base;
 }
 
-const BaseWidget: React.FC<BaseWidgetProps> = ({base}) => {
-  
+const BaseWidget: React.FC<BaseWidgetProps> = ({ base }) => {
   const router = useRouter();
 
   const handleWidgetClick = () => {

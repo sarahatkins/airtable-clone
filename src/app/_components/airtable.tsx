@@ -1,7 +1,7 @@
 // app/page.tsx
 "use client";
 
-import { Plus, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import Image from "next/image";
 import SelectedTable from "./Table/SelectedTable";
 import { useEffect, useState } from "react";

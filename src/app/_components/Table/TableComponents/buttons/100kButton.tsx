@@ -1,4 +1,3 @@
-import type { RowType } from "~/app/defaults";
 import { api } from "~/trpc/react";
 
 interface ButtonProps {
