@@ -78,5 +78,5 @@ export const views = createTable("views", (d) => ({
     onDelete: "cascade",
   }),
   name: d.text().notNull(),
-  config: d.jsonb().notNull().default(`${DEFAULT_VIEW_CONFIG}`),
+  config: d.jsonb().notNull().default(JSON.stringify(DEFAULT_VIEW_CONFIG)),
 }));

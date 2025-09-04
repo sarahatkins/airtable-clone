@@ -1,6 +1,13 @@
 import AirTable from "../../_components/airtable";
 
-// @ts-ignore
-export default function Page({ params }: any) {
-  return <AirTable baseId={params.id} />;
+interface TablePageProps {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+export default async function Page({ params }: TablePageProps) {
+  const { id } = await params;
+
+  return <AirTable baseId={id} />;
 }

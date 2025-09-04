@@ -17,11 +17,10 @@ interface AirtableProps {
 }
 
 /* GOALS
-- generate data for 100k rows
 - filtering
+- sorting
 
 Extra:
-- sorting
 - clean up code
 */
 

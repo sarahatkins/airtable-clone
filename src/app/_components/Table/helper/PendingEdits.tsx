@@ -1,8 +1,8 @@
 const pendingEdits = new Map<number, any[]>(); 
-// key: tempRowId (-1), value: array of edits
 
+// key: tempRowId (-1), value: array of edits
 export function addPendingRowEdit(edit: any) {
-  const key = edit.rowIndex; // or use row.id if stable
+  const key = edit.rowIndex;
   if (!pendingEdits.has(key)) {
     pendingEdits.set(key, []);
   }
