@@ -1,11 +1,11 @@
 import AirTable from "../../_components/airtable";
 
-interface PageProps {
+interface TablePageProps {
   params: {
     id: string;
   }
 }
 
-export default function Page({ params }: PageProps) {
+export default function Page({ params }: TablePageProps) {
   return <AirTable baseId={params.id}/>;
 }
