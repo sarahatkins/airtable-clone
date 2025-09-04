@@ -1,8 +1,5 @@
 import { z } from "zod";
-import {
-  createTRPCRouter,
-  publicProcedure,
-} from "~/server/api/trpc";
+import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import {
   table,
   columns,
@@ -10,18 +7,12 @@ import {
   cellValues,
   views,
 } from "~/server/db/schemas/tableSchema"; // your Drizzle table
-import {
-  eq,
-  and,
-  inArray,
-  gt,
-  sql,
-  asc,
-  desc,
-} from "drizzle-orm";
+import { eq, and, inArray, gt, ilike, lt, sql } from "drizzle-orm";
+import { faker } from "@faker-js/faker";
 import { db } from "~/server/db";
 import {
   DEFAULT_VIEW_CONFIG,
+  type CellNoId,
   type CellType,
   type ColType,
   type RowType,
@@ -29,8 +20,7 @@ import {
   type ViewConfigType,
   type ViewType,
 } from "~/app/defaults";
-import { operatorMap } from "./helpers/filterHelpers";
-import { alias } from "drizzle-orm/pg-core";
+import { applyFilters } from "./helpers/filterHelpers";
 
 // Types
 
@@ -102,7 +92,7 @@ export const tableRouter = createTRPCRouter({
       return newRow;
     }),
 
-  createRows: publicProcedure
+  createFilledRows: publicProcedure
     .input(
       z.object({
         tableId: z.number(),
@@ -115,14 +105,77 @@ export const tableRouter = createTRPCRouter({
         createdAt: new Date(),
       }));
 
-      // Explicitly tell Drizzle not to return inserted rows
-      // Done in chunks
+      // Insert rows in chunks and collect inserted rows with IDs
+      const insertedRows: { id: number }[] = [];
+
       for (let i = 0; i < newRows.length; i += 1000) {
         const chunk = newRows.slice(i, i + 1000);
-        await db.insert(rows).values(chunk);
+        const insertedChunk = await db
+          .insert(rows)
+          .values(chunk)
+          .returning({ id: rows.id }); // Get back the inserted IDs
+        insertedRows.push(...insertedChunk);
       }
 
-      return { success: true, inserted: input.count };
+      // Fetch columns for the table
+      const tableColumns = await db
+        .select()
+        .from(columns)
+        .where(eq(columns.tableId, input.tableId));
+
+      const newCells: CellNoId[] = [];
+
+      // Use insertedRows with real IDs here
+      for (const row of insertedRows) {
+        for (const col of tableColumns) {
+          let fakeValue: any;
+
+          switch (col.type) {
+            case "single_line":
+              fakeValue = faker.lorem.words(3);
+              break;
+            case "multi_line":
+              fakeValue = faker.lorem.paragraph();
+              break;
+            case "checkbox":
+              fakeValue = faker.datatype.boolean();
+              break;
+            case "select":
+              fakeValue = faker.lorem.word();
+              break;
+            case "date":
+              fakeValue = faker.date.past().toISOString();
+              break;
+            case "number":
+              fakeValue = faker.number.int({ max: 100 });
+              break;
+            case "user":
+              fakeValue = faker.internet.email();
+              break;
+            default:
+              fakeValue = faker.lorem.word();
+          }
+
+          newCells.push({
+            tableId: input.tableId,
+            rowId: row.id, // now valid
+            columnId: col.id,
+            value: JSON.stringify(fakeValue),
+          });
+        }
+      }
+
+      // Insert cells in chunks
+      for (let i = 0; i < newCells.length; i += 1000) {
+        const chunk = newCells.slice(i, i + 1000);
+        await db.insert(cellValues).values(chunk);
+      }
+
+      return {
+        success: true,
+        rowsInserted: insertedRows.length,
+        cellsInserted: newCells.length,
+      };
     }),
 
   getRowsByTable: publicProcedure
@@ -230,205 +283,123 @@ export const tableRouter = createTRPCRouter({
         .where(eq(cellValues.tableId, input.tableId)); // assuming you have tableId in cellValues
     }),
 
-  getCellsByRows: publicProcedure
-    .input(z.object({ rowIds: z.array(z.number()) }))
-    .query(async ({ input }) => {
-      return db
-        .select()
-        .from(cellValues)
-        .where(inArray(cellValues.rowId, input.rowIds)); // fetch all cells for multiple rows in one call
-    }),
-
-  // getCellsByView: publicProcedure
-  //   .input(
-  //     z.object({
-  //       viewId: z.number(),
-  //       limit: z.number().default(100),
-  //       cursor: z.number().optional(),
-  //     }),
-  //   )
-  //   .query(async ({ input }) => {
-  //     // 1. Fetch the view + config
-  //     const [view] = await db
-  //       .select()
-  //       .from(views)
-  //       .where(eq(views.id, input.viewId))
-  //       .limit(1);
-
-  //     if (!view || !view.tableId) throw new Error("View not found");
-
-  //     const config = view.config as {
-  //       filters?: {
-  //         columnId: number;
-  //         operator: keyof typeof operatorMap;
-  //         value: string | number;
-  //       }[];
-  //     };
-
-  //     // 2. Collect conditions
-  //     const conditions: any[] = [eq(rows.tableId, view.tableId)];
-
-  //     if (input.cursor) {
-  //       conditions.push(gt(rows.id, input.cursor));
-  //     }
-
-  //     // If filters exist, push filter conditions (on cellValues)
-  //     let useJoin = false;
-  //     if (config?.filters?.length) {
-  //       useJoin = true;
-  //       for (const f of config.filters) {
-  //         const operatorFn = operatorMap[f.operator];
-  //         if (operatorFn) {
-  //           conditions.push(operatorFn(cellValues.value, f.value));
-  //           conditions.push(eq(cellValues.columnId, f.columnId)); // filter must match correct column
-  //         }
-  //       }
-  //     }
-
-  //     // 3. Build row query
-  //     let rowQuery: any = db
-  //       .select({ id: rows.id }) // only need IDs here
-  //       .from(rows);
-
-  //     if (useJoin) {
-  //       rowQuery = rowQuery.innerJoin(cellValues, eq(rows.id, cellValues.rowId));
-  //     }
-
-  //     rowQuery = rowQuery
-  //       .where(and(...conditions))
-  //       .limit(input.limit + 1);
-
-  //     const filteredRows = await rowQuery;
-
-  //     if (!filteredRows.length) {
-  //       return { rows: [], cells: [], nextCursor: null };
-  //     }
-
-  //     const rowIds = filteredRows.map((r: RowType) => r.id);
-
-  //     // 4. Fetch all cells for the filtered rows
-  //     const cells = await db
-  //       .select()
-  //       .from(cellValues)
-  //       .where(inArray(cellValues.rowId, rowIds));
-
-  //     return {
-  //       rows: filteredRows.slice(0, input.limit),
-  //       cells,
-  //       nextCursor:
-  //         filteredRows.length > input.limit
-  //           ? filteredRows[input.limit - 1]?.id
-  //           : null,
-  //     };
-  //   }),
-
   getCellsByView: publicProcedure
     .input(
       z.object({
         viewId: z.number(),
-        limit: z.number().default(100),
-        cursor: z.number().optional(),
+        limit: z.number().default(1000), // batch size
+        cursor: z.number().optional(), // last processed row id
       }),
     )
     .query(async ({ input }) => {
+      const { viewId, limit, cursor } = input;
+
+      // 1. Fetch the view
       const [view] = await db
         .select()
         .from(views)
-        .where(eq(views.id, input.viewId))
+        .where(eq(views.id, viewId))
         .limit(1);
 
-      if (!view || !view.tableId) throw new Error("View not found");
+      if (!view) throw new Error("View not found");
+      if (!view.tableId) throw new Error("View missing tableId");
 
-      const config = view.config as ViewConfigType;
+      const tableId = view.tableId;
 
-      const filters = config.filters ?? [];
-      const sorting = config.sorting ?? [];
+      // 2. Get filters from view config
+      const config = view.config as any;
+      const filters = config?.filters ?? [];
 
-      const conditions: any[] = [eq(rows.tableId, view.tableId)];
-
-      if (input.cursor) {
-        conditions.push(gt(rows.id, input.cursor));
+      // 3. Build base row conditions
+      const rowConditions = [eq(rows.tableId, tableId)];
+      if (cursor) {
+        rowConditions.push(gt(rows.id, cursor));
       }
 
-      // ========== Filtering ==========
-      let filterJoinNeeded = false;
+      // 4. Handle filters
+      for (const filter of filters) {
+        const { columnId, operator, value } = filter;
 
-      if (filters.length > 0) {
-        filterJoinNeeded = true;
+        const cellConditions = [eq(cellValues.columnId, columnId)];
 
-        for (const filter of filters) {
-          const operatorFn = operatorMap[filter.operator];
-          if (!operatorFn) continue;
-
-          // Apply filter using helper
-          conditions.push(
-            operatorFn(sql`${cellValues.value}::text`, filter.value),
-          );
-          conditions.push(eq(cellValues.columnId, filter.columnId));
+        switch (operator) {
+          case "equals":
+            cellConditions.push(eq(cellValues.value, value));
+            break;
+          case "contains":
+            cellConditions.push(
+              ilike(sql`${cellValues.value}::text`, `%${value}%`),
+            );
+            break;
+          case "startsWith":
+            cellConditions.push(
+              ilike(sql`${cellValues.value}::text`, `${value}%`),
+            );
+            break;
+          case "endsWith":
+            cellConditions.push(
+              ilike(sql`${cellValues.value}::text`, `%${value}`),
+            );
+            break;
+          case "greaterThan":
+            cellConditions.push(gt(cellValues.value, value));
+            break;
+          case "lessThan":
+            cellConditions.push(lt(cellValues.value, value));
+            break;
+          default:
+            throw new Error(`Unsupported operator: ${operator}`);
         }
+
+        // Get matching row IDs from cell values
+        const matchingRowIdsQuery = await db
+          .select({ rowId: cellValues.rowId })
+          .from(cellValues)
+          .where(and(eq(cellValues.tableId, tableId), ...cellConditions));
+
+        const matchingIds = matchingRowIdsQuery.map((r) => r.rowId);
+
+        if (matchingIds.length === 0) {
+          return {
+            rows: [],
+            cells: [],
+            nextCursor: undefined,
+          };
+        }
+
+        rowConditions.push(inArray(rows.id, matchingIds));
       }
 
-      // ========== Sorting ==========
-      const sortAliases = sorting.map((s, i) => alias(cellValues, `sort_${i}`));
-
-      let rowQuery: any = db.select({ id: rows.id }).from(rows);
-
-      // Add LEFT JOINs for sorting
-      sortAliases.forEach((aliasRef, i) => {
-        rowQuery = rowQuery.leftJoin(
-          aliasRef,
-          and(
-            eq(rows.id, aliasRef.rowId),
-            eq(aliasRef.columnId, sorting[i]!.columnId),
-          ),
-        );
-      });
-
-      // Add INNER JOIN for filtering if needed
-      if (filterJoinNeeded) {
-        rowQuery = rowQuery.innerJoin(
-          cellValues,
-          eq(rows.id, cellValues.rowId),
-        );
-      }
-
-      // Add WHERE
-      rowQuery = rowQuery.where(and(...conditions));
-
-      // Add ORDER BY from sorting
-      sorting.forEach((sort, i) => {
-        const aliasRef = sortAliases[i];
-        rowQuery = rowQuery.orderBy(
-          sort.direction === "asc"
-            ? asc(sql`${aliasRef!.value}::text`) // or cast to ::numeric if needed
-            : desc(sql`${aliasRef!.value}::text`),
-        );
-      });
-
-      // Add pagination limit
-      rowQuery = rowQuery.limit(input.limit + 1);
-
-      const filteredRows = await rowQuery;
-
-      if (!filteredRows.length) {
-        return { rows: [], cells: [], nextCursor: null };
-      }
-
-      const rowIds = filteredRows.map((r: RowType) => r.id);
-
-      // Fetch cell values for these rows
-      const cells = await db
+      // 5. Fetch filtered & paginated rows
+      const fetchedRows = await db
         .select()
-        .from(cellValues)
-        .where(inArray(cellValues.rowId, rowIds));
+        .from(rows)
+        .where(and(...rowConditions))
+        .orderBy(rows.id)
+        .limit(limit + 1);
+
+      const hasNext = fetchedRows.length > limit;
+      const slicedRows = hasNext ? fetchedRows.slice(0, limit) : fetchedRows;
+      const rowIds = slicedRows.map((r) => r.id);
+
+      // 6. Fetch all cells for the selected rows
+      const cells =
+        rowIds.length > 0
+          ? await db
+              .select()
+              .from(cellValues)
+              .where(
+                and(
+                  eq(cellValues.tableId, tableId),
+                  inArray(cellValues.rowId, rowIds),
+                ),
+              )
+          : [];
 
       return {
-        rows: filteredRows.slice(0, input.limit),
+        rows: slicedRows,
         cells,
-        nextCursor:
-          filteredRows.length > input.limit
-            ? filteredRows[input.limit - 1]?.id
-            : null,
+        nextCursor: hasNext ? slicedRows[slicedRows.length - 1].id : undefined,
       };
     }),
 });

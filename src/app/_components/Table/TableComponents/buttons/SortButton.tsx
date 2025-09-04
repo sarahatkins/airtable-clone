@@ -31,7 +31,7 @@ const SortButton: React.FC<ButtonProps> = ({ viewId, cols, sorts, setConfig }) =
     
           return newConfig;
         });
-      }, [newSort, setConfig, updateConfig, viewId]);
+      }, [newSort]);
 
   return (
     <div className="relative inline-block">

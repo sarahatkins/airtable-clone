@@ -36,7 +36,7 @@ const FilterButton: React.FC<ButtonProps> = ({
 
       return newConfig;
     });
-  }, [newFilter, setConfig, updateConfig, viewId]);
+  }, [newFilter]);
 
   return (
     <div className="relative inline-block">
