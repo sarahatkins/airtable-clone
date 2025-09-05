@@ -274,8 +274,8 @@ export const tableRouter = createTRPCRouter({
     .input(
       z.object({
         viewId: z.number(),
-        limit: z.number().default(500), // batch size
-        cursor: z.number().optional(), // last processed row id
+        limit: z.number().default(500),
+        cursor: z.number().optional(),
       }),
     )
     .query(async ({ input, ctx }) => {
@@ -290,8 +290,7 @@ export const tableRouter = createTRPCRouter({
       if (!view) throw new Error("View not found");
 
       // Extract config
-      const { filters: filterTree, sorting = [] } =
-        view.config as ViewConfigType;
+      const { filters: filterTree, sorting } = view.config as ViewConfigType;
 
       // Build WHERE conditions
       const conditions = [eq(rows.tableId, view.tableId)];
@@ -325,16 +324,22 @@ export const tableRouter = createTRPCRouter({
             eq(sortAlias.columnId, sort.columnId),
           ),
         );
-
-        rowQuery = rowQuery.orderBy(
-          sort.direction === "asc"
-            ? asc(sql`${sortAlias.value}::text`)
-            : desc(sql`${sortAlias.value}::text`),
-        );
+      });
+      const orderBys = sorting.map((sort, i) => {
+        const sortAlias = sortAliases[i];
+        if(!sortAlias) return;
+        return sort.direction === "asc"
+          ? asc(sql`${sortAlias.value}::text`)
+          : desc(sql`${sortAlias.value}::text`);
       });
 
+      // Always add rows.id for stable pagination (last tiebreaker)
+      orderBys.push(asc(rows.id));
+
       // ========= Pagination =========
-      rowQuery = rowQuery.orderBy(rows.id).limit(limit + 1);
+      rowQuery = rowQuery.orderBy(...orderBys).limit(limit + 1);
+
+      console.log("QUERY", rowQuery.toSQL());
 
       // ========= Execute =========
       const rowsRes = await rowQuery;

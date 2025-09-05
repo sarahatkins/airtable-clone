@@ -15,7 +15,7 @@ import type {
 
 interface FilterModalProps {
   isOpen: boolean;
-  onClose: any;
+  onClose: () => void;
   setFilter: Dispatch<SetStateAction<FilterGroup | null>>;
   currentFilter: FilterGroup | null;
   cols: ColType[];

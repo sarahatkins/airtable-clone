@@ -88,7 +88,7 @@ export const DEFAULT_COLS = [
   },
   {
     name: "Status",
-    type: STATUS.Text,
+    type: STATUS.Number,
   },
 ];
 

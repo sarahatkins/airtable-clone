@@ -1,4 +1,4 @@
-import { useEffect,  useState } from "react";
+import { useEffect, useState } from "react";
 import {
   type TableType,
   type ColType,
@@ -21,6 +21,7 @@ import { api } from "~/trpc/react";
 import DataGrid from "./DataGrid";
 import FilterButton from "./TableComponents/buttons/FilterButton";
 import SortButton from "./TableComponents/buttons/SortButton";
+import HiddenButton from "./TableComponents/buttons/HiddenButton";
 interface SelectedTableProps {
   selectedTable: TableType;
 }
@@ -88,9 +89,13 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
         <div className="flex items-center gap-5 text-gray-600">
           {!isDataLoading && currentView && cols && (
             <>
-              <button className="flex items-center gap-1 hover:text-gray-900">
-                <EyeOff className="h-4 w-4" /> Hide fields
-              </button>
+              <HiddenButton
+                viewId={currentView?.id}
+                cols={cols}
+                currHiddenCols={viewConfig.hiddenColumns}
+                setConfig={setViewConfig}
+              />
+
               <FilterButton
                 viewId={currentView?.id}
                 cols={cols}

@@ -88,7 +88,7 @@ const DataGrid: React.FC<DataGridProps> = ({ table, view, cols, setCols }) => {
     const normalized = normalizeRows(newRows);
 
     // append if we already have rows, otherwise replace
-    setRows((prev) => (cursor ? [...prev, ...normalized] : normalized));
+    setRows((prev) => (!isFreshFetch ? [...prev, ...normalized] : normalized));
 
     setNextCursor(nextCursor ?? undefined);
   }, [viewData]);
@@ -123,10 +123,8 @@ const DataGrid: React.FC<DataGridProps> = ({ table, view, cols, setCols }) => {
     const lastVisible = rowVirtualizer.getVirtualItems().slice(-1)[0];
     if (!lastVisible) return;
 
-    // don’t auto-fetch if fewer rows than one page
-    if (rows.length < 50) return;
-
     if (lastVisible.index >= rows.length - 100) {
+      setIsFreshFetch(false);
       loadMoreRows();
     }
   }, [rowVirtualizer.getVirtualItems(), rows.length, cursor]);
