@@ -7,7 +7,7 @@ import {
   cellValues,
   views,
 } from "~/server/db/schemas/tableSchema"; // your Drizzle table
-import { eq, and, inArray, gt, ilike, lt, sql } from "drizzle-orm";
+import { eq, and, inArray, gt, ilike, lt, sql, asc, desc } from "drizzle-orm";
 import { faker } from "@faker-js/faker";
 import { db } from "~/server/db";
 import {
@@ -21,6 +21,8 @@ import {
   type ViewType,
 } from "~/app/defaults";
 import { buildFilter, validateFilterGroup } from "./helpers/filtering";
+import { buildSortingClauses } from "./helpers/sorting";
+import { alias } from "drizzle-orm/pg-core";
 
 // Types
 
@@ -287,50 +289,78 @@ export const tableRouter = createTRPCRouter({
 
       if (!view) throw new Error("View not found");
 
-      // Find filter tree
-      const { filters: filterTree } = view.config as ViewConfigType;
-      
-      // Begin filtering and constructing the sql
-      let whereExpr = sql`TRUE`
+      // Extract config
+      const { filters: filterTree, sorting = [] } =
+        view.config as ViewConfigType;
 
-      if (filterTree  && filterTree.args.length > 0) {
+      // Build WHERE conditions
+      const conditions = [eq(rows.tableId, view.tableId)];
+
+      if (filterTree && filterTree.args.length > 0) {
         validateFilterGroup(filterTree);
-        whereExpr = buildFilter(filterTree);
+        conditions.push(buildFilter(filterTree));
       }
-      
-      const conditions = [eq(rows.tableId, view.tableId)]; // mandatory condition
-      
-      if (filterTree) conditions.push(whereExpr);
-      if (cursor) conditions.push(gt(rows.id, cursor));
-      
-      const query = ctx.db
-      .select()
-      .from(rows)
-      .where(and(...conditions)) // combine all with AND
-      .orderBy(rows.id)
-      .limit(limit);
-      console.log("QUERYSQL", query.toSQL());
 
-      const rowsRes = await query;
+      if (cursor) {
+        conditions.push(gt(rows.id, cursor));
+      }
 
-      if (rowsRes.length === 0)
-        return { rows: [], cells: [], nextCursor: null };
+      // Base query (only rows)
+      let rowQuery: any = ctx.db
+        .select({ id: rows.id })
+        .from(rows)
+        .where(and(...conditions));
+
+      // ========= Sorting =========
+      const sortAliases = sorting.map((s, i) => alias(cellValues, `sort_${i}`));
+
+      sorting.forEach((sort, i) => {
+        const sortAlias = sortAliases[i];
+        if (!sortAlias) return;
+
+        rowQuery = rowQuery.leftJoin(
+          sortAlias,
+          and(
+            eq(rows.id, sortAlias.rowId),
+            eq(sortAlias.columnId, sort.columnId),
+          ),
+        );
+
+        rowQuery = rowQuery.orderBy(
+          sort.direction === "asc"
+            ? asc(sql`${sortAlias.value}::text`)
+            : desc(sql`${sortAlias.value}::text`),
+        );
+      });
+
+      // ========= Pagination =========
+      rowQuery = rowQuery.orderBy(rows.id).limit(limit + 1);
+
+      // ========= Execute =========
+      const rowsRes = await rowQuery;
+
+      if (rowsRes.length === 0) {
+        return { rows: [], nextCursor: null };
+      }
+
       const rowIds = rowsRes.map((r) => r.id);
 
+      // Fetch related cells separately
       const cellsRes = await ctx.db
         .select()
         .from(cellValues)
         .where(inArray(cellValues.rowId, rowIds));
 
-      // Group cells by row
+      // Hydrate rows with cells
       const rowsWithCells = rowsRes.map((r) => ({
         ...r,
         cells: cellsRes.filter((c) => c.rowId === r.id),
       }));
 
+      // Compute next cursor
       const nextCursor =
-        rowsRes.length === limit ? rowsRes[rowsRes.length - 1]?.id : undefined;
-      // Return rows + next cursor
+        rowsRes.length > limit ? rowsRes[rowsRes.length - 1]?.id : undefined;
+
       return {
         rows: rowsWithCells,
         nextCursor,

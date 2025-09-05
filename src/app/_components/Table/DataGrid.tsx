@@ -16,6 +16,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import HundredThousandButton from "./TableComponents/buttons/100kButton";
 import CreateColButton from "./TableComponents/buttons/CreateColButton";
 import { api } from "~/trpc/react";
+import CreateRowButton from "./TableComponents/buttons/CreateRowButton";
 
 interface DataGridProps {
   table: TableType;
@@ -35,13 +36,15 @@ const DataGrid: React.FC<DataGridProps> = ({ table, view, cols, setCols }) => {
   const parentRef = useRef<HTMLDivElement>(null);
   const [rows, setRows] = useState<any[]>([]);
   const [cursor, setCursor] = useState<number | undefined>(undefined);
+  const [nextCursor, setNextCursor] = useState<number | undefined>(undefined);
+
   const [isFreshFetch, setIsFreshFetch] = useState<boolean>(false);
   const {
     data: viewData,
     refetch: refetchViewData,
     isFetching,
   } = api.table.getFilterCells.useQuery(
-    { viewId: view?.id ?? 0, limit: 1000, cursor },
+    { viewId: view?.id ?? 0, limit: 100, cursor },
     { enabled: !!view?.id }, //doesn't run until view provided
   );
 
@@ -83,23 +86,21 @@ const DataGrid: React.FC<DataGridProps> = ({ table, view, cols, setCols }) => {
 
     const { rows: newRows, nextCursor } = viewData;
     const normalized = normalizeRows(newRows);
-    if(isFreshFetch) {
-      setRows(normalized);  
-    } else {
-      setRows((prev) => [...prev, ...normalized]);
-    }
 
-    setCursor(nextCursor ?? undefined);
+    // append if we already have rows, otherwise replace
+    setRows((prev) => (cursor ? [...prev, ...normalized] : normalized));
+
+    setNextCursor(nextCursor ?? undefined);
   }, [viewData]);
 
   const loadMoreRows = () => {
-    if (cursor && !isFetching) {
-      refetchViewData(); // backend returns next batch using cursor
+    if (nextCursor && !isFetching) {
+      setCursor(nextCursor);
     }
   };
 
   const normalizeRows = (rowsWithCells: any[]) => {
-    console.log(rowsWithCells)
+    console.log(rowsWithCells);
     return rowsWithCells.map((row) => {
       const rowObj: Record<string, any> = {
         id: row.id,
@@ -114,20 +115,22 @@ const DataGrid: React.FC<DataGridProps> = ({ table, view, cols, setCols }) => {
 
   useEffect(() => {
     setRows([]);
-    setCursor(undefined);
-    refetchViewData();
-    setIsFreshFetch(true)
+    setIsFreshFetch(true);
+    setCursor(undefined); // trigger a fresh fetch with no cursor
   }, [view]);
 
   useEffect(() => {
     const lastVisible = rowVirtualizer.getVirtualItems().slice(-1)[0];
     if (!lastVisible) return;
 
-    // If the last visible row is within 5 rows of the total rows, load more
-    if (lastVisible.index >= rows.length - 5) {
+    // don’t auto-fetch if fewer rows than one page
+    if (rows.length < 50) return;
+
+    if (lastVisible.index >= rows.length - 100) {
       loadMoreRows();
     }
   }, [rowVirtualizer.getVirtualItems(), rows.length, cursor]);
+
   return (
     <div className="flex h-screen w-full flex-col">
       {/* Toolbar + sticky header wrapper (sticky keeps header visible while vertical-scrolling) */}
@@ -178,10 +181,9 @@ const DataGrid: React.FC<DataGridProps> = ({ table, view, cols, setCols }) => {
       <div ref={parentRef} className="relative flex-1 overflow-auto bg-white">
         {/* Inner spacer must be as wide as the total table to enable horizontal scroll */}
         <div
+          className="relative"
           style={{
             height: rowVirtualizer.getTotalSize(),
-            width: Math.max(totalWidth, 800),
-            position: "relative",
           }}
         >
           {rowVirtualizer.getVirtualItems().map((vr) => {
@@ -189,16 +191,13 @@ const DataGrid: React.FC<DataGridProps> = ({ table, view, cols, setCols }) => {
             if (!r) return null;
             return (
               <div
-                key={r.id}
-                className="flex items-center border-b border-gray-200 hover:bg-neutral-50"
+                key={vr.key}
+                className="absolute top-0 left-0 flex items-center border-b border-gray-200 hover:bg-neutral-50"
                 style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  height: vr.size,
-                  width: "100%",
+                  height: `${vr.size}px`,
                   transform: `translateY(${vr.start}px)`,
                 }}
+                data-index={vr.index}
               >
                 {r.getVisibleCells().map((cell) => (
                   <div
@@ -209,6 +208,11 @@ const DataGrid: React.FC<DataGridProps> = ({ table, view, cols, setCols }) => {
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </div>
                 ))}
+                <CreateRowButton
+                  cols={cols}
+                  dbTable={table}
+                  setRows={setRows}
+                />
               </div>
             );
           })}
@@ -219,198 +223,3 @@ const DataGrid: React.FC<DataGridProps> = ({ table, view, cols, setCols }) => {
 };
 
 export default DataGrid;
-
-// const DataGrid: React.FC<DataGridProps> = ({
-//   table,
-//   rows,
-//   cols,
-//   view,
-//   setRows,
-//   setCols,
-// }) => {
-//   const parentRef = useRef<HTMLDivElement>(null);
-
-//   // React Table columns
-// const reactColumns = useMemo(
-//   () =>
-//     cols.map((col) => ({
-//       accessorKey: col.name,
-//       header: col.name,
-//       size: 200,
-//       cell: EditableCell,
-//       enableColumnFilter: true,
-//       meta: { col },
-//     })),
-//   [cols],
-// );
-
-//   // React Table instance
-//   const reactTable = useReactTable({
-//     data: rows,
-//     columns: reactColumns,
-//     getCoreRowModel: getCoreRowModel(),
-//     columnResizeMode: "onChange",
-//     meta: {
-//       updateData: (rowIndex: number, columnId: string, value: any) =>
-//         setRows((prev) =>
-//           prev.map((row, idx) =>
-//             idx === rowIndex ? { ...row, [columnId]: value } : row,
-//           ),
-//         ),
-//     },
-//   });
-
-//   // Fetch all cell values
-//   const rowIds = rows.map((r) => r.id);
-//   const query = useInfiniteQuery({
-//     queryKey: ["cellsByView", view.id],
-//     queryFn: async ({ pageParam }) => {
-//       return await trpcClient.table.getCellsByRows.query({
-//         rowIds,
-//         // cursor: pageParam,
-//         // limit: 100,
-//       });
-//     },
-//     getNextPageParam: (last: any) => last.nextCursor,
-//     initialPageParam: undefined,
-//   });
-
-//   // Flatten cell values from all pages
-//   const cellValues = useMemo(
-//     () => query.data?.pages.flatMap((page) => page) ?? [],
-//     [query.data],
-//   );
-
-//   // Create a map from rowId -> cells for fast lookup
-//   const cellMap = useMemo(() => {
-//     const map: Record<number, typeof cellValues> = {};
-//     cellValues.forEach((cv) => {
-//       if (!map[cv.rowId]) map[cv.rowId] = [];
-//       map[cv.rowId]!.push(cv);
-//     });
-//     return map;
-//   }, [cellValues]);
-
-//   // Hydrate rows with cell values without mutating state
-//   const hydratedRows = useMemo(() => {
-//     return rows.map((row) => {
-//       const rowWithCells: any = { ...row };
-//       (cellMap[row.id] || []).forEach((cell) => {
-//         const col = cols.find((c) => c.id === cell.columnId);
-//         if (col) rowWithCells[col.name] = cell.value;
-//       });
-//       return rowWithCells;
-//     });
-//   }, [rows, cellMap, cols]);
-
-//   // Virtualizer
-//   const rowVirtualizer = useVirtualizer({
-//     count: hydratedRows.length + (query.hasNextPage ? 1 : 0),
-//     getScrollElement: () => parentRef.current,
-//     estimateSize: () => 41,
-//     overscan: 10,
-//   });
-
-//   // Infinite scroll trigger
-//   React.useEffect(() => {
-//     const [last] = rowVirtualizer.getVirtualItems().slice(-1);
-//     if (
-//       last &&
-//       last.index >= hydratedRows.length - 1 &&
-//       query.hasNextPage &&
-//       !query.isFetchingNextPage
-//     ) {
-//       query.fetchNextPage();
-//     }
-//   }, [
-//     rowVirtualizer.getVirtualItems(),
-//     hydratedRows.length,
-//     query.hasNextPage,
-//     query.isFetchingNextPage,
-//   ]);
-
-// return (
-//   <div className="flex h-full w-full flex-col">
-//     {/* Header */}
-//     <div className="sticky top-0 z-20 flex flex-col border-b border-gray-200 bg-white">
-//       <div className="flex items-center justify-between px-2 py-2">
-
-//         <CreateRowButton dbTable={table} cols={cols} setRows={setRows} />
-//         <CreateColButton dbTable={table} setCols={setCols} />
-
-//       </div>
-//       <div>
-//         {reactTable.getHeaderGroups().map((headerGroup) => (
-//           <div
-//             className="tr flex border-b border-gray-200"
-//             key={headerGroup.id}
-//           >
-//             {headerGroup.headers.map((header) => (
-//               <div
-//                 className="th relative flex items-center border-r border-gray-200 bg-white px-3 py-2 text-sm font-semibold"
-//                 style={{ width: header.getSize() }}
-//                 key={header.id}
-//               >
-//                 {flexRender(
-//                   header.column.columnDef.header,
-//                   header.getContext(),
-//                 )}
-//               </div>
-//             ))}
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-
-//     {/* Scrollable virtual rows */}
-//     <div ref={parentRef} className="relative w-full flex-1 overflow-auto">
-//       <div
-//         style={{
-//           height: `${rowVirtualizer.getTotalSize()}px`,
-//           width: "100%",
-//           position: "relative",
-//         }}
-//       >
-//         {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-//           const row = hydratedRows[virtualRow.index];
-//           if (!row) return null;
-
-//           const rowIndex = virtualRow.index;
-//           const tableRow = reactTable.getRowModel().rows[rowIndex];
-
-//           return (
-//             <div
-//               key={row.id}
-//               className="tr flex items-center border-b border-gray-200 transition-colors hover:bg-blue-50"
-//               style={{
-//                 position: "absolute",
-//                 top: 0,
-//                 left: 0,
-//                 width: "100%",
-//                 height: `${virtualRow.size}px`,
-//                 transform: `translateY(${virtualRow.start}px)`,
-//               }}
-//             >
-//               {tableRow &&
-//                 tableRow.getVisibleCells().map((cell) => (
-//                   <div
-//                     className="td overflow-hidden border-r border-b border-gray-200 text-ellipsis whitespace-nowrap"
-//                     style={{ width: cell.column.getSize() }}
-//                     key={cell.id}
-//                   >
-//                     {flexRender(
-//                       cell.column.columnDef.cell,
-//                       cell.getContext(),
-//                     )}
-//                   </div>
-//                 ))}
-//             </div>
-//           );
-//         })}
-//       </div>
-//     </div>
-//   </div>
-// );
-// };
-
-// export default DataGrid;
