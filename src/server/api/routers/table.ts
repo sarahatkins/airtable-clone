@@ -7,7 +7,18 @@ import {
   cellValues,
   views,
 } from "~/server/db/schemas/tableSchema"; // your Drizzle table
-import { eq, and, inArray, gt, ilike, lt, sql, asc, desc, notInArray } from "drizzle-orm";
+import {
+  eq,
+  and,
+  inArray,
+  gt,
+  ilike,
+  lt,
+  sql,
+  asc,
+  desc,
+  notInArray,
+} from "drizzle-orm";
 import { faker } from "@faker-js/faker";
 import { db } from "~/server/db";
 import {
@@ -83,11 +94,27 @@ export const tableRouter = createTRPCRouter({
       // Extract config
       const { hiddenColumns } = view.config as ViewConfigType;
 
-      return db
+      const allCols = await ctx.db
         .select()
         .from(columns)
-        .where(and(eq(columns.tableId, Number(input.tableId)), notInArray(columns.id, hiddenColumns)))
+        .where(eq(columns.tableId, Number(input.tableId)))
         .orderBy(columns.orderIndex);
+
+      const shownCols = await ctx.db
+        .select()
+        .from(columns)
+        .where(
+          and(
+            eq(columns.tableId, Number(input.tableId)),
+            notInArray(columns.id, hiddenColumns),
+          ),
+        )
+        .orderBy(columns.orderIndex);
+
+      return {
+        cols: allCols,
+        shownCols
+      }
     }),
 
   // ------------------ ROWS ------------------
@@ -337,7 +364,7 @@ export const tableRouter = createTRPCRouter({
       });
       const orderBys = sorting.map((sort, i) => {
         const sortAlias = sortAliases[i];
-        if(!sortAlias) return;
+        if (!sortAlias) return;
         return sort.direction === "asc"
           ? asc(sql`${sortAlias.value}::text`)
           : desc(sql`${sortAlias.value}::text`);

@@ -28,14 +28,15 @@ interface SelectedTableProps {
 
 const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
   const [cols, setCols] = useState<ColType[]>([]);
+  const [showCols, setShownCols] = useState<ColType[]>([]);
   const [views, setViews] = useState<ViewType[] | null>(null);
   const [currentView, setCurrentView] = useState<ViewType | null>(null);
-  
+
   const { data: loadedViews, isLoading: viewsLoading } =
-  api.table.getViewByTable.useQuery(
-    { tableId: selectedTable?.id ?? 0 },
-    { enabled: !!selectedTable?.id },
-  );
+    api.table.getViewByTable.useQuery(
+      { tableId: selectedTable?.id ?? 0 },
+      { enabled: !!selectedTable?.id },
+    );
   const {
     data: loadedCols,
     isLoading: colsLoading,
@@ -49,7 +50,10 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
     useState<ViewConfigType>(DEFAULT_VIEW_CONFIG);
 
   useEffect(() => {
-    if (!colsLoading && loadedCols) setCols(loadedCols);
+    if (!colsLoading && loadedCols) {
+      setCols(loadedCols.cols);
+      setShownCols(loadedCols.shownCols)
+    }
     console.log("loaded", loadedCols);
   }, [colsLoading, loadedCols]);
 
@@ -140,7 +144,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
         {!isDataLoading && currentView && (
           <DataGrid
             table={selectedTable}
-            cols={cols}
+            cols={showCols}
             view={currentView}
             setCols={setCols}
           />
