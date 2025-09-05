@@ -7,7 +7,7 @@ import {
   cellValues,
   views,
 } from "~/server/db/schemas/tableSchema"; // your Drizzle table
-import { eq, and, inArray, gt, ilike, lt, sql, asc, desc } from "drizzle-orm";
+import { eq, and, inArray, gt, ilike, lt, sql, asc, desc, notInArray } from "drizzle-orm";
 import { faker } from "@faker-js/faker";
 import { db } from "~/server/db";
 import {
@@ -71,12 +71,22 @@ export const tableRouter = createTRPCRouter({
     }),
 
   getColumnsByTable: publicProcedure
-    .input(z.object({ tableId: z.number() }))
-    .query(async ({ input }) => {
+    .input(z.object({ tableId: z.number(), viewId: z.number() }))
+    .query(async ({ input, ctx }) => {
+      const [view] = await ctx.db
+        .select({ config: views.config, tableId: views.tableId })
+        .from(views)
+        .where(eq(views.id, input.viewId));
+
+      if (!view) throw new Error("View not found");
+
+      // Extract config
+      const { hiddenColumns } = view.config as ViewConfigType;
+
       return db
         .select()
         .from(columns)
-        .where(eq(columns.tableId, Number(input.tableId)))
+        .where(and(eq(columns.tableId, Number(input.tableId)), notInArray(columns.id, hiddenColumns)))
         .orderBy(columns.orderIndex);
     }),
 

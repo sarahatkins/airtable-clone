@@ -27,24 +27,24 @@ interface SelectedTableProps {
 }
 
 const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
+  const [cols, setCols] = useState<ColType[]>([]);
+  const [views, setViews] = useState<ViewType[] | null>(null);
+  const [currentView, setCurrentView] = useState<ViewType | null>(null);
+  
+  const { data: loadedViews, isLoading: viewsLoading } =
+  api.table.getViewByTable.useQuery(
+    { tableId: selectedTable?.id ?? 0 },
+    { enabled: !!selectedTable?.id },
+  );
   const {
     data: loadedCols,
     isLoading: colsLoading,
     refetch: refetchCols,
   } = api.table.getColumnsByTable.useQuery(
-    { tableId: selectedTable?.id ?? 0 },
-    { enabled: !!selectedTable?.id },
+    { tableId: selectedTable?.id ?? 0, viewId: currentView?.id ?? 0 },
+    { enabled: !!selectedTable?.id && !viewsLoading && !currentView },
   );
 
-  const { data: loadedViews, isLoading: viewsLoading } =
-    api.table.getViewByTable.useQuery(
-      { tableId: selectedTable?.id ?? 0 },
-      { enabled: !!selectedTable?.id },
-    );
-
-  const [cols, setCols] = useState<ColType[]>([]);
-  const [views, setViews] = useState<ViewType[] | null>(null);
-  const [currentView, setCurrentView] = useState<ViewType | null>(null);
   const [viewConfig, setViewConfig] =
     useState<ViewConfigType>(DEFAULT_VIEW_CONFIG);
 
