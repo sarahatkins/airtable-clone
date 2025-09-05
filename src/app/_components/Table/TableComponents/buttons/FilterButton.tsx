@@ -3,11 +3,12 @@ import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import FilterModal from "../modals/FilterModal";
 import type { ColType, FilterType, ViewConfigType } from "~/app/defaults";
 import { api } from "~/trpc/react";
+import type { FilterGroup } from "~/app/filterDefaults";
 
 interface ButtonProps {
   cols: ColType[];
   viewId: number;
-  filter: FilterType[];
+  filter: FilterGroup | null;
   setConfig: Dispatch<SetStateAction<ViewConfigType>>;
 }
 
@@ -17,11 +18,13 @@ const FilterButton: React.FC<ButtonProps> = ({
   viewId,
   setConfig,
 }) => {
+  const utils = api.useUtils();
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [newFilter, setNewFilter] = useState<FilterType[]>(filter);
+  const [newFilter, setNewFilter] = useState<FilterGroup | null>(filter);
   const updateConfig = api.table.updateViewConfig.useMutation({
     onSuccess: () => {
       console.log("new filter");
+      utils.table.getFilterCells.invalidate();
     },
   });
 

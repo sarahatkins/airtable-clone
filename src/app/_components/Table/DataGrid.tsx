@@ -1,15 +1,16 @@
-import React, {
-  useRef,
-  useMemo,
-  useState,
-  useEffect,
-} from "react";
+import React, { useRef, useMemo, useState, useEffect } from "react";
 import {
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import type { ColType, RowType, TableType, ViewType } from "~/app/defaults";
+import type {
+  CellType,
+  ColType,
+  RowType,
+  TableType,
+  ViewType,
+} from "~/app/defaults";
 import EditableCell from "./TableComponents/EditableCell";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import HundredThousandButton from "./TableComponents/buttons/100kButton";
@@ -23,39 +24,28 @@ interface DataGridProps {
   setCols: React.Dispatch<React.SetStateAction<ColType[]>>;
 }
 
+interface HydratedRows extends RowType {
+  cells: CellType[];
+}
+
 const ROW_HEIGHT = 41;
 
 const DataGrid: React.FC<DataGridProps> = ({ table, view, cols, setCols }) => {
   // Fetch rows + cells for the selected view
-  const [rows, setRows] = useState<any[]>([]);
-
-  const { data: viewData, refetch: refetchViewData } =
-    api.table.getCellsByView.useQuery(
-      { viewId: view?.id ?? 0 },
-      { enabled: !!view?.id },
-    );
-
-  useEffect(() => {
-    if (!viewData) return;
-
-    const { rows: filteredRows, cells } = viewData;
-
-    const hydratedRows = filteredRows.map((row: RowType) => {
-      const rowCells = cells.filter((c) => c.rowId === row.id);
-      const rowWithCells: any = { ...row, tableId: table.id }; // add tableId here
-      rowCells.forEach((cell) => {
-        const col = cols.find((c) => c.id === cell.columnId);
-        if (col) {
-          rowWithCells[`col_${col.id}`] = cell.value; // safer accessor
-        }
-      });
-      return rowWithCells;
-    });
-
-    setRows(hydratedRows);
-  }, [viewData, cols, table.id]);
-
   const parentRef = useRef<HTMLDivElement>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [rows, setRows] = useState<any[]>([]);
+  const [cursor, setCursor] = useState<number | undefined>(undefined);
+
+  const {
+    data: viewData,
+    refetch: refetchViewData,
+    isFetching,
+  } = api.table.getFilterCells.useQuery(
+    { viewId: view?.id ?? 0, limit: 1000, cursor },
+    { enabled: !!view?.id }, //doesn't run until view provided
+  );
+
   const reactColumns = useMemo(
     () =>
       cols.map((col) => ({
@@ -90,9 +80,51 @@ const DataGrid: React.FC<DataGridProps> = ({ table, view, cols, setCols }) => {
   );
 
   useEffect(() => {
-    refetchViewData();
-  }, [view])
+    if (!viewData) return;
 
+    const { rows: newRows, nextCursor } = viewData;
+    const normalized = normalizeRows(newRows);
+    console.log("NORMALISED", normalized)
+    setRows((prev) => [...prev, ...normalized]);
+    setCursor(nextCursor ?? undefined);
+    setHasMore(!!nextCursor);
+  }, [viewData]);
+
+  const loadMoreRows = () => {
+    if (cursor && !isFetching) {
+      refetchViewData(); // backend returns next batch using cursor
+    }
+  };
+
+  const normalizeRows = (rowsWithCells: any[]) => {
+    console.log(rowsWithCells)
+    return rowsWithCells.map((row) => {
+      const rowObj: Record<string, any> = {
+        id: row.id,
+        tableId: row.tableId,
+      };
+      for (const cell of row.cells) {
+        rowObj[`col_${cell.columnId}`] = cell.value;
+      }
+      return rowObj;
+    });
+  };
+
+  useEffect(() => {
+    setRows([]);
+    setCursor(undefined);
+    refetchViewData();
+  }, [view]);
+
+  useEffect(() => {
+    const lastVisible = rowVirtualizer.getVirtualItems().slice(-1)[0];
+    if (!lastVisible) return;
+
+    // If the last visible row is within 5 rows of the total rows, load more
+    if (lastVisible.index >= rows.length - 5) {
+      loadMoreRows();
+    }
+  }, [rowVirtualizer.getVirtualItems(), rows.length, cursor]);
   return (
     <div className="flex h-screen w-full flex-col">
       {/* Toolbar + sticky header wrapper (sticky keeps header visible while vertical-scrolling) */}

@@ -20,7 +20,7 @@ import {
   type ViewConfigType,
   type ViewType,
 } from "~/app/defaults";
-import { applyFilters } from "./helpers/filterHelpers";
+import { buildFilter, validateFilterGroup } from "./helpers/filtering";
 
 // Types
 
@@ -283,123 +283,71 @@ export const tableRouter = createTRPCRouter({
         .where(eq(cellValues.tableId, input.tableId)); // assuming you have tableId in cellValues
     }),
 
-  getCellsByView: publicProcedure
+  getFilterCells: publicProcedure
     .input(
       z.object({
         viewId: z.number(),
-        limit: z.number().default(1000), // batch size
+        limit: z.number().default(500), // batch size
         cursor: z.number().optional(), // last processed row id
       }),
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const { viewId, limit, cursor } = input;
 
-      // 1. Fetch the view
-      const [view] = await db
-        .select()
+      // Get respective view
+      const [view] = await ctx.db
+        .select({ config: views.config, tableId: views.tableId })
         .from(views)
-        .where(eq(views.id, viewId))
-        .limit(1);
+        .where(eq(views.id, viewId));
 
       if (!view) throw new Error("View not found");
-      if (!view.tableId) throw new Error("View missing tableId");
 
-      const tableId = view.tableId;
+      // Find filter tree
+      const { filters: filterTree } = view.config as ViewConfigType;
 
-      // 2. Get filters from view config
-      const config = view.config as any;
-      const filters = config?.filters ?? [];
-
-      // 3. Build base row conditions
-      const rowConditions = [eq(rows.tableId, tableId)];
-      if (cursor) {
-        rowConditions.push(gt(rows.id, cursor));
+      // Begin filtering and constructing the sql
+      let whereExpr = sql`TRUE`
+      if (filterTree) {
+        validateFilterGroup(filterTree);
+        whereExpr = buildFilter(filterTree);
       }
+      
+      const conditions = [eq(rows.tableId, view.tableId)]; // mandatory condition
+      
+      if (whereExpr) conditions.push(whereExpr);
+      if (cursor) conditions.push(gt(rows.id, cursor));
+      
+      const query = ctx.db
+      .select()
+      .from(rows)
+      .where(and(...conditions)) // combine all with AND
+      .orderBy(rows.id)
+      .limit(limit);
+      console.log("QUERYSQL", query.toSQL());
 
-      // 4. Handle filters
-      for (const filter of filters) {
-        const { columnId, operator, value } = filter;
+      const rowsRes = await query;
 
-        const cellConditions = [eq(cellValues.columnId, columnId)];
+      if (rowsRes.length === 0)
+        return { rows: [], cells: [], nextCursor: null };
+      const rowIds = rowsRes.map((r) => r.id);
 
-        switch (operator) {
-          case "equals":
-            cellConditions.push(eq(cellValues.value, value));
-            break;
-          case "contains":
-            cellConditions.push(
-              ilike(sql`${cellValues.value}::text`, `%${value}%`),
-            );
-            break;
-          case "startsWith":
-            cellConditions.push(
-              ilike(sql`${cellValues.value}::text`, `${value}%`),
-            );
-            break;
-          case "endsWith":
-            cellConditions.push(
-              ilike(sql`${cellValues.value}::text`, `%${value}`),
-            );
-            break;
-          case "greaterThan":
-            cellConditions.push(gt(cellValues.value, value));
-            break;
-          case "lessThan":
-            cellConditions.push(lt(cellValues.value, value));
-            break;
-          default:
-            throw new Error(`Unsupported operator: ${operator}`);
-        }
-
-        // Get matching row IDs from cell values
-        const matchingRowIdsQuery = await db
-          .select({ rowId: cellValues.rowId })
-          .from(cellValues)
-          .where(and(eq(cellValues.tableId, tableId), ...cellConditions));
-
-        const matchingIds = matchingRowIdsQuery.map((r) => r.rowId);
-
-        if (matchingIds.length === 0) {
-          return {
-            rows: [],
-            cells: [],
-            nextCursor: undefined,
-          };
-        }
-
-        rowConditions.push(inArray(rows.id, matchingIds));
-      }
-
-      // 5. Fetch filtered & paginated rows
-      const fetchedRows = await db
+      const cellsRes = await ctx.db
         .select()
-        .from(rows)
-        .where(and(...rowConditions))
-        .orderBy(rows.id)
-        .limit(limit + 1);
+        .from(cellValues)
+        .where(inArray(cellValues.rowId, rowIds));
 
-      const hasNext = fetchedRows.length > limit;
-      const slicedRows = hasNext ? fetchedRows.slice(0, limit) : fetchedRows;
-      const rowIds = slicedRows.map((r) => r.id);
+      // Group cells by row
+      const rowsWithCells = rowsRes.map((r) => ({
+        ...r,
+        cells: cellsRes.filter((c) => c.rowId === r.id),
+      }));
 
-      // 6. Fetch all cells for the selected rows
-      const cells =
-        rowIds.length > 0
-          ? await db
-              .select()
-              .from(cellValues)
-              .where(
-                and(
-                  eq(cellValues.tableId, tableId),
-                  inArray(cellValues.rowId, rowIds),
-                ),
-              )
-          : [];
-
+      const nextCursor =
+        rowsRes.length === limit ? rowsRes[rowsRes.length - 1]?.id : undefined;
+      // Return rows + next cursor
       return {
-        rows: slicedRows,
-        cells,
-        nextCursor: hasNext ? slicedRows[slicedRows.length - 1].id : undefined,
+        rows: rowsWithCells,
+        nextCursor,
       };
     }),
 });

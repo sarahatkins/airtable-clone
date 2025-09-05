@@ -7,6 +7,7 @@ import type {
   table,
   views,
 } from "~/server/db/schemas/tableSchema";
+import type { FilterNode } from "./filterDefaults";
 
 // --------------------------------------------------
 // ------------- TYPES ------------------------------
@@ -20,13 +21,18 @@ export type CellNoId = Omit<CellType, "id">;
 export type ViewType = InferSelectModel<typeof views>;
 export type ViewConfigType = {
   sorting: SortingType[];
-  filters: FilterType[];
+  filters: FilterNode | null;
   hiddenColumns: HiddenColType[];
 };
 
 export type SortingType = {
   columnId: number;
   direction: "asc" | "desc";
+};
+
+export type NewFilterType = {
+  functionName: FilterOperator | FilterJoiner;  
+  args: Array<string | number | boolean | NewFilterType>;
 };
 
 export type FilterType = {
@@ -99,6 +105,6 @@ export const DEFAULT_COLS = [
 
 export const DEFAULT_VIEW_CONFIG: ViewConfigType = {
   sorting: [],
-  filters: [],
+  filters: null,
   hiddenColumns: [],
 };
