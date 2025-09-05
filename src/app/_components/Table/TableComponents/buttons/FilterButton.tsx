@@ -1,9 +1,8 @@
 import { Filter } from "lucide-react";
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import FilterModal from "../modals/FilterModal";
-import type { ColType, FilterType, ViewConfigType } from "~/app/defaults";
+import type { ColType, ViewConfigType, FilterGroup } from "~/app/defaults";
 import { api } from "~/trpc/react";
-import type { FilterGroup } from "~/app/filterDefaults";
 
 interface ButtonProps {
   cols: ColType[];

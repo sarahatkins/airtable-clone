@@ -33,10 +33,9 @@ const ROW_HEIGHT = 41;
 const DataGrid: React.FC<DataGridProps> = ({ table, view, cols, setCols }) => {
   // Fetch rows + cells for the selected view
   const parentRef = useRef<HTMLDivElement>(null);
-  const [hasMore, setHasMore] = useState(true);
   const [rows, setRows] = useState<any[]>([]);
   const [cursor, setCursor] = useState<number | undefined>(undefined);
-
+  const [isFreshFetch, setIsFreshFetch] = useState<boolean>(false);
   const {
     data: viewData,
     refetch: refetchViewData,
@@ -84,10 +83,13 @@ const DataGrid: React.FC<DataGridProps> = ({ table, view, cols, setCols }) => {
 
     const { rows: newRows, nextCursor } = viewData;
     const normalized = normalizeRows(newRows);
-    console.log("NORMALISED", normalized)
-    setRows((prev) => [...prev, ...normalized]);
+    if(isFreshFetch) {
+      setRows(normalized);  
+    } else {
+      setRows((prev) => [...prev, ...normalized]);
+    }
+
     setCursor(nextCursor ?? undefined);
-    setHasMore(!!nextCursor);
   }, [viewData]);
 
   const loadMoreRows = () => {
@@ -114,6 +116,7 @@ const DataGrid: React.FC<DataGridProps> = ({ table, view, cols, setCols }) => {
     setRows([]);
     setCursor(undefined);
     refetchViewData();
+    setIsFreshFetch(true)
   }, [view]);
 
   useEffect(() => {

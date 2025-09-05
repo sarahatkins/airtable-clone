@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import type { FilterGroup, FilterLeaf } from "~/app/filterDefaults";
+import type { FilterGroup, FilterLeaf } from "~/app/defaults";
 import { cellValues, rows } from "~/server/db/schemas/tableSchema";
 
 export function buildFilter(node: FilterGroup | FilterLeaf): any {
@@ -27,14 +27,14 @@ export function buildFilter(node: FilterGroup | FilterLeaf): any {
           SELECT 1 FROM ${cellValues} cv
           WHERE cv."rowId" = ${rows.id}
             AND cv."columnId" = ${columnId}
-            AND cv."value"::text = ${value}
+            AND cv."value"::jsonb = to_jsonb(${value}::text)
         )`;
       case "neq":
         return sql`EXISTS (
           SELECT 1 FROM ${cellValues} cv
           WHERE cv."rowId" = ${rows.id}
             AND cv."columnId" = ${columnId}
-            AND cv."value"::text != ${value}
+            AND cv."value"::jsonb != to_jsonb(${value}::text)
         )`;
       case "contains":
         return sql`EXISTS (
@@ -50,50 +50,56 @@ export function buildFilter(node: FilterGroup | FilterLeaf): any {
             AND cv."columnId" = ${columnId}
             AND NOT (cv."value"::text ILIKE '%' || ${value} || '%')
         )`;
-
-      case "startsWith":
+      case "isEmpty":
         return sql`EXISTS (
-          SELECT 1 FROM ${cellValues} cv
-          WHERE cv."rowId" = ${rows.id}
-            AND cv."columnId" = ${columnId}
-            AND cv."value"::text ILIKE ${value} || '%'
-        )`;
-
-      case "endsWith":
+        SELECT 1 FROM "airtable_cell_values" cv
+        WHERE cv."rowId" = ${rows.id}
+          AND cv."columnId" = ${columnId}
+          AND (
+            cv."value" IS NULL
+            OR cv."value"::jsonb = to_jsonb(''::text)
+          )
+      )
+      `;
+      case "isNotEmpty":
         return sql`EXISTS (
-          SELECT 1 FROM ${cellValues} cv
-          WHERE cv."rowId" = ${rows.id}
-            AND cv."columnId" = ${columnId}
-            AND cv."value"::text ILIKE '%' || ${value}
-        )`;
+        SELECT 1 FROM ${cellValues} cv
+        WHERE cv."rowId" = ${rows.id}
+          AND cv."columnId" = ${columnId}
+          AND cv."value" IS NOT NULL
+          AND cv."value"::jsonb != to_jsonb(''::text)
+      )`;
       case "gt":
         return sql`EXISTS (
-          SELECT 1 FROM ${cellValues} cv
-          WHERE cv."rowId" = ${rows.id}
-            AND cv."columnId" = ${columnId}
-            AND (cv."value"->>'')::numeric > ${value}
-        )`;
+    SELECT 1 FROM ${cellValues} cv
+    WHERE cv."rowId" = ${rows.id}
+      AND cv."columnId" = ${columnId}
+      AND (cv."value" #>> '{}')::numeric > ${value}
+  )`;
+
       case "lt":
         return sql`EXISTS (
-          SELECT 1 FROM ${cellValues} cv
-          WHERE cv."rowId" = ${rows.id}
-            AND cv."columnId" = ${columnId}
-            AND (cv."value"->>'')::numeric < ${value}
-        )`;
+    SELECT 1 FROM ${cellValues} cv
+    WHERE cv."rowId" = ${rows.id}
+      AND cv."columnId" = ${columnId}
+      AND (cv."value" #>> '{}')::numeric < ${value}
+  )`;
+
       case "gte":
         return sql`EXISTS (
-          SELECT 1 FROM ${cellValues} cv
-          WHERE cv."rowId" = ${rows.id}
-            AND cv."columnId" = ${columnId}
-            AND (cv."value"->>'')::numeric >= ${value}
-        )`;
+    SELECT 1 FROM ${cellValues} cv
+    WHERE cv."rowId" = ${rows.id}
+      AND cv."columnId" = ${columnId}
+      AND (cv."value" #>> '{}')::numeric >= ${value}
+  )`;
+
       case "lte":
         return sql`EXISTS (
-          SELECT 1 FROM ${cellValues} cv
-          WHERE cv."rowId" = ${rows.id}
-            AND cv."columnId" = ${columnId}
-            AND (cv."value"->>'')::numeric <= ${value}
-        )`;
+    SELECT 1 FROM ${cellValues} cv
+    WHERE cv."rowId" = ${rows.id}
+      AND cv."columnId" = ${columnId}
+      AND (cv."value" #>> '{}')::numeric <= ${value}
+  )`;
 
       default:
         throw new Error(`Unknown operator: ${node.functionName}`);

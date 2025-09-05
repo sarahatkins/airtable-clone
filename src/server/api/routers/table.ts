@@ -304,17 +304,18 @@ export const tableRouter = createTRPCRouter({
 
       // Find filter tree
       const { filters: filterTree } = view.config as ViewConfigType;
-
+      
       // Begin filtering and constructing the sql
       let whereExpr = sql`TRUE`
-      if (filterTree) {
+
+      if (filterTree  && filterTree.args.length > 0) {
         validateFilterGroup(filterTree);
         whereExpr = buildFilter(filterTree);
       }
       
       const conditions = [eq(rows.tableId, view.tableId)]; // mandatory condition
       
-      if (whereExpr) conditions.push(whereExpr);
+      if (filterTree) conditions.push(whereExpr);
       if (cursor) conditions.push(gt(rows.id, cursor));
       
       const query = ctx.db

@@ -7,7 +7,6 @@ import type {
   table,
   views,
 } from "~/server/db/schemas/tableSchema";
-import type { FilterNode } from "./filterDefaults";
 
 // --------------------------------------------------
 // ------------- TYPES ------------------------------
@@ -21,7 +20,7 @@ export type CellNoId = Omit<CellType, "id">;
 export type ViewType = InferSelectModel<typeof views>;
 export type ViewConfigType = {
   sorting: SortingType[];
-  filters: FilterNode | null;
+  filters: FilterGroup | null;
   hiddenColumns: HiddenColType[];
 };
 
@@ -30,29 +29,29 @@ export type SortingType = {
   direction: "asc" | "desc";
 };
 
-export type NewFilterType = {
-  functionName: FilterOperator | FilterJoiner;  
-  args: Array<string | number | boolean | NewFilterType>;
+export type FilterGroup = {
+  functionName: "and" | "or";
+  args: FilterLeaf[];
 };
 
-export type FilterType = {
-  columnId: number;
-  operator: FilterOperator;
-  value: string | number | boolean;
-  joiner?: FilterJoiner; // default AND
+export type FilterLeaf = {
+  functionName: FilterOperator;
+  args: [columnId: number, value: string | number | boolean];
 };
-
-export type HiddenColType = number;
 
 export type FilterOperator =
-  | "equals"
-  | "notEquals"
+  | "eq"
+  | "neq"
   | "contains"
   | "notContains"
-  | "startsWith"
-  | "endsWith"
-  | "greaterThan"
-  | "lessThan";
+  | "isEmpty"
+  | "isNotEmpty"
+  | "gt"
+  | "lt"
+  | "gte"
+  | "lte";
+export type HiddenColType = number;
+
 export type FilterJoiner = | "and" | "or"; 
 
 // --------------------------------------------------
@@ -62,23 +61,13 @@ export type FilterJoiner = | "and" | "or";
 export const DEFAULT_PENDING_KEY = -1;
 
 export enum STATUS {
-  SingleLine = "single_line",
-  MultiLine = "multi_line",
-  Checkbox = "checkbox",
-  Select = "select",
-  Date = "date",
+  Text = "text",
   Number = "number",
-  User = "user",
 }
 
 export const typeToIconMap: Record<STATUS, LucideIcon> = {
-  [STATUS.SingleLine]: Baseline,
-  [STATUS.MultiLine]: LetterText,
-  [STATUS.Checkbox]: SquareMousePointer,
-  [STATUS.Select]: CircleChevronDown,
-  [STATUS.Date]: Calendar,
-  [STATUS.Number]: ListEnd,
-  [STATUS.User]: User,
+  [STATUS.Text]: Baseline,
+  [STATUS.Number]: CircleChevronDown,
 };
 
 export const DEFAULT_NUM_ROWS = 3;
@@ -86,20 +75,20 @@ export const DEFAULT_NUM_ROWS = 3;
 export const DEFAULT_COLS = [
   {
     name: "Name",
-    type: STATUS.SingleLine,
+    type: STATUS.Text,
     primary: true,
   },
   {
     name: "Notes",
-    type: STATUS.MultiLine,
+    type: STATUS.Text,
   },
   {
     name: "Assignee",
-    type: STATUS.User,
+    type: STATUS.Text,
   },
   {
     name: "Status",
-    type: STATUS.Select,
+    type: STATUS.Text,
   },
 ];
 
