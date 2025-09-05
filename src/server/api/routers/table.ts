@@ -131,26 +131,11 @@ export const tableRouter = createTRPCRouter({
           let fakeValue: any;
 
           switch (col.type) {
-            case "single_line":
+            case "text":
               fakeValue = faker.lorem.words(3);
-              break;
-            case "multi_line":
-              fakeValue = faker.lorem.paragraph();
-              break;
-            case "checkbox":
-              fakeValue = faker.datatype.boolean();
-              break;
-            case "select":
-              fakeValue = faker.lorem.word();
-              break;
-            case "date":
-              fakeValue = faker.date.past().toISOString();
               break;
             case "number":
               fakeValue = faker.number.int({ max: 100 });
-              break;
-            case "user":
-              fakeValue = faker.internet.email();
               break;
             default:
               fakeValue = faker.lorem.word();

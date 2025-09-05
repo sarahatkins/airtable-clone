@@ -71,36 +71,34 @@ export function buildFilter(node: FilterGroup | FilterLeaf): any {
       )`;
       case "gt":
         return sql`EXISTS (
-    SELECT 1 FROM ${cellValues} cv
-    WHERE cv."rowId" = ${rows.id}
-      AND cv."columnId" = ${columnId}
-      AND (cv."value" #>> '{}')::numeric > ${value}
-  )`;
+          SELECT 1 FROM ${cellValues} cv
+          WHERE cv."rowId" = ${rows.id}
+            AND cv."columnId" = ${columnId}
+            AND (cv."value" #>> '{}')::numeric > ${value}
+        )`;
 
       case "lt":
         return sql`EXISTS (
-    SELECT 1 FROM ${cellValues} cv
-    WHERE cv."rowId" = ${rows.id}
-      AND cv."columnId" = ${columnId}
-      AND (cv."value" #>> '{}')::numeric < ${value}
-  )`;
+          SELECT 1 FROM ${cellValues} cv
+          WHERE cv."rowId" = ${rows.id}
+            AND cv."columnId" = ${columnId}
+            AND (cv."value" #>> '{}')::numeric < ${value}
+        )`;
 
       case "gte":
         return sql`EXISTS (
-    SELECT 1 FROM ${cellValues} cv
-    WHERE cv."rowId" = ${rows.id}
-      AND cv."columnId" = ${columnId}
-      AND (cv."value" #>> '{}')::numeric >= ${value}
-  )`;
-
+          SELECT 1 FROM ${cellValues} cv
+          WHERE cv."rowId" = ${rows.id}
+            AND cv."columnId" = ${columnId}
+            AND (cv."value" #>> '{}')::numeric >= ${value}
+        )`;
       case "lte":
         return sql`EXISTS (
-    SELECT 1 FROM ${cellValues} cv
-    WHERE cv."rowId" = ${rows.id}
-      AND cv."columnId" = ${columnId}
-      AND (cv."value" #>> '{}')::numeric <= ${value}
-  )`;
-
+          SELECT 1 FROM ${cellValues} cv
+          WHERE cv."rowId" = ${rows.id}
+            AND cv."columnId" = ${columnId}
+            AND (cv."value" #>> '{}')::numeric <= ${value}
+        )`;
       default:
         throw new Error(`Unknown operator: ${node.functionName}`);
     }

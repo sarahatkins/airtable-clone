@@ -208,13 +208,22 @@ const FilterModal: React.FC<FilterModalProps> = ({
                 </select>
 
                 {/* Value */}
-                <input
-                  type="text"
-                  value={cond.args[1].toString()}
-                  onChange={(e) => updateArg(index, 1, e.target.value)}
-                  className="flex-1 border-r border-gray-200 px-2 py-1 focus:outline-none"
-                  placeholder="Enter a value"
-                />
+                {cond.functionName &&
+                  (() => {
+                    const usableInput =
+                      cond.functionName !== "isEmpty" &&
+                      cond.functionName !== "isNotEmpty";
+                    return (
+                      <input
+                        type="text"
+                        value={usableInput ? cond.args[1].toString() : ""}
+                        disabled={!usableInput}
+                        onChange={(e) => updateArg(index, 1, e.target.value)}
+                        className="flex-1 border-r border-gray-200 px-2 py-1 focus:outline-none"
+                        placeholder={usableInput ? "Enter a value" : ""}
+                      />
+                    );
+                  })()}
 
                 {/* Delete */}
                 <button
