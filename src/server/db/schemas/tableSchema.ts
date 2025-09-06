@@ -41,7 +41,10 @@ export const table = createTable("tables", (d) => ({
 
 export const columns = createTable("columns", (d) => ({
   id: d.serial().primaryKey(),
-  tableId: d.integer().references(() => table.id, { onDelete: "cascade" }).notNull(),
+  tableId: d
+    .integer()
+    .references(() => table.id, { onDelete: "cascade" })
+    .notNull(),
   name: d.varchar({ length: 255 }).notNull(),
   type: d.text().notNull().default("text"),
   orderIndex: d.integer().notNull(),
@@ -58,7 +61,7 @@ export const rows = createTable("rows", (d) => ({
 
 export const cellValues = createTable("cell_values", (d) => ({
   id: d.serial().primaryKey(),
-  tableId: d.integer().references(() => table.id, {onDelete: "cascade"}),
+  tableId: d.integer().references(() => table.id, { onDelete: "cascade" }),
   rowId: d
     .integer()
     .references(() => rows.id, { onDelete: "cascade" })
@@ -69,14 +72,17 @@ export const cellValues = createTable("cell_values", (d) => ({
       onDelete: "cascade",
     })
     .notNull(),
-  value: d.jsonb().notNull(),
+  value: d.jsonb("value").$type<string | number | boolean | null>().notNull(),
 }));
 
 export const views = createTable("views", (d) => ({
   id: d.serial().primaryKey(),
-  tableId: d.integer().references(() => table.id, {
-    onDelete: "cascade",
-  }).notNull(),
+  tableId: d
+    .integer()
+    .references(() => table.id, {
+      onDelete: "cascade",
+    })
+    .notNull(),
   name: d.text().notNull(),
   config: d.jsonb().notNull().default(JSON.stringify(DEFAULT_VIEW_CONFIG)),
 }));

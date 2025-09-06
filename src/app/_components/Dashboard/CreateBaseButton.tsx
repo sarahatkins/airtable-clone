@@ -11,7 +11,6 @@ const CreateBaseButton: React.FC<ButtonProps> = ({ expanded }) => {
 
   const createBase = api.base.create.useMutation({
     onSuccess: (newBase) => {
-      console.log("Created base:", newBase);
       router.push(`/table/${newBase?.id}`);
     },
     onError: (error) => {

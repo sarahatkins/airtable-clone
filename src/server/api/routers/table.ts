@@ -389,8 +389,6 @@ export const tableRouter = createTRPCRouter({
       // ========= Pagination =========
       rowQuery = rowQuery.orderBy(...orderBys).limit(limit + 1);
 
-      console.log("QUERY", rowQuery.toSQL());
-
       // ========= Execute =========
       const rowsRes = await rowQuery;
 

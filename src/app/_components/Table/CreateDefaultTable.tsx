@@ -1,25 +1,25 @@
 import { useCallback, useState } from "react";
 import { api } from "~/trpc/react";
-import { DEFAULT_COLS, DEFAULT_NUM_ROWS } from "~/app/defaults";
+import { DEFAULT_COLS, DEFAULT_NUM_ROWS, type ColNoId, type ColType, type RowNoId, type RowType, type TableType } from "~/app/defaults";
 
 export function useDefaultTableSetup(baseId: string) {
   const utils = api.useUtils();
-  const [newRows, setNewRows] = useState<any[]>([]);
-  const [newCols, setNewCols] = useState<any[]>([]);
-  const [newTable, setNewTable] = useState<any>();
+  const [newRows, setNewRows] = useState<RowType[]>([]);
+  const [newCols, setNewCols] = useState<ColType[]>([]);
+  const [newTable, setNewTable] = useState<TableType>();
   const [finishedTableSetup, setFinishedTableSetup] = useState<boolean>(false);
 
   // --- default newRows/newCols/newGrid hook ---
   const createColumn = api.table.createColumn.useMutation({
     onSuccess: (newCol) => {
-      console.log("Created column:", newCol);
+      if(!newCol) return;
       setNewCols((prev) => [...prev, newCol]);
     },
   });
 
   const createRow = api.table.createRow.useMutation({
     onSuccess: (newRow) => {
-      console.log("Created row:", newRow);
+      if(!newRow) return;
       setNewRows((prev) => [...prev, newRow]);
     },
   });

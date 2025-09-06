@@ -26,16 +26,29 @@ interface DataGridProps {
   setCols: React.Dispatch<React.SetStateAction<ColType[]>>;
 }
 
-interface HydratedRows extends RowType {
+interface HydratedRows {
+  id: number;
   cells: CellType[];
 }
 
 const ROW_HEIGHT = 41;
 
-const DataGrid: React.FC<DataGridProps> = ({ table, view, cols, setCols, searchText }) => {
+type CellValue = string | number | boolean | null;
+export type NormalizedRow = {
+  id: number;
+  tableId: number;
+} & Record<string, CellValue>;
+
+const DataGrid: React.FC<DataGridProps> = ({
+  table,
+  view,
+  cols,
+  setCols,
+  searchText,
+}) => {
   // Fetch rows + cells for the selected view
   const parentRef = useRef<HTMLDivElement>(null);
-  const [rows, setRows] = useState<any[]>([]);
+  const [rows, setRows] = useState<NormalizedRow[]>([]);
   const [cursor, setCursor] = useState<number | undefined>(undefined);
   const [nextCursor, setNextCursor] = useState<number | undefined>(undefined);
 
@@ -86,8 +99,8 @@ const DataGrid: React.FC<DataGridProps> = ({ table, view, cols, setCols, searchT
     if (!viewData) return;
 
     const { rows: newRows, nextCursor } = viewData;
+    console.log("new rows", newRows);
     const normalized = normalizeRows(newRows);
-
     // append if we already have rows, otherwise replace
     setRows((prev) => (!isFreshFetch ? [...prev, ...normalized] : normalized));
 
@@ -100,12 +113,11 @@ const DataGrid: React.FC<DataGridProps> = ({ table, view, cols, setCols, searchT
     }
   };
 
-  const normalizeRows = (rowsWithCells: any[]) => {
-    console.log(rowsWithCells);
+  const normalizeRows = (rowsWithCells: HydratedRows[]) => {
     return rowsWithCells.map((row) => {
-      const rowObj: Record<string, any> = {
+      const rowObj: NormalizedRow = {
         id: row.id,
-        tableId: row.tableId,
+        tableId: table.id,
       };
       for (const cell of row.cells) {
         rowObj[`col_${cell.columnId}`] = cell.value;

@@ -56,9 +56,7 @@ const EditableCell: React.FC<EditableCellProps> = ({
 
         return;
       }
-      console.log("ROW", row);
-      console.log("TABLE", table);
-      console.log("COL", column)
+      
       // Otherwise save immediately
       setCellValue({
         tableId: row.original.tableId,

@@ -21,7 +21,7 @@ const TableRenameModal: React.FC<RenameModalProps> = ({
   const [recordLabel, setRecordLabel] = useState("Record");
   const modalRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<any>(null);
-  console.log(tableId);
+
   // Close on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

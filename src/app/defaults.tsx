@@ -14,7 +14,12 @@ import type {
 
 export type TableType = InferSelectModel<typeof table>;
 export type ColType = InferSelectModel<typeof columns>;
+export type ColNoId = Omit<ColType, "id">;
+
+
 export type RowType = InferSelectModel<typeof rows>;
+export type RowNoId = Omit<RowType, "id">;
+
 export type CellType = InferSelectModel<typeof cellValues>;
 export type CellNoId = Omit<CellType, "id">;
 export type ViewType = InferSelectModel<typeof views>;

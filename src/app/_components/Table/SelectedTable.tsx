@@ -56,20 +56,18 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
       setCols(loadedCols.cols);
       setShownCols(loadedCols.shownCols);
     }
-    console.log("loaded", loadedCols);
   }, [colsLoading, loadedCols]);
 
   useEffect(() => {
     if (viewsLoading) return;
     if (!loadedViews) return;
-    console.log("loading views");
+
     setViews(loadedViews);
     setCurrentView(loadedViews[0]!);
     setViewConfig(loadedViews[0]?.config as ViewConfigType);
   }, [viewsLoading, loadedViews]);
 
   useEffect(() => {
-    console.log("changed view", currentView);
     refetchCols();
   }, [currentView, viewConfig]);
 

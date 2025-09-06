@@ -59,7 +59,6 @@ const SortModal: React.FC<SortModalProps> = ({ cols, isOpen, onClose, setSort, c
   };
 
   const addSortOption = (columnId: number) => {
-    console.log("add");
     setSort([...currentSorts, { columnId, direction: "asc" }]);
   };
 

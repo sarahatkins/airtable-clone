@@ -31,7 +31,6 @@ export function addPendingColEdit(edit:  {
     pendingColEdits.set(key, []);
   }
   pendingColEdits.get(key)!.push(edit);
-  console.log(pendingColEdits)
 }
 
 export function getPendingColEditsForCol(tempId: number) {

@@ -10,11 +10,12 @@ import {
   clearPendingEditsForRow,
   getPendingEditsForRow,
 } from "../../helper/PendingEdits";
+import type { NormalizedRow } from "../../DataGrid";
 
 interface ColButtonProps {
   dbTable: TableType;
   cols: ColType[];
-  setRows: Dispatch<SetStateAction<RowType[]>>;
+  setRows: Dispatch<SetStateAction<NormalizedRow[]>>;
 }
 
 const CreateRowButton: React.FC<ColButtonProps> = ({
@@ -31,6 +32,8 @@ const CreateRowButton: React.FC<ColButtonProps> = ({
   const createRowMutation = api.table.createRow.useMutation({
     onSuccess: (newRow) => {
       if (!newRow) return;
+
+      // normalize row
       setRows((prev) =>
         prev.map((row) =>
           row.id === DEFAULT_PENDING_KEY ? { ...row, id: newRow.id } : row,
@@ -53,15 +56,12 @@ const CreateRowButton: React.FC<ColButtonProps> = ({
   });
 
   const addNewRow = () => {
-    const newRow: RowType = {
+    // Update frontend state
+    const normalizedRow: NormalizedRow = {
       id: DEFAULT_PENDING_KEY,
       tableId: dbTable.id,
-      createdAt: new Date(),
-      ...cols.reduce((acc, col) => ({ ...acc, [col.name]: "" }), {}),
-    };
-
-    // Update frontend state
-    setRows((prev) => [...prev, newRow]);
+    }
+    setRows((prev) => [...prev, normalizedRow]);
 
     // Persist to backend
     createRowMutation.mutate({ tableId: dbTable.id });
