@@ -22,6 +22,7 @@ interface DataGridProps {
   table: TableType;
   view: ViewType;
   cols: ColType[];
+  searchText: string | undefined;
   setCols: React.Dispatch<React.SetStateAction<ColType[]>>;
 }
 
@@ -31,7 +32,7 @@ interface HydratedRows extends RowType {
 
 const ROW_HEIGHT = 41;
 
-const DataGrid: React.FC<DataGridProps> = ({ table, view, cols, setCols }) => {
+const DataGrid: React.FC<DataGridProps> = ({ table, view, cols, setCols, searchText }) => {
   // Fetch rows + cells for the selected view
   const parentRef = useRef<HTMLDivElement>(null);
   const [rows, setRows] = useState<any[]>([]);
@@ -44,7 +45,7 @@ const DataGrid: React.FC<DataGridProps> = ({ table, view, cols, setCols }) => {
     refetch: refetchViewData,
     isFetching,
   } = api.table.getFilterCells.useQuery(
-    { viewId: view?.id ?? 0, limit: 100, cursor },
+    { viewId: view?.id ?? 0, limit: 100, cursor, searchText },
     { enabled: !!view?.id }, //doesn't run until view provided
   );
 
@@ -117,7 +118,7 @@ const DataGrid: React.FC<DataGridProps> = ({ table, view, cols, setCols }) => {
     setRows([]);
     setIsFreshFetch(true);
     setCursor(undefined); // trigger a fresh fetch with no cursor
-  }, [view]);
+  }, [view, searchText]);
 
   useEffect(() => {
     const lastVisible = rowVirtualizer.getVirtualItems().slice(-1)[0];

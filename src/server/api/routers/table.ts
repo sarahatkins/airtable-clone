@@ -113,8 +113,8 @@ export const tableRouter = createTRPCRouter({
 
       return {
         cols: allCols,
-        shownCols
-      }
+        shownCols,
+      };
     }),
 
   // ------------------ ROWS ------------------
@@ -313,10 +313,11 @@ export const tableRouter = createTRPCRouter({
         viewId: z.number(),
         limit: z.number().default(500),
         cursor: z.number().optional(),
+        searchText: z.string().optional(),
       }),
     )
     .query(async ({ input, ctx }) => {
-      const { viewId, limit, cursor } = input;
+      const { viewId, limit, cursor, searchText } = input;
 
       // Get respective view
       const [view] = await ctx.db
@@ -346,6 +347,18 @@ export const tableRouter = createTRPCRouter({
         .select({ id: rows.id })
         .from(rows)
         .where(and(...conditions));
+
+      // ========= SEARCH ============
+      if (searchText) {
+        rowQuery = rowQuery
+          .leftJoin(cellValues, eq(cellValues.rowId, rows.id))
+          .where(
+            and(
+              ...conditions,
+              sql`${cellValues.value}::text ILIKE ${`%${searchText}%`}`,
+            ),
+          );
+      }
 
       // ========= Sorting =========
       const sortAliases = sorting.map((s, i) => alias(cellValues, `sort_${i}`));

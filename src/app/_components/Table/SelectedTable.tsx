@@ -22,6 +22,7 @@ import DataGrid from "./DataGrid";
 import FilterButton from "./TableComponents/buttons/FilterButton";
 import SortButton from "./TableComponents/buttons/SortButton";
 import HiddenButton from "./TableComponents/buttons/HiddenButton";
+import SearchViewButton from "./TableComponents/buttons/SearchViewButton";
 interface SelectedTableProps {
   selectedTable: TableType;
 }
@@ -31,7 +32,8 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
   const [showCols, setShownCols] = useState<ColType[]>([]);
   const [views, setViews] = useState<ViewType[] | null>(null);
   const [currentView, setCurrentView] = useState<ViewType | null>(null);
-
+  const [search, setSearch] = useState<string | undefined>(undefined)
+  
   const { data: loadedViews, isLoading: viewsLoading } =
     api.table.getViewByTable.useQuery(
       { tableId: selectedTable?.id ?? 0 },
@@ -52,7 +54,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
   useEffect(() => {
     if (!colsLoading && loadedCols) {
       setCols(loadedCols.cols);
-      setShownCols(loadedCols.shownCols)
+      setShownCols(loadedCols.shownCols);
     }
     console.log("loaded", loadedCols);
   }, [colsLoading, loadedCols]);
@@ -121,9 +123,10 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
               <button className="flex items-center gap-1 hover:text-gray-900">
                 <List className="h-4 w-4" /> Share and sync
               </button>
-              <button className="rounded p-1 hover:bg-gray-100">
-                <Search className="h-5 w-5" />
-              </button>
+              <SearchViewButton
+                search={search}
+                setSearch={setSearch}
+              />
             </>
           )}
         </div>
@@ -144,6 +147,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
         {!isDataLoading && currentView && (
           <DataGrid
             table={selectedTable}
+            searchText={search}
             cols={showCols}
             view={currentView}
             setCols={setCols}
