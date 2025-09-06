@@ -24,25 +24,45 @@ const FilterButton: React.FC<ButtonProps> = ({
   const [showModal, setShowModal] = useState<boolean>(false);
   const [newFilter, setNewFilter] = useState<FilterGroup | null>(filter);
   const updateConfig = api.table.updateViewConfig.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       console.log("new filter");
-      utils.table.getFilterCells.invalidate();
+      await utils.table.getFilterCells.invalidate();
     },
   });
 
   useEffect(() => {
-    setConfig((prev) => {
-      const newConfig = { ...prev, filters: newFilter };
+    const update = async () => {
+      let newConfig: ViewConfigType | null = null;
 
-      updateConfig.mutate({
-        viewId,
-        config: newConfig,
+      // Update state and capture the full new config
+      setConfig((prev) => {
+        if (!prev) return prev;
+
+        newConfig = {
+          ...prev,
+          filters: newFilter,
+        };
+
+        onViewChange(newConfig);
+
+        return newConfig;
       });
 
-      onViewChange(newConfig);
-      return newConfig;
-    });
-  }, [newFilter]);
+      // If newConfig is set, call mutation with full updated config
+      if (newConfig) {
+        try {
+          await updateConfig.mutateAsync({
+            viewId,
+            config: newConfig, // pass full config with filters + unchanged properties
+          });
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    };
+
+    void update();
+  }, [newFilter, onViewChange, setConfig, updateConfig, viewId]);
 
   return (
     <div className="relative inline-block">

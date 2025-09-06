@@ -30,7 +30,9 @@ const AddTableButton: React.FC<ButtonProps> = ({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        modalRef.current && buttonRef.current && modalRef &&
+        modalRef.current &&
+        buttonRef.current &&
+        modalRef &&
         !modalRef.current.contains(event.target as Node) &&
         !buttonRef.current.contains(event.target as Node)
       ) {
@@ -50,11 +52,13 @@ const AddTableButton: React.FC<ButtonProps> = ({
   useEffect(() => {
     if (!newTable) return;
     setSelectedTable(newTable);
-  }, [newTable]);
+  }, [newTable, setSelectedTable]);
 
   useEffect(() => {
-    if(finishedTableSetup) setFinishedTableSetup(true);
-  }, [finishedTableSetup])
+    if (finishedTableSetup) {
+      setFinishedTableSetup(true);
+    }
+  }, [finishedTableSetup, setFinishedTableSetup]);
 
   return (
     <div className="relative inline-block text-left">

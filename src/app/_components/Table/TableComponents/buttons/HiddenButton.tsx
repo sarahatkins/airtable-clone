@@ -29,29 +29,49 @@ const HiddenButton: React.FC<ButtonProps> = ({
   const utils = api.useUtils();
 
   const updateConfig = api.table.updateViewConfig.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       console.log("changed hidden columns");
-      utils.table.getFilterCells.invalidate();
+      await utils.table.getFilterCells.invalidate();
     },
   });
 
   useEffect(() => {
-    setConfig((prev) => {
-      const newConfig = { ...prev, hiddenColumns };
+    const update = async () => {
+      let newConfig: ViewConfigType | null = null;
 
-      updateConfig.mutate({
-        viewId,
-        config: newConfig,
+      setConfig((prev) => {
+        if (!prev) return prev;
+
+        newConfig = {
+          ...prev,
+          hiddenColumns,
+        };
+        onViewChange(newConfig);
+
+        return newConfig;
       });
 
-      onViewChange(newConfig);
-      return newConfig;
-    });
-  }, [hiddenColumns]);
+      if (newConfig) {
+        try {
+          await updateConfig.mutateAsync({
+            viewId,
+            config: newConfig, // pass full config with filters + unchanged properties
+          });
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    };
+
+    void update();
+  }, [hiddenColumns, onViewChange, setConfig, updateConfig, viewId]);
 
   return (
     <div className="relative inline-block">
-      <button className="flex items-center gap-1 hover:text-gray-900 cursor-pointer" onClick={() => setIsOpen(true)}>
+      <button
+        className="flex cursor-pointer items-center gap-1 hover:text-gray-900"
+        onClick={() => setIsOpen(true)}
+      >
         <EyeOff className="h-4 w-4" /> Hide fields
       </button>
 

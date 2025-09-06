@@ -1,8 +1,6 @@
 import React, { type Dispatch, type SetStateAction } from "react";
 import {
   DEFAULT_PENDING_KEY,
-  type ColType,
-  type RowType,
   type TableType,
 } from "~/app/defaults";
 import { api } from "~/trpc/react";
@@ -14,12 +12,10 @@ import type { NormalizedRow } from "../../DataGrid";
 
 interface ColButtonProps {
   dbTable: TableType;
-  cols: ColType[];
   setRows: Dispatch<SetStateAction<NormalizedRow[]>>;
 }
 
 const CreateRowButton: React.FC<ColButtonProps> = ({
-  cols,
   dbTable,
   setRows,
 }) => {

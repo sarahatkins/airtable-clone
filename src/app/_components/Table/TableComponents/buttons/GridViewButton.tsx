@@ -5,7 +5,7 @@ import type { ViewType } from "~/app/defaults";
 interface ButtonProps {
   view: ViewType;
   selected: boolean;
-  setSelectedView: Dispatch<SetStateAction<ViewType>>;
+  setSelectedView: Dispatch<SetStateAction<ViewType | null>>;
 }
 
 const GridViewButton: React.FC<ButtonProps> = ({ view, selected, setSelectedView }) => {

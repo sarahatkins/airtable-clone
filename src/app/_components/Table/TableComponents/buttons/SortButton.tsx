@@ -24,27 +24,47 @@ const SortButton: React.FC<ButtonProps> = ({
   onViewChange,
   setConfig,
 }) => {
+  const utils = api.useUtils();
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [newSort, setNewSort] = useState<SortingType[]>(sorts);
   const updateConfig = api.table.updateViewConfig.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       console.log("new sort");
+      await utils.table.getFilterCells.invalidate();
     },
   });
 
   useEffect(() => {
-    setConfig((prev) => {
-      const newConfig = { ...prev, sorting: newSort };
+    const update = async () => {
+      let newConfig: ViewConfigType | null = null;
 
-      updateConfig.mutate({
-        viewId,
-        config: newConfig,
+      setConfig((prev) => {
+        if (!prev) return prev;
+
+        newConfig = {
+          ...prev,
+          sorting: newSort,
+        };
+
+        onViewChange(newConfig);
+
+        return newConfig;
       });
 
-      onViewChange(newConfig);
-      return newConfig;
-    });
-  }, [newSort]);
+      if (newConfig) {
+        try {
+          await updateConfig.mutateAsync({
+            viewId,
+            config: newConfig, // pass full config with filters + unchanged properties
+          });
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    };
+
+    void update();
+  }, [newSort, onViewChange, setConfig, updateConfig, viewId]);
 
   return (
     <div className="relative inline-block">

@@ -24,10 +24,10 @@ const ViewNameModal: React.FC<ViewNameModalProps> = ({
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const createView = api.table.createView.useMutation({
-    onSuccess: (newView) => {
+    onSuccess: async (newView) => {
       if (!newView) return;
       console.log("Created view", newView);
-      utils.table.getViewByTable.invalidate({tableId: newView.tableId!})
+      await utils.table.getViewByTable.invalidate({tableId: newView.tableId})
     },
   });
 

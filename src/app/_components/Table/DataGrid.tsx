@@ -1,15 +1,19 @@
-import React, { useRef, useMemo, useState, useEffect } from "react";
+import React, {
+  useRef,
+  useMemo,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import {
   flexRender,
   getCoreRowModel,
   useReactTable,
-  type ColumnDef,
 } from "@tanstack/react-table";
 import type {
   CellType,
   CellValue,
   ColType,
-  RowType,
   TableType,
   ViewType,
 } from "~/app/defaults";
@@ -19,6 +23,7 @@ import HundredThousandButton from "./TableComponents/buttons/100kButton";
 import CreateColButton from "./TableComponents/buttons/CreateColButton";
 import { api } from "~/trpc/react";
 import CreateRowButton from "./TableComponents/buttons/CreateRowButton";
+import type { UseQueryResult } from "@tanstack/react-query";
 
 interface DataGridProps {
   table: TableType;
@@ -40,6 +45,11 @@ export type NormalizedRow = {
   tableId: number;
 } & Record<string, CellValue>;
 
+type ViewDataResult = {
+  rows: HydratedRows[];
+  nextCursor: number | null;
+};
+
 const DataGrid: React.FC<DataGridProps> = ({
   table,
   view,
@@ -56,7 +66,15 @@ const DataGrid: React.FC<DataGridProps> = ({
   const { data: viewData, isFetching } = api.table.getFilterCells.useQuery(
     { viewId: view?.id ?? 0, limit: 100, cursor, searchText },
     { enabled: !!view?.id }, //doesn't run until view provided
-  );
+  ) as UseQueryResult<ViewDataResult>;
+  const rowVirtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 10,
+  });
+
+  const virtualItems = rowVirtualizer.getVirtualItems();
 
   const reactColumns = cols.map((col) => ({
     accessorKey: `col_${col.id}`, // dynamic keys
@@ -84,16 +102,26 @@ const DataGrid: React.FC<DataGridProps> = ({
   });
 
   // Row virtualizer
-  const rowVirtualizer = useVirtualizer({
-    count: rows.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => ROW_HEIGHT,
-    overscan: 10,
-  });
 
   const totalWidth = useMemo(
     () => reactColumns.reduce((sum, c) => sum + (c.size ?? 150) + 150, 0),
-    [table],
+    [reactColumns],
+  );
+
+  const normalizeRows = useCallback(
+    (rowsWithCells: HydratedRows[]): NormalizedRow[] => {
+      return rowsWithCells.map((row) => {
+        const rowObj: NormalizedRow = {
+          id: row.id,
+          tableId: table.id,
+        };
+        for (const cell of row.cells) {
+          rowObj[`col_${cell.columnId}`] = cell.value;
+        }
+        return rowObj;
+      });
+    },
+    [table.id],
   );
 
   useEffect(() => {
@@ -109,26 +137,13 @@ const DataGrid: React.FC<DataGridProps> = ({
 
     // After first fetch, set isFreshFetch = false
     if (isFreshFetch) setIsFreshFetch(false);
-  }, [viewData]);
+  }, [viewData, isFreshFetch, normalizeRows]);
 
-  const loadMoreRows = () => {
+  const loadMoreRows = useCallback(() => {
     if (nextCursor && !isFetching) {
       setCursor(nextCursor);
     }
-  };
-
-  const normalizeRows = (rowsWithCells: HydratedRows[]) => {
-    return rowsWithCells.map((row) => {
-      const rowObj: NormalizedRow = {
-        id: row.id,
-        tableId: table.id,
-      };
-      for (const cell of row.cells) {
-        rowObj[`col_${cell.columnId}`] = cell.value;
-      }
-      return rowObj;
-    });
-  };
+  }, [nextCursor, isFetching]);
 
   useEffect(() => {
     if (!view) return;
@@ -148,7 +163,7 @@ const DataGrid: React.FC<DataGridProps> = ({
       setIsFreshFetch(false);
       loadMoreRows();
     }
-  }, [rowVirtualizer.getVirtualItems(), rows.length, cursor]);
+  }, [rowVirtualizer, virtualItems, rows.length, loadMoreRows]);
 
   return (
     <div className="flex h-screen w-full flex-col">
@@ -227,11 +242,7 @@ const DataGrid: React.FC<DataGridProps> = ({
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </div>
                 ))}
-                <CreateRowButton
-                  cols={cols}
-                  dbTable={table}
-                  setRows={setRows}
-                />
+                <CreateRowButton dbTable={table} setRows={setRows} />
               </div>
             );
           })}

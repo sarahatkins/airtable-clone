@@ -1,4 +1,4 @@
-import type { CellNoId, CellType, CellValue } from "~/app/defaults";
+import type { CellNoId } from "~/app/defaults";
 
 const pendingEdits = new Map<number, CellNoId[]>(); 
 
@@ -12,7 +12,7 @@ export function addPendingRowEdit(edit: CellNoId) {
 }
 
 export function getPendingEditsForRow(tempId: number) {
-  return pendingEdits.get(tempId) || [];
+  return pendingEdits.get(tempId) ?? [];
 }
 
 export function clearPendingEditsForRow(tempId: number) {
@@ -31,7 +31,7 @@ export function addPendingColEdit(edit: CellNoId) {
 }
 
 export function getPendingColEditsForCol(tempId: number) {
-  return pendingColEdits.get(tempId) || [];
+  return pendingColEdits.get(tempId) ?? [];
 }
 
 export function clearPendingColEditsForCol(tempId: number) {

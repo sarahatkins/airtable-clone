@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { api } from "~/trpc/react";
-import { DEFAULT_COLS, DEFAULT_NUM_ROWS, type ColNoId, type ColType, type RowNoId, type RowType, type TableType } from "~/app/defaults";
+import { DEFAULT_COLS, DEFAULT_NUM_ROWS, type ColType,  type RowType, type TableType } from "~/app/defaults";
 
 export function useDefaultTableSetup(baseId: string) {
   const utils = api.useUtils();
@@ -51,7 +51,7 @@ export function useDefaultTableSetup(baseId: string) {
         console.error("Issue with default table setup", error);
       }
     },
-    [createColumn, createRow],
+    [createColumn, createRow, createView],
   );
 
   // --- table creation mutation ---
@@ -63,7 +63,7 @@ export function useDefaultTableSetup(baseId: string) {
 
       // create defaults immediately after table is created
       await createDefaultTable(newTable.id);
-      utils.table.getTablesByBase.invalidate({baseId})
+      await utils.table.getTablesByBase.invalidate({baseId})
     },
     onError: (error) => {
       console.error("Error creating table:", error);

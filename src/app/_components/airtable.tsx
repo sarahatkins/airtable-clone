@@ -38,19 +38,34 @@ const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
 
   // Fetch columns and rows for the selected table
   useEffect(() => {
-    newTable && createdDefault && finishedTableSetup && setSelectedTable(newTable);
-  }, [newTable, finishedTableSetup]);
-
-  useEffect(() => {
-    if (tablesLoading) return;
-
-    if (tables && tables.length === 0 && !createdDefault) {
-      handleCreateTable("Table 1");
-      setCreatedDefault(true);
-    } else if (tables && tables.length > 0 && !selectedTable) {
-      setSelectedTable(tables[0]!);
+    if (newTable && createdDefault && finishedTableSetup) {
+      setSelectedTable(newTable);
     }
-  }, [tablesLoading, tables, selectedTable, createdDefault]);
+  }, [newTable, finishedTableSetup, createdDefault]);
+
+useEffect(() => {
+  if (tablesLoading) return;
+
+  const firstTable = tables?.[0];
+  // If no tables and we haven't auto-created one yet
+  if (!createdDefault && tables?.length === 0) {
+    handleCreateTable("Table 1");
+    setCreatedDefault(true); // prevent this from running again
+    return;
+  }
+
+  // If tables exist and no table is selected, set the first one
+  if (firstTable && !selectedTable) {
+    setSelectedTable(firstTable);
+  }
+}, [
+  tables,
+  tablesLoading,
+  tables?.length,
+  selectedTable,
+  createdDefault,
+  handleCreateTable,
+]);
 
 
   return (
@@ -129,13 +144,11 @@ const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
           <div className="flex items-center gap-3">
             {/* Active table */}
             {!tablesLoading &&
-              tables &&
-              tables.map((t, idx) => (
+              tables?.map((t, idx) => (
                 <SetTableButton
                   key={idx}
                   setSelectedTable={() => setSelectedTable(t)}
                   name={t.name}
-                  tableId={t.id}
                 />
               ))}
 

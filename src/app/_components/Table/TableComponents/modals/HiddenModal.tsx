@@ -6,7 +6,7 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import { Eye, GripVertical, Info, Search } from "lucide-react";
+import { Eye, GripVertical } from "lucide-react";
 import type { ColType, HiddenColType } from "~/app/defaults";
 
 interface ModalProps {

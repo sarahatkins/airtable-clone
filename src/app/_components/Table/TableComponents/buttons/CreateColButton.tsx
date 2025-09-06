@@ -6,7 +6,6 @@ import {
   getPendingColEditsForCol,
 } from "../../helper/PendingEdits";
 import { Plus } from "lucide-react";
-import { number } from "zod";
 
 interface ColButtonProps {
   dbTable: TableType;
@@ -62,7 +61,7 @@ const CreateColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
     const newCol: ColType = {
       id: -1,
       name: newColumnName,
-      type: newColumnType!,
+      type: newColumnType,
       tableId: dbTable.id,
       orderIndex: 0,
       primary: false,

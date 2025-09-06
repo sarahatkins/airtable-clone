@@ -1,4 +1,4 @@
-import { X, Plus, Baseline, Info } from "lucide-react";
+import { X } from "lucide-react";
 import React, {
   useEffect,
   useRef,
@@ -37,7 +37,7 @@ const SearchViewModal: React.FC<SearchViewModalProps> = ({
       document.addEventListener("mousedown", handleClickOutside);
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, setSearch]);
 
   if (!isOpen) return null;
 
@@ -51,7 +51,7 @@ const SearchViewModal: React.FC<SearchViewModalProps> = ({
         <div className="flex items-center border-b px-3 py-2">
           <input
             type="text"
-            value={currentSearch ? currentSearch : ""}
+            value={currentSearch ??  ""}
             placeholder="Find in view"
             className="flex-1 text-sm placeholder-gray-400 outline-none"
             onChange={(e) => setSearch(e.target.value)}

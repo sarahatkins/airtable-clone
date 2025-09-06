@@ -3,8 +3,6 @@ import {
   useEffect,
   useRef,
   useState,
-  type Dispatch,
-  type SetStateAction,
 } from "react";
 
 import {
@@ -22,14 +20,12 @@ import {
 import MenuItem from "../modals/MenuItem";
 import TableRenameModal from "../modals/TableRenameModal";
 interface ButtonProps {
-  tableId: number;
   setSelectedTable: () => void;
   name: string;
   showRename?: boolean;
 }
 
 const SetTableButton: React.FC<ButtonProps> = ({
-  tableId,
   name,
   setSelectedTable,
   showRename = false,
@@ -114,7 +110,6 @@ const SetTableButton: React.FC<ButtonProps> = ({
       )}
 
       <TableRenameModal
-        tableId={tableId}
         isOpen={showRenameModal}
         onClose={() => setShowRenameModal(false)}
         currentName={name}

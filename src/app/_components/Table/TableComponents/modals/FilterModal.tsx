@@ -1,8 +1,7 @@
-import { Trash2, GripVertical } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import React, {
   useEffect,
   useRef,
-  useState,
   type Dispatch,
   type SetStateAction,
 } from "react";
@@ -76,17 +75,17 @@ const FilterModal: React.FC<FilterModalProps> = ({
   const updateArg = (
     index: number,
     argIndex: 0 | 1,
-    value: string | number | boolean,
+    value: string | number,
   ) => {
     const updated = [...filterTree.args];
     const cond = updated[index];
     if (!cond) return;
 
-    const newArgs = [...cond.args] as [number, string | number | boolean];
+    const newArgs = [...cond.args] as [number, string | number];
     if (argIndex === 0) {
       newArgs[0] = Number(value); // Ensure it's a number for columnId
     } else {
-      newArgs[1] = value; // Can be string | number | boolean
+      newArgs[1] = value; // Can be string | number
     }
     updated[index] = {
       ...cond,
@@ -212,11 +211,13 @@ const FilterModal: React.FC<FilterModalProps> = ({
                   (() => {
                     const usableInput =
                       cond.functionName !== "isEmpty" &&
-                      cond.functionName !== "isNotEmpty";
+                      cond.functionName !== "isNotEmpty" &&
+                      cond.args[1] !== null &&
+                      cond.args[1] !== undefined;
                     return (
                       <input
                         type="text"
-                        value={usableInput ? cond.args[1].toString() : ""}
+                        value={usableInput ? cond.args[1]?.toString() : ""}
                         disabled={!usableInput}
                         onChange={(e) => updateArg(index, 1, e.target.value)}
                         className="flex-1 border-r border-gray-200 px-2 py-1 focus:outline-none"

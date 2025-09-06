@@ -1,4 +1,4 @@
-import { SQL, sql } from "drizzle-orm";
+import { type SQL, sql } from "drizzle-orm";
 import type { FilterGroup, FilterLeaf } from "~/app/defaults";
 import { cellValues, rows } from "~/server/db/schemas/tableSchema";
 
@@ -6,9 +6,7 @@ export function buildFilter(node: FilterGroup | FilterLeaf): SQL {
   // Check if it's a branch/group node
   if (node.functionName === "and" || node.functionName === "or") {
     const op = node.functionName.toUpperCase();
-    const subFilters = (node.args as FilterLeaf[])
-      .map((arg) => buildFilter(arg))
-      .filter(Boolean);
+    const subFilters = node.args.map((arg) => buildFilter(arg)).filter(Boolean);
 
     if (subFilters.length === 0) {
       throw new Error(`Empty ${op} filter group`);
@@ -99,15 +97,15 @@ export function buildFilter(node: FilterGroup | FilterLeaf): SQL {
             AND cv."columnId" = ${columnId}
             AND (cv."value" #>> '{}')::numeric <= ${value}
         )`;
-      default:
-        throw new Error(`Unknown operator: ${node.functionName}`);
     }
   }
 
   throw new Error("Invalid filter node: expected either a group or a leaf");
 }
 
-export function validateFilterGroup(group: FilterGroup): asserts group is FilterGroup {
+export function validateFilterGroup(
+  group: FilterGroup,
+): asserts group is FilterGroup {
   if (!group.functionName || !["and", "or"].includes(group.functionName)) {
     throw new Error("Top-level filter must be 'and' or 'or'");
   }

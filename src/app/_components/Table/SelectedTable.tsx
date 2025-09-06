@@ -10,11 +10,9 @@ import {
   Menu,
   Table,
   ChevronDown,
-  EyeOff,
   LayoutGrid,
   Palette,
   List,
-  Search,
 } from "lucide-react";
 import TableMenu from "./TableMenu";
 import { api } from "~/trpc/react";
@@ -67,12 +65,12 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
     setViewConfig(loadedViews[0]?.config as ViewConfigType);
   }, [viewsLoading, loadedViews]);
 
-  const onConfigChange = (newConfig: ViewConfigType) => {
+  const onConfigChange = async (newConfig: ViewConfigType) => {
     setCurrentView((prevData) =>
       prevData ? { ...prevData, config: newConfig } : null,
     );
     setViewConfig(newConfig);
-    refetchCols();
+    await refetchCols();
   };
 
   const isDataLoading = colsLoading || viewsLoading;

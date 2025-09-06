@@ -1,5 +1,5 @@
 import type { InferSelectModel } from "drizzle-orm";
-import { Baseline, LetterText, CircleChevronDown, ListEnd, User, Calendar, SquareMousePointer, type LucideIcon } from "lucide-react";
+import { Baseline, CircleChevronDown, type LucideIcon } from "lucide-react";
 import type {
   cellValues,
   columns,

@@ -7,7 +7,7 @@ import React, {
   type SetStateAction,
 } from "react";
 import {
-  STATUS,
+  type STATUS,
   typeToIconMap,
   type ColType,
   type SortingType,

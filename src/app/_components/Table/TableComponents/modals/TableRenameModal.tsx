@@ -7,7 +7,6 @@ import {
 interface RenameModalProps {
   isOpen: boolean;
   onClose: () => void;
-  tableId: number;
   currentName: string;
 }
 
@@ -15,7 +14,6 @@ const TableRenameModal: React.FC<RenameModalProps> = ({
   currentName,
   isOpen,
   onClose,
-  tableId,
 }) => {
   const [tableName, setTableName] = useState(currentName);
   const [recordLabel, setRecordLabel] = useState("Record");

@@ -12,7 +12,7 @@ interface ColMeta {
   col: ColType;
 }
 const EditableCell = (
-  ctx: CellContext<NormalizedRow, any>,
+  ctx: CellContext<NormalizedRow, CellValue>,
 ) => {
   const {getValue, row, column, table} = ctx;
   const { mutate: setCellValue } = api.table.setCellValue.useMutation({
@@ -21,7 +21,7 @@ const EditableCell = (
     },
   });
 
-  const initialValue = getValue() ?? "";
+  const initialValue: CellValue = getValue() ?? "";
   const [value, setValue] = useState<CellValue>(initialValue);
 
   // Sync external value changes
