@@ -57,13 +57,13 @@ const DataGrid: React.FC<DataGridProps> = ({
   setCols,
   searchText,
 }) => {
-  const parentRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const [rows, setRows] = useState<NormalizedRow[]>([]);
   const [cursor, setCursor] = useState<number | undefined>(undefined);
   const [nextCursor, setNextCursor] = useState<number | undefined>(undefined);
   const [isFreshFetch, setIsFreshFetch] = useState<boolean>(false);
-  
+
   const { data: viewData, isFetching } = api.table.getFilterCells.useQuery(
     { viewId: view?.id ?? 0, limit: 100, cursor, searchText },
     { enabled: !!view?.id },
@@ -71,9 +71,9 @@ const DataGrid: React.FC<DataGridProps> = ({
 
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
-    getScrollElement: () => parentRef.current,
+    getScrollElement: () => scrollRef.current,
     estimateSize: () => ROW_HEIGHT,
-    overscan: 10,
+    overscan: rows.length > 100 ? 10 : 2,
   });
 
   const virtualItems = rowVirtualizer.getVirtualItems();
@@ -91,7 +91,8 @@ const DataGrid: React.FC<DataGridProps> = ({
     data: rows,
     columns: reactColumns,
     getCoreRowModel: getCoreRowModel(),
-    columnResizeMode: "onChange",
+    enableColumnResizing: true,
+    columnResizeMode: "onEnd",
     meta: {
       updateData: (rowIndex: number, columnId: string, value: CellValue) => {
         setRows((prev) =>
@@ -129,6 +130,7 @@ const DataGrid: React.FC<DataGridProps> = ({
 
     const { rows: newRows, nextCursor } = viewData;
     const normalized = normalizeRows(newRows);
+    console.log("NEW ROWS", newRows);
 
     // always replace rows on fresh fetch
     setRows((prev) => (isFreshFetch ? normalized : [...prev, ...normalized]));
@@ -165,7 +167,7 @@ const DataGrid: React.FC<DataGridProps> = ({
   }, [rowVirtualizer, virtualItems, rows.length, loadMoreRows]);
 
   return (
-    <div className="flex h-screen w-full flex-col">
+    <div ref={scrollRef} className="flex h-screen w-full flex-col">
       {/* Toolbar + sticky header wrapper (sticky keeps header visible while vertical-scrolling) */}
       <div className="sticky top-0 z-20 border-b border-gray-200 bg-transparent">
         <div className="flex items-center gap-2 px-2 py-2">
@@ -174,77 +176,83 @@ const DataGrid: React.FC<DataGridProps> = ({
             {rows.length.toLocaleString()} rows
           </div>
         </div>
+      </div>
 
-        {/* Header: put it in an overflow-x container so it scrolls horizontally with the body */}
-        <div className="overflow-auto">
-          <div style={{ width: Math.max(totalWidth + 200, 800) }}>
-            {reactTable.getHeaderGroups().map((hg) => (
-              <div
-                key={hg.id}
-                className="flex border-t border-b border-gray-200"
-              >
-                {hg.headers.map((header) => (
-                  <div
-                    key={header.id}
-                    className="border-r border-gray-200 bg-white px-3 py-2 text-sm font-semibold"
-                    style={{ width: header.getSize() }}
-                  >
+      <div ref={scrollRef} className="overflow-auto" style={{ height: "100%" }}>
+        <div style={{ width: Math.max(totalWidth + 200, 800) }}>
+          {/* Header */}
+          {reactTable.getHeaderGroups().map((hg) => (
+            <div key={hg.id} className="flex border-t border-b border-gray-200">
+              {hg.headers.map((header) => (
+                <div
+                  key={header.id}
+                  className="border-r border-gray-200 bg-white px-3 py-2 text-sm font-semibold"
+                  style={{ width: header.getSize() }}
+                >
+                  <>
                     {flexRender(
                       header.column.columnDef.header,
                       header.getContext(),
                     )}
-                  </div>
-                ))}
-
-                {/* Extra header cell at the end */}
-                <div
-                  key="column_add"
-                  className="flex cursor-pointer items-center justify-center border-r border-gray-200 bg-white hover:bg-neutral-50"
-                  style={{ minWidth: "120px" }} // give it some space
-                >
-                  <CreateColButton dbTable={table} setCols={setCols} />
+                    {/* {header.getCanResize() && (
+                      <div
+                        onMouseDown={header.getResizeHandler()} // Attach resize handler
+                        onTouchStart={header.getResizeHandler()}
+                        className={`resizer ${header.column.getIsResizing() ? "isResizing" : ""}`}
+                      />
+                    )} */}
+                  </>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Body: one scroll container for both directions */}
-      <div ref={parentRef} className="relative flex-1 overflow-auto bg-white">
-        {/* Inner spacer must be as wide as the total table to enable horizontal scroll */}
-        <div
-          className="relative"
-          style={{
-            height: rowVirtualizer.getTotalSize(),
-          }}
-        >
-          {rowVirtualizer.getVirtualItems().map((vr) => {
-            const r = reactTable.getRowModel().rows[vr.index];
-            if (!r) return null;
-            return (
+              ))}
               <div
-                key={vr.key}
-                className="absolute top-0 left-0 flex items-center border-b border-gray-200 hover:bg-neutral-50"
-                style={{
-                  height: `${vr.size}px`,
-                  transform: `translateY(${vr.start}px)`,
-                }}
-                data-index={vr.index}
+                key="column_add"
+                className="flex cursor-pointer items-center justify-center border-r border-gray-200 bg-white hover:bg-neutral-50"
+                style={{ minWidth: "120px" }}
               >
-                {r.getVisibleCells().map((cell) => (
-                  <div
-                    key={cell.id}
-                    className="overflow-hidden border-r border-gray-200 text-ellipsis whitespace-nowrap"
-                    style={{ width: cell.column.getSize() }}
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </div>
-                ))}
-                <CreateRowButton dbTable={table} setRows={setRows} />
+                <CreateColButton dbTable={table} setCols={setCols} />
               </div>
-            );
-          })}
+            </div>
+          ))}
+
+          {/* Body (virtualized rows) */}
+          <div
+            className="relative"
+            style={{
+              height: rowVirtualizer.getTotalSize(),
+              position: "relative",
+            }}
+          >
+            {rowVirtualizer.getVirtualItems().map((vr) => {
+              const r = reactTable.getRowModel().rows[vr.index];
+              if (!r) return null;
+              return (
+                <div
+                  key={vr.key}
+                  className="absolute top-0 left-0 flex items-center border-b border-gray-200 hover:bg-neutral-50"
+                  style={{
+                    height: `${vr.size}px`,
+                    transform: `translateY(${vr.start}px)`,
+                  }}
+                  data-index={vr.index}
+                >
+                  {r.getVisibleCells().map((cell) => (
+                    <div
+                      key={cell.id}
+                      className="overflow-hidden border-r border-gray-200 text-ellipsis whitespace-nowrap"
+                      style={{ width: cell.column.getSize() }}
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+
+          <CreateRowButton dbTable={table} setRows={setRows} />
         </div>
       </div>
     </div>

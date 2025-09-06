@@ -12,7 +12,7 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({ base }) => {
   const router = useRouter();
 
   const handleWidgetClick = () => {
-    router.push(`/table/${base.id}`);
+    router.push(`/${base.id}`);
   };
 
   return (

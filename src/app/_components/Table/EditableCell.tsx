@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { api } from "~/trpc/react";
 import { addPendingColEdit, addPendingRowEdit } from "./helper/PendingEdits";
 import type { CellContext } from "@tanstack/react-table";
 import type { CellValue, ColType } from "~/app/defaults";
 import type { NormalizedRow } from "./DataGrid";
+
 export interface TableMeta {
   updateData: (rowIndex: number, columnId: string, value: CellValue) => void;
 }
@@ -11,62 +12,79 @@ export interface TableMeta {
 interface ColMeta {
   col: ColType;
 }
-const EditableCell = (
-  ctx: CellContext<NormalizedRow, CellValue>,
-) => {
-  const {getValue, row, column, table} = ctx;
+
+const EditableCell = (ctx: CellContext<NormalizedRow, CellValue>) => {
+  const { getValue, row, column, table } = ctx;
+  const initialValue = getValue() ?? "";
+  const [value, setValue] = useState<CellValue>(initialValue);
+
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const { mutate: setCellValue } = api.table.setCellValue.useMutation({
     onSuccess: () => {
-      console.log("New cell created");
+      console.log("Cell saved successfully");
     },
   });
 
-  const initialValue: CellValue = getValue() ?? "";
-  const [value, setValue] = useState<CellValue>(initialValue);
-
-  // Sync external value changes
+  // Sync external changes
   useEffect(() => {
     setValue(initialValue ?? "");
   }, [initialValue]);
 
-  const onBlur = () => {
-    (table.options.meta as TableMeta).updateData(row.index, column.id, value);
-
-    if (value !== initialValue) {
+  const saveToDB = useCallback(
+    (val: CellValue) => {
       const rowId = row.original.id;
       const colId = (column.columnDef.meta as ColMeta).col.id;
 
-      // If still -1, store as pending
+      // New row/column, store in pending
       if (rowId === -1) {
         addPendingRowEdit({
           tableId: row.original.tableId,
           rowId,
           columnId: colId,
-          value,
+          value: val,
         });
         return;
       }
+
       if (colId === -1) {
         addPendingColEdit({
           tableId: row.original.tableId,
-          rowId: rowId,
+          rowId,
           columnId: colId,
-          value,
+          value: val,
         });
-
         return;
       }
-      
-      const stringifiedVal = value ? value.toString() : ""
-      
+
       // Otherwise save immediately
       setCellValue({
         tableId: row.original.tableId,
         rowId,
         columnId: colId,
-        value: stringifiedVal,
+        value: val ? val.toString() : "",
       });
-    }
+    },
+    [row.original, column.columnDef.meta, setCellValue],
+  );
+
+  const onBlur = () => {
+    (table.options.meta as TableMeta).updateData(row.index, column.id, value);
+
+    if (value !== initialValue) saveToDB(value);
+  };
+
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setValue(val);
+
+    (table.options.meta as TableMeta).updateData(row.index, column.id, val);
+
+    // Debounce save to DB by 300ms
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => {
+      if (val !== initialValue) saveToDB(val);
+    }, 300);
   };
 
   return (
