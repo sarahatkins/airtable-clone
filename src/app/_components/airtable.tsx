@@ -6,35 +6,27 @@ import Image from "next/image";
 import SelectedTable from "./Table/SelectedTable";
 import { useEffect, useState } from "react";
 import { api } from "~/trpc/react";
-import { useDefaultTableSetup } from "./Table/CreateDefaultTable";
+import { useDefaultTableSetup } from "./Table/helper/CreateDefaultTable";
 import type { TableType } from "../defaults";
-import AddTableButton from "./Table/TableComponents/buttons/AddTableButton";
-import SetTableButton from "./Table/TableComponents/buttons/SetTableButton";
+import AddTableButton from "./Table/buttons/AddTableButton";
+import SetTableButton from "./Table/buttons/SetTableButton";
 import { useRouter } from "next/navigation";
 
 interface AirtableProps {
   baseId: string;
 }
 
-/* GOALS
-- filtering
-- sorting
-
-Extra:
-- clean up code
-*/
-
 const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
   const router = useRouter();
+  const [selectedTable, setSelectedTable] = useState<TableType | null>(null);
+  const [createdDefault, setCreatedDefault] = useState<boolean>(false); // flag for creating a new table
+  const [isTableSetup, setIsTableSetup] = useState<boolean>(true);
+
   const { data: base } = api.base.getById.useQuery({ id: baseId });
-  const { newTable, finishedTableSetup, handleCreateTable } =
-    useDefaultTableSetup(baseId);
   const { data: tables, isLoading: tablesLoading } =
     api.table.getTablesByBase.useQuery({ baseId });
-
-  const [selectedTable, setSelectedTable] = useState<TableType | null>(null);
-  const [createdDefault, setCreatedDefault] = useState<boolean>(false);
-  const [isTableSetup, setIsTableSetup] = useState<boolean>(true);
+  const { newTable, finishedTableSetup, handleCreateTable } =
+    useDefaultTableSetup(baseId);
 
   // Fetch columns and rows for the selected table
   useEffect(() => {
@@ -43,30 +35,29 @@ const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
     }
   }, [newTable, finishedTableSetup, createdDefault]);
 
-useEffect(() => {
-  if (tablesLoading) return;
+  useEffect(() => {
+    if (tablesLoading) return;
 
-  const firstTable = tables?.[0];
-  // If no tables and we haven't auto-created one yet
-  if (!createdDefault && tables?.length === 0) {
-    handleCreateTable("Table 1");
-    setCreatedDefault(true); // prevent this from running again
-    return;
-  }
+    const firstTable = tables?.[0];
+    // If no tables and we haven't auto-created one yet
+    if (!createdDefault && tables?.length === 0) {
+      handleCreateTable("Table 1");
+      setCreatedDefault(true); // prevent this from running again
+      return;
+    }
 
-  // If tables exist and no table is selected, set the first one
-  if (firstTable && !selectedTable) {
-    setSelectedTable(firstTable);
-  }
-}, [
-  tables,
-  tablesLoading,
-  tables?.length,
-  selectedTable,
-  createdDefault,
-  handleCreateTable,
-]);
-
+    // If tables exist and no table is selected, set the first one
+    if (firstTable && !selectedTable) {
+      setSelectedTable(firstTable);
+    }
+  }, [
+    tables,
+    tablesLoading,
+    tables?.length,
+    selectedTable,
+    createdDefault,
+    handleCreateTable,
+  ]);
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">

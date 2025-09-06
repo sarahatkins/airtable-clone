@@ -17,10 +17,10 @@ import {
 import TableMenu from "./TableMenu";
 import { api } from "~/trpc/react";
 import DataGrid from "./DataGrid";
-import FilterButton from "./TableComponents/buttons/FilterButton";
-import SortButton from "./TableComponents/buttons/SortButton";
-import HiddenButton from "./TableComponents/buttons/HiddenButton";
-import SearchViewButton from "./TableComponents/buttons/SearchViewButton";
+import FilterButton from "./buttons/FilterButton";
+import SortButton from "./buttons/SortButton";
+import HiddenButton from "./buttons/HiddenButton";
+import SearchViewButton from "./buttons/SearchViewButton";
 interface SelectedTableProps {
   selectedTable: TableType;
 }

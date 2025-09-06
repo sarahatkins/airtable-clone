@@ -1,5 +1,5 @@
 import { Pencil, Plus } from "lucide-react";
-import { useDefaultTableSetup } from "../../CreateDefaultTable";
+import { useDefaultTableSetup } from "../helper/CreateDefaultTable";
 import {
   useEffect,
   useRef,
@@ -20,12 +20,12 @@ const AddTableButton: React.FC<ButtonProps> = ({
   setSelectedTable,
   setFinishedTableSetup,
 }) => {
-  // Create default table
-  const { newTable, finishedTableSetup, handleCreateTable } =
-    useDefaultTableSetup(baseId);
   const [showModal, setShowModal] = useState<boolean>(false);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const modalRef = useRef<HTMLDivElement | null>(null);
+
+  const { newTable, finishedTableSetup, handleCreateTable } =
+    useDefaultTableSetup(baseId);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

@@ -7,8 +7,8 @@ import { api } from "~/trpc/react";
 import {
   clearPendingEditsForRow,
   getPendingEditsForRow,
-} from "../../helper/PendingEdits";
-import type { NormalizedRow } from "../../DataGrid";
+} from "../helper/PendingEdits";
+import type { NormalizedRow } from "../DataGrid";
 
 interface ColButtonProps {
   dbTable: TableType;

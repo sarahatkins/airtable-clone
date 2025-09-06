@@ -5,8 +5,8 @@ import { type Dispatch, type SetStateAction } from "react";
 import {
   Search,
 } from "lucide-react";
-import CreateViewButton from "./TableComponents/buttons/CreateViewButton";
-import GridViewButton from "./TableComponents/buttons/GridViewButton";
+import CreateViewButton from "./buttons/CreateViewButton";
+import GridViewButton from "./buttons/GridViewButton";
 import type { ViewType } from "~/app/defaults";
 
 interface MenuProps {

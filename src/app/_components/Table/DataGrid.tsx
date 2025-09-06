@@ -17,12 +17,12 @@ import type {
   TableType,
   ViewType,
 } from "~/app/defaults";
-import EditableCell from "./TableComponents/EditableCell";
+import EditableCell from "./EditableCell";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import HundredThousandButton from "./TableComponents/buttons/100kButton";
-import CreateColButton from "./TableComponents/buttons/CreateColButton";
+import HundredThousandButton from "./buttons/100kButton";
+import CreateColButton from "./buttons/CreateColButton";
 import { api } from "~/trpc/react";
-import CreateRowButton from "./TableComponents/buttons/CreateRowButton";
+import CreateRowButton from "./buttons/CreateRowButton";
 import type { UseQueryResult } from "@tanstack/react-query";
 
 interface DataGridProps {
@@ -57,16 +57,18 @@ const DataGrid: React.FC<DataGridProps> = ({
   setCols,
   searchText,
 }) => {
-  // Fetch rows + cells for the selected view
   const parentRef = useRef<HTMLDivElement>(null);
+
   const [rows, setRows] = useState<NormalizedRow[]>([]);
   const [cursor, setCursor] = useState<number | undefined>(undefined);
   const [nextCursor, setNextCursor] = useState<number | undefined>(undefined);
   const [isFreshFetch, setIsFreshFetch] = useState<boolean>(false);
+  
   const { data: viewData, isFetching } = api.table.getFilterCells.useQuery(
     { viewId: view?.id ?? 0, limit: 100, cursor, searchText },
-    { enabled: !!view?.id }, //doesn't run until view provided
+    { enabled: !!view?.id },
   ) as UseQueryResult<ViewDataResult>;
+
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => parentRef.current,
@@ -77,11 +79,11 @@ const DataGrid: React.FC<DataGridProps> = ({
   const virtualItems = rowVirtualizer.getVirtualItems();
 
   const reactColumns = cols.map((col) => ({
-    accessorKey: `col_${col.id}`, // dynamic keys
+    accessorKey: `col_${col.id}`,
     header: col.name,
     size: 200,
     enableColumnFilter: true,
-    meta: { col }, // still strongly typed
+    meta: { col },
     cell: EditableCell,
   }));
 
@@ -98,10 +100,8 @@ const DataGrid: React.FC<DataGridProps> = ({
           ),
         );
       },
-    }, // cast meta to TableMeta
+    },
   });
-
-  // Row virtualizer
 
   const totalWidth = useMemo(
     () => reactColumns.reduce((sum, c) => sum + (c.size ?? 150) + 150, 0),

@@ -4,7 +4,7 @@ import { api } from "~/trpc/react";
 import {
   clearPendingColEditsForCol,
   getPendingColEditsForCol,
-} from "../../helper/PendingEdits";
+} from "../helper/PendingEdits";
 import { Plus } from "lucide-react";
 
 interface ColButtonProps {

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
-import { addPendingColEdit, addPendingRowEdit } from "../helper/PendingEdits";
+import { addPendingColEdit, addPendingRowEdit } from "./helper/PendingEdits";
 import type { CellContext } from "@tanstack/react-table";
 import type { CellValue, ColType } from "~/app/defaults";
-import type { NormalizedRow } from "../DataGrid";
+import type { NormalizedRow } from "./DataGrid";
 export interface TableMeta {
   updateData: (rowIndex: number, columnId: string, value: CellValue) => void;
 }
