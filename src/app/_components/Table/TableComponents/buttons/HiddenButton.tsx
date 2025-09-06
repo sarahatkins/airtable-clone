@@ -36,35 +36,22 @@ const HiddenButton: React.FC<ButtonProps> = ({
   });
 
   useEffect(() => {
-    const update = async () => {
-      let newConfig: ViewConfigType | null = null;
+    setConfig((prev) => {
+      const newConfig = { ...prev, hiddenColumns };
 
-      setConfig((prev) => {
-        if (!prev) return prev;
-
-        newConfig = {
-          ...prev,
+      updateConfig.mutate({
+        viewId,
+        config: {
+          filters: newConfig.filters ?? undefined,
+          sorting: newConfig.sorting,
           hiddenColumns,
-        };
-        onViewChange(newConfig);
-
-        return newConfig;
+        },
       });
 
-      if (newConfig) {
-        try {
-          await updateConfig.mutateAsync({
-            viewId,
-            config: newConfig, // pass full config with filters + unchanged properties
-          });
-        } catch (error) {
-          console.error(error);
-        }
-      }
-    };
-
-    void update();
-  }, [hiddenColumns, onViewChange, setConfig, updateConfig, viewId]);
+      onViewChange(newConfig);
+      return newConfig;
+    });
+  }, [hiddenColumns]);
 
   return (
     <div className="relative inline-block">

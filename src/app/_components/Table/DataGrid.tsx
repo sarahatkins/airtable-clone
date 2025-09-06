@@ -148,7 +148,6 @@ const DataGrid: React.FC<DataGridProps> = ({
   useEffect(() => {
     if (!view) return;
 
-    console.log("new view WOW");
     setRows([]);
     setIsFreshFetch(true);
     setCursor(undefined); // trigger a fresh fetch with no cursor

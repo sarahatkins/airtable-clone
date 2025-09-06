@@ -116,7 +116,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
               <SortButton
                 viewId={currentView?.id}
                 cols={cols}
-                sorts={viewConfig.sorting}
+                sorts={viewConfig.sorting ?? []}
                 setConfig={setViewConfig}
                 onViewChange={() => onConfigChange}
               />

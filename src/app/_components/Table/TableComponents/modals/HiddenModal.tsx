@@ -30,6 +30,7 @@ const HiddenModal: React.FC<ModalProps> = ({
   const filteredFields = cols.filter((field) =>
     field.name.toLowerCase().includes(search.toLowerCase()),
   );
+  
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (

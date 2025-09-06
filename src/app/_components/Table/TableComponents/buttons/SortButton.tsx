@@ -13,7 +13,6 @@ interface ButtonProps {
   cols: ColType[];
   sorts: SortingType[];
   onViewChange: (param: ViewConfigType) => void;
-
   setConfig: Dispatch<SetStateAction<ViewConfigType>>;
 }
 
@@ -35,36 +34,22 @@ const SortButton: React.FC<ButtonProps> = ({
   });
 
   useEffect(() => {
-    const update = async () => {
-      let newConfig: ViewConfigType | null = null;
+    setConfig((prev) => {
+      const newConfig = { ...prev, sorting: newSort };
 
-      setConfig((prev) => {
-        if (!prev) return prev;
-
-        newConfig = {
-          ...prev,
+      updateConfig.mutate({
+        viewId,
+        config: {
+          filters: newConfig.filters ?? undefined,
           sorting: newSort,
-        };
-
-        onViewChange(newConfig);
-
-        return newConfig;
+          hiddenColumns: newConfig.hiddenColumns
+        },
       });
 
-      if (newConfig) {
-        try {
-          await updateConfig.mutateAsync({
-            viewId,
-            config: newConfig, // pass full config with filters + unchanged properties
-          });
-        } catch (error) {
-          console.error(error);
-        }
-      }
-    };
-
-    void update();
-  }, [newSort, onViewChange, setConfig, updateConfig, viewId]);
+      onViewChange(newConfig);
+      return newConfig;
+    });
+  }, [newSort]);
 
   return (
     <div className="relative inline-block">

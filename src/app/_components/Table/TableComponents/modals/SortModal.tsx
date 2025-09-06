@@ -51,6 +51,7 @@ const SortModal: React.FC<SortModalProps> = ({
       }));
 
     setAvailableCols(mappedCols);
+    console.log(currentSorts)
     setShowPickCol(currentSorts.length === 0);
   }, [cols, currentSorts]);
 
