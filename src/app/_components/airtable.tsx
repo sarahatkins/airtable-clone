@@ -38,7 +38,7 @@ const AirTable: React.FC<AirtableProps> = ({ baseId }) => {
 
   // Fetch columns and rows for the selected table
   useEffect(() => {
-    createdDefault && finishedTableSetup && setSelectedTable(newTable);
+    newTable && createdDefault && finishedTableSetup && setSelectedTable(newTable);
   }, [newTable, finishedTableSetup]);
 
   useEffect(() => {

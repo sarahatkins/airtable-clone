@@ -3,9 +3,11 @@ import {
   flexRender,
   getCoreRowModel,
   useReactTable,
+  type ColumnDef,
 } from "@tanstack/react-table";
 import type {
   CellType,
+  CellValue,
   ColType,
   RowType,
   TableType,
@@ -33,7 +35,6 @@ interface HydratedRows {
 
 const ROW_HEIGHT = 41;
 
-type CellValue = string | number | boolean | null;
 export type NormalizedRow = {
   id: number;
   tableId: number;
@@ -51,35 +52,35 @@ const DataGrid: React.FC<DataGridProps> = ({
   const [rows, setRows] = useState<NormalizedRow[]>([]);
   const [cursor, setCursor] = useState<number | undefined>(undefined);
   const [nextCursor, setNextCursor] = useState<number | undefined>(undefined);
-
   const [isFreshFetch, setIsFreshFetch] = useState<boolean>(false);
-  const {
-    data: viewData,
-    refetch: refetchViewData,
-    isFetching,
-  } = api.table.getFilterCells.useQuery(
+  const { data: viewData, isFetching } = api.table.getFilterCells.useQuery(
     { viewId: view?.id ?? 0, limit: 100, cursor, searchText },
     { enabled: !!view?.id }, //doesn't run until view provided
   );
 
-  const reactColumns = useMemo(
-    () =>
-      cols.map((col) => ({
-        accessorKey: `col_${col.id}`,
-        header: col.name,
-        size: 200,
-        cell: EditableCell,
-        enableColumnFilter: true,
-        meta: { col },
-      })),
-    [cols],
-  );
+  const reactColumns = cols.map((col) => ({
+    accessorKey: `col_${col.id}`, // dynamic keys
+    header: col.name,
+    size: 200,
+    enableColumnFilter: true,
+    meta: { col }, // still strongly typed
+    cell: EditableCell,
+  }));
 
   const reactTable = useReactTable({
     data: rows,
     columns: reactColumns,
     getCoreRowModel: getCoreRowModel(),
     columnResizeMode: "onChange",
+    meta: {
+      updateData: (rowIndex: number, columnId: string, value: CellValue) => {
+        setRows((prev) =>
+          prev.map((row, idx) =>
+            idx === rowIndex ? { ...row, [columnId]: value } : row,
+          ),
+        );
+      },
+    }, // cast meta to TableMeta
   });
 
   // Row virtualizer
@@ -99,12 +100,15 @@ const DataGrid: React.FC<DataGridProps> = ({
     if (!viewData) return;
 
     const { rows: newRows, nextCursor } = viewData;
-    console.log("new rows", newRows);
     const normalized = normalizeRows(newRows);
-    // append if we already have rows, otherwise replace
-    setRows((prev) => (!isFreshFetch ? [...prev, ...normalized] : normalized));
+
+    // always replace rows on fresh fetch
+    setRows((prev) => (isFreshFetch ? normalized : [...prev, ...normalized]));
 
     setNextCursor(nextCursor ?? undefined);
+
+    // After first fetch, set isFreshFetch = false
+    if (isFreshFetch) setIsFreshFetch(false);
   }, [viewData]);
 
   const loadMoreRows = () => {
@@ -127,9 +131,13 @@ const DataGrid: React.FC<DataGridProps> = ({
   };
 
   useEffect(() => {
+    if (!view) return;
+
+    console.log("new view WOW");
     setRows([]);
     setIsFreshFetch(true);
     setCursor(undefined); // trigger a fresh fetch with no cursor
+    setNextCursor(undefined);
   }, [view, searchText]);
 
   useEffect(() => {

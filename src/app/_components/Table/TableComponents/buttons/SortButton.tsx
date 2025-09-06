@@ -1,37 +1,50 @@
 import { ArrowDownUp } from "lucide-react";
 import SortModal from "../modals/SortModal";
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
-import { type SortingType, type ColType, type ViewConfigType } from "~/app/defaults";
+import {
+  type SortingType,
+  type ColType,
+  type ViewConfigType,
+} from "~/app/defaults";
 import { api } from "~/trpc/react";
 
 interface ButtonProps {
   viewId: number;
   cols: ColType[];
   sorts: SortingType[];
+  onViewChange: (param: ViewConfigType) => void;
+
   setConfig: Dispatch<SetStateAction<ViewConfigType>>;
 }
 
-const SortButton: React.FC<ButtonProps> = ({ viewId, cols, sorts, setConfig }) => {
+const SortButton: React.FC<ButtonProps> = ({
+  viewId,
+  cols,
+  sorts,
+  onViewChange,
+  setConfig,
+}) => {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [newSort, setNewSort] = useState<SortingType[]>(sorts);
-   const updateConfig = api.table.updateViewConfig.useMutation({
-      onSuccess: () => {
-        console.log("new sort");
-      },
+  const updateConfig = api.table.updateViewConfig.useMutation({
+    onSuccess: () => {
+      console.log("new sort");
+    },
+  });
+
+  useEffect(() => {
+    setConfig((prev) => {
+      const newConfig = { ...prev, sorting: newSort };
+
+      updateConfig.mutate({
+        viewId,
+        config: newConfig,
+      });
+
+      onViewChange(newConfig);
+      return newConfig;
     });
-    
-    useEffect(() => {
-        setConfig((prev) => {
-          const newConfig = { ...prev, sorting: newSort };
-    
-          updateConfig.mutate({
-            viewId,
-            config: newConfig,
-          });
-    
-          return newConfig;
-        });
-      }, [newSort]);
+  }, [newSort]);
 
   return (
     <div className="relative inline-block">

@@ -3,6 +3,8 @@ import {
   useEffect,
   useRef,
   useState,
+  type Dispatch,
+  type SetStateAction,
 } from "react";
 
 import {
@@ -21,7 +23,7 @@ import MenuItem from "../modals/MenuItem";
 import TableRenameModal from "../modals/TableRenameModal";
 interface ButtonProps {
   tableId: number;
-  setSelectedTable: any;
+  setSelectedTable: () => void;
   name: string;
   showRename?: boolean;
 }
@@ -49,8 +51,8 @@ const SetTableButton: React.FC<ButtonProps> = ({
   }, []);
 
   return (
-    <div onClick={(val) => setSelectedTable(val)}>
-      <button className="flex items-center rounded px-2 py-1 font-semibold text-gray-900 hover:bg-gray-100">
+    <div onClick={setSelectedTable}>
+      <button className="cursor-pointer flex items-center rounded px-2 py-1 font-semibold text-gray-900 hover:bg-gray-100">
         {name}
         <ChevronDown className="ml-1 h-4 w-4 text-gray-500" />
       </button>

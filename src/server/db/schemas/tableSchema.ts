@@ -72,7 +72,7 @@ export const cellValues = createTable("cell_values", (d) => ({
       onDelete: "cascade",
     })
     .notNull(),
-  value: d.jsonb("value").$type<string | number | boolean | null>().notNull(),
+  value: d.jsonb("value").$type<string | number | null>().notNull(),
 }));
 
 export const views = createTable("views", (d) => ({

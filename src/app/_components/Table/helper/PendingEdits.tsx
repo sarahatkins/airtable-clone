@@ -1,8 +1,10 @@
-const pendingEdits = new Map<number, any[]>(); 
+import type { CellNoId, CellType, CellValue } from "~/app/defaults";
+
+const pendingEdits = new Map<number, CellNoId[]>(); 
 
 // key: tempRowId (-1), value: array of edits
-export function addPendingRowEdit(edit: any) {
-  const key = edit.rowIndex;
+export function addPendingRowEdit(edit: CellNoId) {
+  const key = edit.rowId;
   if (!pendingEdits.has(key)) {
     pendingEdits.set(key, []);
   }
@@ -18,15 +20,10 @@ export function clearPendingEditsForRow(tempId: number) {
 }
 
 // pendingEdits.ts
-const pendingColEdits = new Map<number, any[]>();
+const pendingColEdits = new Map<number, CellNoId[]>();
 
-export function addPendingColEdit(edit:  {
-  tableId: number;
-  rowId: number;
-  columnId: number;
-  value: any;
-}) {
-  const key = edit.columnId; // temporary colId (-1)
+export function addPendingColEdit(edit: CellNoId) {
+  const key = edit.columnId;
   if (!pendingColEdits.has(key)) {
     pendingColEdits.set(key, []);
   }

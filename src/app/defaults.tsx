@@ -22,6 +22,8 @@ export type RowNoId = Omit<RowType, "id">;
 
 export type CellType = InferSelectModel<typeof cellValues>;
 export type CellNoId = Omit<CellType, "id">;
+export type CellValue = string | number | null;
+
 export type ViewType = InferSelectModel<typeof views>;
 export type ViewConfigType = {
   sorting: SortingType[];
@@ -41,7 +43,7 @@ export type FilterGroup = {
 
 export type FilterLeaf = {
   functionName: FilterOperator;
-  args: [columnId: number, value: string | number | boolean];
+  args: [columnId: number, value: CellValue ];
 };
 
 export type FilterOperator =

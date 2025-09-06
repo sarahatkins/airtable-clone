@@ -32,8 +32,8 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
   const [showCols, setShownCols] = useState<ColType[]>([]);
   const [views, setViews] = useState<ViewType[] | null>(null);
   const [currentView, setCurrentView] = useState<ViewType | null>(null);
-  const [search, setSearch] = useState<string | undefined>(undefined)
-  
+  const [search, setSearch] = useState<string | undefined>(undefined);
+
   const { data: loadedViews, isLoading: viewsLoading } =
     api.table.getViewByTable.useQuery(
       { tableId: selectedTable?.id ?? 0 },
@@ -45,7 +45,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
     refetch: refetchCols,
   } = api.table.getColumnsByTable.useQuery(
     { tableId: selectedTable?.id ?? 0, viewId: currentView?.id ?? 0 },
-    { enabled: !!selectedTable?.id && !viewsLoading && !currentView },
+    { enabled: !!selectedTable?.id && !viewsLoading && !!currentView },
   );
 
   const [viewConfig, setViewConfig] =
@@ -67,9 +67,13 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
     setViewConfig(loadedViews[0]?.config as ViewConfigType);
   }, [viewsLoading, loadedViews]);
 
-  useEffect(() => {
+  const onConfigChange = (newConfig: ViewConfigType) => {
+    setCurrentView((prevData) =>
+      prevData ? { ...prevData, config: newConfig } : null,
+    );
+    setViewConfig(newConfig);
     refetchCols();
-  }, [currentView, viewConfig]);
+  };
 
   const isDataLoading = colsLoading || viewsLoading;
 
@@ -98,6 +102,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
                 cols={cols}
                 currHiddenCols={viewConfig.hiddenColumns}
                 setConfig={setViewConfig}
+                onViewChange={() => onConfigChange}
               />
 
               <FilterButton
@@ -105,6 +110,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
                 cols={cols}
                 filter={viewConfig.filters}
                 setConfig={setViewConfig}
+                onViewChange={() => onConfigChange}
               />
               <button className="flex items-center gap-1 hover:text-gray-900">
                 <LayoutGrid className="h-4 w-4" /> Group
@@ -114,6 +120,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
                 cols={cols}
                 sorts={viewConfig.sorting}
                 setConfig={setViewConfig}
+                onViewChange={() => onConfigChange}
               />
               <button className="flex items-center gap-1 hover:text-gray-900">
                 <Palette className="h-4 w-4" /> Color
@@ -121,10 +128,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
               <button className="flex items-center gap-1 hover:text-gray-900">
                 <List className="h-4 w-4" /> Share and sync
               </button>
-              <SearchViewButton
-                search={search}
-                setSearch={setSearch}
-              />
+              <SearchViewButton search={search} setSearch={setSearch} />
             </>
           )}
         </div>

@@ -8,6 +8,8 @@ interface ButtonProps {
   cols: ColType[];
   viewId: number;
   filter: FilterGroup | null;
+  onViewChange: (param: ViewConfigType) => void;
+
   setConfig: Dispatch<SetStateAction<ViewConfigType>>;
 }
 
@@ -15,6 +17,7 @@ const FilterButton: React.FC<ButtonProps> = ({
   cols,
   filter,
   viewId,
+  onViewChange,
   setConfig,
 }) => {
   const utils = api.useUtils();
@@ -36,6 +39,7 @@ const FilterButton: React.FC<ButtonProps> = ({
         config: newConfig,
       });
 
+      onViewChange(newConfig);
       return newConfig;
     });
   }, [newFilter]);

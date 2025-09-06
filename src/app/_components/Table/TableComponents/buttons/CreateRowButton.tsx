@@ -44,10 +44,10 @@ const CreateRowButton: React.FC<ColButtonProps> = ({
       const pending = getPendingEditsForRow(DEFAULT_PENDING_KEY);
       pending.forEach((edit) => {
         setCellValue({
-          tableId: edit.tableId,
+          tableId: edit.tableId ?? 0,
           rowId: newRow.id,
           columnId: edit.columnId,
-          value: edit.value,
+          value: edit.value as string,
         });
       });
 

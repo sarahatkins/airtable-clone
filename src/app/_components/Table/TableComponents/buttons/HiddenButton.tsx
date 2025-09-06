@@ -12,6 +12,7 @@ interface ButtonProps {
   viewId: number;
   cols: ColType[];
   currHiddenCols: HiddenColType[];
+  onViewChange: (param: ViewConfigType) => void;
   setConfig: Dispatch<SetStateAction<ViewConfigType>>;
 }
 
@@ -19,6 +20,7 @@ const HiddenButton: React.FC<ButtonProps> = ({
   cols,
   viewId,
   currHiddenCols,
+  onViewChange,
   setConfig,
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -42,6 +44,7 @@ const HiddenButton: React.FC<ButtonProps> = ({
         config: newConfig,
       });
 
+      onViewChange(newConfig);
       return newConfig;
     });
   }, [hiddenColumns]);
