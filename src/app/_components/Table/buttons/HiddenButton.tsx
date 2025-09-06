@@ -5,53 +5,27 @@ import {
   type ViewConfigType,
 } from "~/app/defaults";
 import HiddenModal from "../modals/HiddenModal";
-import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
-import { api } from "~/trpc/react";
+import { useState } from "react";
 
 interface ButtonProps {
-  viewId: number;
   cols: ColType[];
   currHiddenCols: HiddenColType[];
-  onViewChange: (param: ViewConfigType) => void;
-  setConfig: Dispatch<SetStateAction<ViewConfigType>>;
+  onConfigChange: (newConfig: ViewConfigType) => void;
+  viewConfig: ViewConfigType;
 }
 
 const HiddenButton: React.FC<ButtonProps> = ({
   cols,
-  viewId,
   currHiddenCols,
-  onViewChange,
-  setConfig,
+  onConfigChange,
+  viewConfig,
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [hiddenColumns, setHiddenColumns] =
-    useState<HiddenColType[]>(currHiddenCols);
-  const utils = api.useUtils();
 
-  const updateConfig = api.table.updateViewConfig.useMutation({
-    onSuccess: async () => {
-      console.log("changed hidden columns");
-      await utils.table.getFilterCells.invalidate();
-    },
-  });
-
-  useEffect(() => {
-    setConfig((prev) => {
-      const newConfig = { ...prev, hiddenColumns };
-
-      updateConfig.mutate({
-        viewId,
-        config: {
-          filters: newConfig.filters ?? undefined,
-          sorting: newConfig.sorting,
-          hiddenColumns,
-        },
-      });
-
-      onViewChange(newConfig);
-      return newConfig;
-    });
-  }, [hiddenColumns]);
+  const handleSave = (newHiddenCols: HiddenColType[]) => {
+    const newConfig = { ...viewConfig, hiddenColumns: newHiddenCols };
+    onConfigChange(newConfig);
+  };
 
   return (
     <div className="relative inline-block">
@@ -66,8 +40,8 @@ const HiddenButton: React.FC<ButtonProps> = ({
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         cols={cols}
-        onSelect={setHiddenColumns}
-        hiddenCols={hiddenColumns}
+        onSave={handleSave}
+        hiddenCols={currHiddenCols}
       />
     </div>
   );

@@ -3,8 +3,6 @@ import {
   useEffect,
   useRef,
   useState,
-  type Dispatch,
-  type SetStateAction,
 } from "react";
 import { Eye, GripVertical } from "lucide-react";
 import type { ColType, HiddenColType } from "~/app/defaults";
@@ -14,7 +12,7 @@ interface ModalProps {
   onClose: () => void;
   cols: ColType[];
   hiddenCols: HiddenColType[];
-  onSelect: Dispatch<SetStateAction<HiddenColType[]>>;
+  onSave: (param: HiddenColType[]) => void;
 }
 
 const HiddenModal: React.FC<ModalProps> = ({
@@ -22,7 +20,7 @@ const HiddenModal: React.FC<ModalProps> = ({
   onClose,
   cols,
   hiddenCols,
-  onSelect,
+  onSave,
 }) => {
   const modalRef = useRef<HTMLDivElement | null>(null);
   const [search, setSearch] = useState("");
@@ -30,7 +28,15 @@ const HiddenModal: React.FC<ModalProps> = ({
   const filteredFields = cols.filter((field) =>
     field.name.toLowerCase().includes(search.toLowerCase()),
   );
-  
+
+  const handleHiddenCol = (hide: boolean, id: number) => {
+    if(hide) {
+      onSave([...hiddenCols, id])
+    } else {
+      onSave(hiddenCols.filter((colId) => colId != id))
+    }
+  }
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -52,6 +58,7 @@ const HiddenModal: React.FC<ModalProps> = ({
     <div
       ref={modalRef}
       className="absolute right-0 z-60 mt-2 w-[380px] rounded-lg border border-gray-200 bg-white shadow-xl"
+       onClick={(e) => e.stopPropagation()}
     >
       {/* Content */}
       <div className="space-y-2 px-4 py-3">
@@ -69,14 +76,16 @@ const HiddenModal: React.FC<ModalProps> = ({
           <li className="my-1 border-t border-gray-200" />
         </ul>
         <div className="mt-3 space-y-2">
-          {filteredFields.map((col: ColType) => (
+          {filteredFields.map((col: ColType) =>{ 
+            const hiddenCol: boolean = hiddenCols.includes(col.id);
+            return (
             <div
               key={col.id}
               className="flex items-center justify-between rounded-md px-2 py-1 hover:bg-gray-50"
             >
               <div className="flex items-center gap-2">
-                <button onClick={() => onSelect((prev) => [...prev, col.id])}>
-                  {hiddenCols.includes(col.id) ? (
+                <button onClick={() => handleHiddenCol(!hiddenCol, col.id)}>
+                  {hiddenCol ? (
                     <Eye className="h-4 w-4 text-green-600" />
                   ) : (
                     <Eye className="h-4 w-4 text-gray-300" />
@@ -87,7 +96,7 @@ const HiddenModal: React.FC<ModalProps> = ({
               </div>
               <GripVertical className="h-4 w-4 text-gray-400" />
             </div>
-          ))}
+          )})}
         </div>
 
         {/* Footer buttons */}
@@ -95,14 +104,14 @@ const HiddenModal: React.FC<ModalProps> = ({
           <button
             className="rounded-md border border-gray-300 px-3 py-1 text-sm hover:bg-gray-50"
             onClick={() =>
-              onSelect(cols.map((c) => c.id))
+              onSave(cols.map((c) => c.id))
             }
           >
             Hide all
           </button>
           <button
             className="rounded-md border border-gray-300 px-3 py-1 text-sm hover:bg-gray-50"
-            onClick={() => onSelect([])}
+            onClick={() => onSave([])}
           >
             Show all
           </button>

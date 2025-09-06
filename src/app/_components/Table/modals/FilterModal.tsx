@@ -2,10 +2,12 @@ import { Trash2 } from "lucide-react";
 import React, {
   useEffect,
   useRef,
+  useState,
   type Dispatch,
   type SetStateAction,
 } from "react";
 import type {
+  CellValue,
   ColType,
   FilterGroup,
   FilterLeaf,
@@ -15,9 +17,9 @@ import type {
 interface FilterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  setFilter: Dispatch<SetStateAction<FilterGroup | null>>;
-  currentFilter: FilterGroup | null;
   cols: ColType[];
+  currentFilter: FilterGroup | null;
+  onSave: (param: FilterGroup | null) => void;
 }
 
 const textOperators: { value: FilterOperator; label: string }[] = [
@@ -44,32 +46,34 @@ const FilterModal: React.FC<FilterModalProps> = ({
   isOpen,
   onClose,
   currentFilter,
-  setFilter,
+  onSave,
   cols,
 }) => {
+  if (!isOpen) return null;
+  
   const modalRef = useRef<HTMLDivElement | null>(null);
+  const [filterTree, setFilterTree] = useState<FilterGroup>(
+    currentFilter ?? { functionName: "and", args: [] },
+  );
 
-  const filterTree: FilterGroup = currentFilter ?? {
-    functionName: "and",
-    args: [],
+  useEffect(() => {
+    setFilterTree(currentFilter ?? { functionName: "and", args: [] });
+  }, [currentFilter]);
+
+  const getColType = (colId: number) => {
+    const col = cols.find((c) => c.id === colId);
+    return col?.type === "number" ? "number" : "text";
   };
 
   const updateCondition = (
     index: number,
-    key: "functionName",
-    value: FilterOperator,
+    key: "functionName" | "args",
+    value: any,
   ) => {
-    const updated = [...filterTree.args];
-    const existing = updated[index];
-
-    if (!existing) return;
-
-    updated[index] = {
-      functionName: value,
-      args: existing.args, // preserve args explicitly
-    };
-
-    setFilter({ ...filterTree, args: updated });
+    const newArgs = filterTree.args.map((c, i) =>
+      i === index ? { ...c, [key]: value } : c,
+    );
+    onSave({ ...filterTree, args: newArgs });
   };
 
   const updateArg = (
@@ -77,43 +81,36 @@ const FilterModal: React.FC<FilterModalProps> = ({
     argIndex: 0 | 1,
     value: string | number,
   ) => {
-    const updated = [...filterTree.args];
-    const cond = updated[index];
-    if (!cond) return;
+    const newArgs = filterTree.args.map((cond, i) => {
+      if (i !== index) return cond;
+      const args: [number, CellValue] = [...cond.args];
 
-    const newArgs = [...cond.args] as [number, string | number];
-    if (argIndex === 0) {
-      newArgs[0] = Number(value); // Ensure it's a number for columnId
-    } else {
-      newArgs[1] = value; // Can be string | number
-    }
-    updated[index] = {
-      ...cond,
-      args: newArgs,
-    };
-    setFilter({ ...filterTree, args: updated });
+      if (argIndex === 0) {
+        args[0] = Number(value);
+      } else {
+        args[1] = value;
+      }
+
+      return { ...cond, args };
+    });
+    onSave({ ...filterTree, args: newArgs });
   };
 
   const removeCondition = (index: number) => {
-    const updated = [...filterTree.args];
-    updated.splice(index, 1);
-    setFilter({ ...filterTree, args: updated });
-  };
-
-  const getColType = (colId: number): "text" | "number" => {
-    const col = cols.find((c) => c.id === colId);
-    return col?.type === "number" ? "number" : "text";
+    const newArgs = filterTree.args.filter((_, i) => i !== index);
+    onSave({ ...filterTree, args: newArgs });
   };
 
   const addCondition = () => {
+    const firstCol = cols[0]?.id ?? 0;
     const newCond: FilterLeaf = {
       functionName: "contains",
-      args: [cols[0]?.id ?? 0, ""],
+      args: [firstCol, ""],
     };
-    setFilter({ ...filterTree, args: [...filterTree.args, newCond] });
+    onSave({ ...filterTree, args: [...filterTree.args, newCond] });
   };
 
-  // Close on outside click
+  // Close modal on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -123,15 +120,9 @@ const FilterModal: React.FC<FilterModalProps> = ({
         onClose();
       }
     };
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
+    document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen, onClose]);
-
-  // useEffect(() => {
-  //   filterTree && setFilter(filterTree);
-  // }, [filterTree, setFilter]);
+  }, [onClose]);
 
   if (!isOpen) return null;
 
@@ -156,7 +147,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
                   <select
                     value={filterTree.functionName}
                     onChange={(e) =>
-                      setFilter({
+                      onSave({
                         ...filterTree,
                         functionName: e.target.value as "and" | "or",
                       })

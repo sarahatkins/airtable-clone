@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   type TableType,
   type ColType,
@@ -26,53 +26,68 @@ interface SelectedTableProps {
 }
 
 const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
+  const utils = api.useUtils();
   const [cols, setCols] = useState<ColType[]>([]);
-  const [showCols, setShownCols] = useState<ColType[]>([]);
+  // const [showCols, setShownCols] = useState<ColType[]>([]);
   const [views, setViews] = useState<ViewType[] | null>(null);
   const [currentView, setCurrentView] = useState<ViewType | null>(null);
   const [search, setSearch] = useState<string | undefined>(undefined);
+  const [viewConfig, setViewConfig] =
+    useState<ViewConfigType>(DEFAULT_VIEW_CONFIG);
+
+  const shownCols = useMemo(() => {
+    return cols.filter((c) => !viewConfig.hiddenColumns.includes(c.id));
+  }, [cols, viewConfig.hiddenColumns]);
 
   const { data: loadedViews, isLoading: viewsLoading } =
     api.table.getViewByTable.useQuery(
       { tableId: selectedTable?.id ?? 0 },
       { enabled: !!selectedTable?.id },
     );
-  const {
-    data: loadedCols,
-    isLoading: colsLoading,
-    refetch: refetchCols,
-  } = api.table.getColumnsByTable.useQuery(
-    { tableId: selectedTable?.id ?? 0, viewId: currentView?.id ?? 0 },
-    { enabled: !!selectedTable?.id && !viewsLoading && !!currentView },
-  );
 
-  const [viewConfig, setViewConfig] =
-    useState<ViewConfigType>(DEFAULT_VIEW_CONFIG);
+  // Load all columns for the table (no viewId needed)
+  const { data: loadedCols, isLoading: colsLoading } =
+    api.table.getColumnsByTable.useQuery(
+      { tableId: selectedTable?.id ?? 0 },
+      { enabled: !!selectedTable?.id },
+    );
+
+  const updateConfig = api.table.updateViewConfig.useMutation({
+    onSuccess: async () => {
+      console.log("changed hidden columns");
+      await utils.table.getFilterCells.invalidate();
+    },
+  });
 
   useEffect(() => {
     if (!colsLoading && loadedCols) {
       setCols(loadedCols.cols);
-      setShownCols(loadedCols.shownCols);
     }
   }, [colsLoading, loadedCols]);
 
   useEffect(() => {
-    if (viewsLoading) return;
-    if (!loadedViews) return;
+    if (viewsLoading || !loadedViews) return;
 
     setViews(loadedViews);
-    setCurrentView(loadedViews[0]!);
-    setViewConfig(loadedViews[0]?.config as ViewConfigType);
-  }, [viewsLoading, loadedViews]);
+    if (!currentView) {
+      setCurrentView(loadedViews[0]!);
+      setViewConfig(loadedViews[0]?.config as ViewConfigType);
+    }
+  }, [viewsLoading, loadedViews, currentView]);
 
-  const onConfigChange = async (newConfig: ViewConfigType) => {
-    setCurrentView((prevData) =>
-      prevData ? { ...prevData, config: newConfig } : null,
-    );
+  const onConfigChange = (newConfig: ViewConfigType) => {
+    setCurrentView((prev) => (prev ? { ...prev, config: newConfig } : null));
     setViewConfig(newConfig);
-    await refetchCols();
-  };
 
+    updateConfig.mutate({
+      viewId: currentView?.id!,
+      config: {
+        filters: newConfig.filters ?? undefined,
+        sorting: newConfig.sorting,
+        hiddenColumns: newConfig.hiddenColumns,
+      },
+    });
+  };
   const isDataLoading = colsLoading || viewsLoading;
 
   return (
@@ -96,29 +111,26 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
           {!isDataLoading && currentView && cols && (
             <>
               <HiddenButton
-                viewId={currentView?.id}
                 cols={cols}
                 currHiddenCols={viewConfig.hiddenColumns}
-                setConfig={setViewConfig}
-                onViewChange={() => onConfigChange}
+                onConfigChange={onConfigChange}
+                viewConfig={viewConfig}
               />
 
               <FilterButton
-                viewId={currentView?.id}
                 cols={cols}
-                filter={viewConfig.filters}
-                setConfig={setViewConfig}
-                onViewChange={() => onConfigChange}
+                currFilter={viewConfig.filters}
+                viewConfig={viewConfig}
+                onConfigChange={onConfigChange}
               />
               <button className="flex items-center gap-1 hover:text-gray-900">
                 <LayoutGrid className="h-4 w-4" /> Group
               </button>
               <SortButton
-                viewId={currentView?.id}
                 cols={cols}
-                sorts={viewConfig.sorting ?? []}
-                setConfig={setViewConfig}
-                onViewChange={() => onConfigChange}
+                currSorts={viewConfig.sorting ?? []}
+                viewConfig={viewConfig}
+                onConfigChange={onConfigChange}
               />
               <button className="flex items-center gap-1 hover:text-gray-900">
                 <Palette className="h-4 w-4" /> Color
@@ -148,7 +160,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
           <DataGrid
             table={selectedTable}
             searchText={search}
-            cols={showCols}
+            cols={shownCols}
             view={currentView}
             setCols={setCols}
           />

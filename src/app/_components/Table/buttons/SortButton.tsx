@@ -1,6 +1,6 @@
 import { ArrowDownUp } from "lucide-react";
 import SortModal from "../modals/SortModal";
-import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import {
   type SortingType,
   type ColType,
@@ -9,48 +9,24 @@ import {
 import { api } from "~/trpc/react";
 
 interface ButtonProps {
-  viewId: number;
   cols: ColType[];
-  sorts: SortingType[];
-  onViewChange: (param: ViewConfigType) => void;
-  setConfig: Dispatch<SetStateAction<ViewConfigType>>;
+  currSorts: SortingType[];
+  onConfigChange: (newConfig: ViewConfigType) => void;
+  viewConfig: ViewConfigType;
 }
 
 const SortButton: React.FC<ButtonProps> = ({
-  viewId,
   cols,
-  sorts,
-  onViewChange,
-  setConfig,
+  currSorts,
+  onConfigChange,
+  viewConfig,
 }) => {
-  const utils = api.useUtils();
   const [modalOpen, setModalOpen] = useState<boolean>(false);
-  const [newSort, setNewSort] = useState<SortingType[]>(sorts);
-  const updateConfig = api.table.updateViewConfig.useMutation({
-    onSuccess: async () => {
-      console.log("new sort");
-      await utils.table.getFilterCells.invalidate();
-    },
-  });
 
-  useEffect(() => {
-    setConfig((prev) => {
-      const newConfig = { ...prev, sorting: newSort };
-
-      updateConfig.mutate({
-        viewId,
-        config: {
-          filters: newConfig.filters ?? undefined,
-          sorting: newSort,
-          hiddenColumns: newConfig.hiddenColumns
-        },
-      });
-
-      onViewChange(newConfig);
-      return newConfig;
-    });
-  }, [newSort]);
-
+ const handleSave = (newSort: SortingType[]) => {
+    const newConfig: ViewConfigType = { ...viewConfig, sorting: newSort };
+    onConfigChange(newConfig);
+  };
   return (
     <div className="relative inline-block">
       <button
@@ -64,8 +40,8 @@ const SortButton: React.FC<ButtonProps> = ({
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         cols={cols}
-        setSort={setNewSort}
-        currentSorts={newSort}
+        onSave={handleSave}
+        currentSorts={currSorts}
       />
     </div>
   );

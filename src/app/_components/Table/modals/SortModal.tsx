@@ -15,11 +15,11 @@ import {
 import PickColModal from "./PickColModal";
 
 interface SortModalProps {
+  currentSorts: SortingType[];
+  cols: ColType[];
+  onSave: (param: SortingType[]) => void;
   isOpen: boolean;
   onClose: () => void;
-  cols: ColType[];
-  setSort: Dispatch<SetStateAction<SortingType[]>>;
-  currentSorts: SortingType[];
 }
 
 export type SortModalColType = {
@@ -32,53 +32,63 @@ const SortModal: React.FC<SortModalProps> = ({
   cols,
   isOpen,
   onClose,
-  setSort,
+  onSave,
   currentSorts,
 }) => {
   const modalRef = useRef<HTMLDivElement | null>(null);
+  const additionalRef = useRef<HTMLDivElement | null>(null);
 
-  const [showPickCol, setShowPickCol] = useState<boolean>(true);
+  // Local state for modal UI
+  const [showPickCol, setShowPickCol] = useState<boolean>(
+    currentSorts.length === 0,
+  );
   const [showAdditional, setShowAdditional] = useState<boolean>(false);
   const [availableCols, setAvailableCols] = useState<SortModalColType[]>([]);
+  const [sorts, setSorts] = useState<SortingType[]>(currentSorts);
 
+  // Initialize local state when props change
   useEffect(() => {
+    setSorts(currentSorts);
     const mappedCols = cols
-      .filter((col) => !currentSorts.some((sort) => sort.columnId === col.id))
+      .filter((col) => !currentSorts.some((s) => s.columnId === col.id))
       .map((col) => ({
         id: col.id,
         name: col.name,
         icon: typeToIconMap[col.type as STATUS] || Baseline,
       }));
-
     setAvailableCols(mappedCols);
-    console.log(currentSorts)
     setShowPickCol(currentSorts.length === 0);
   }, [cols, currentSorts]);
 
-  const updateColumn = (index: number, columnId: number) => {
-    const updated = [...currentSorts];
+  // Utility to update local state and immediately call onSave
+  const updateSorts = (newSorts: SortingType[]) => {
+    setSorts(newSorts);
+    onSave(newSorts);
+  };
 
-    if (!updated[index]) return;
-    updated[index].columnId = columnId;
-    setSort(updated);
+  const updateColumn = (index: number, columnId: number) => {
+    const updated = sorts.map((s, i) => (i === index ? { ...s, columnId } : s));
+    updateSorts(updated);
   };
 
   const updateDirection = (index: number, direction: "asc" | "desc") => {
-    const updated = [...currentSorts];
-
-    if (!updated[index]) return;
-    updated[index].direction = direction;
-    setSort(updated);
+    const updated = sorts.map((s, i) =>
+      i === index ? { ...s, direction } : s,
+    );
+    updateSorts(updated);
   };
 
   const addSortOption = (columnId: number) => {
-    setSort([...currentSorts, { columnId, direction: "asc" }]);
+    updateSorts([...sorts, { columnId, direction: "asc" }]);
+    setShowAdditional(false);
   };
 
-  const removeSortOption = (index: number) =>
-    setSort(currentSorts.filter((_, i) => i !== index));
+  const removeSortOption = (index: number) => {
+    const updated = sorts.filter((_, i) => i !== index);
+    updateSorts(updated);
+  };
 
-  // Close on outside click
+  // Close modal on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -88,24 +98,40 @@ const SortModal: React.FC<SortModalProps> = ({
         onClose();
       }
     };
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
+    document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen, onClose]);
+  }, [onClose]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        showAdditional &&
+        additionalRef.current &&
+        !additionalRef.current.contains(event.target as Node)
+      ) {
+        setShowAdditional(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showAdditional]);
 
   if (!isOpen) return null;
+  if (showPickCol) {
+    return (
+      <div ref={modalRef}>
+        <PickColModal
+          isOpen={isOpen}
+          onClose={onClose}
+          cols={availableCols}
+          onSelect={addSortOption}
+        />
+      </div>
+    );
+  }
 
-  return showPickCol ? (
-    <div ref={modalRef}>
-      <PickColModal
-        isOpen={isOpen}
-        onClose={onClose}
-        cols={availableCols}
-        onSelect={addSortOption}
-      />
-    </div>
-  ) : (
+  return (
     <div
       ref={modalRef}
       className="absolute right-0 z-60 mt-2 w-[500px] rounded-lg border border-gray-200 bg-white shadow-xl"
@@ -173,12 +199,16 @@ const SortModal: React.FC<SortModalProps> = ({
             <Plus className="h-4 w-4" /> Add another sort
           </button>
 
-          <PickColModal
-            isOpen={showAdditional}
-            onClose={() => setShowAdditional(false)}
-            cols={availableCols}
-            onSelect={addSortOption}
-          />
+          {showAdditional && (
+            <div ref={additionalRef} className="absolute z-50 mt-1">
+              <PickColModal
+                isOpen={showAdditional}
+                onClose={() => setShowAdditional(false)}
+                cols={availableCols}
+                onSelect={addSortOption}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

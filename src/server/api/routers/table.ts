@@ -111,42 +111,52 @@ export const tableRouter = createTRPCRouter({
         .returning();
       return newColumn;
     }),
-
   getColumnsByTable: publicProcedure
-    .input(z.object({ tableId: z.number(), viewId: z.number() }))
+    .input(z.object({ tableId: z.number() }))
     .query(async ({ input, ctx }) => {
-      const [view] = await ctx.db
-        .select({ config: views.config, tableId: views.tableId })
-        .from(views)
-        .where(eq(views.id, input.viewId));
-
-      if (!view) throw new Error("View not found");
-
-      // Extract config
-      const { hiddenColumns } = view.config as ViewConfigType;
-
       const allCols = await ctx.db
         .select()
         .from(columns)
-        .where(eq(columns.tableId, Number(input.tableId)))
+        .where(eq(columns.tableId, input.tableId))
         .orderBy(columns.orderIndex);
 
-      const shownCols = await ctx.db
-        .select()
-        .from(columns)
-        .where(
-          and(
-            eq(columns.tableId, Number(input.tableId)),
-            notInArray(columns.id, hiddenColumns),
-          ),
-        )
-        .orderBy(columns.orderIndex);
-
-      return {
-        cols: allCols,
-        shownCols,
-      };
+      return { cols: allCols };
     }),
+  // getColumnsByTable: publicProcedure
+  //   .input(z.object({ tableId: z.number(), viewId: z.number() }))
+  //   .query(async ({ input, ctx }) => {
+  //     const [view] = await ctx.db
+  //       .select({ config: views.config, tableId: views.tableId })
+  //       .from(views)
+  //       .where(eq(views.id, input.viewId));
+
+  //     if (!view) throw new Error("View not found");
+
+  //     // Extract config
+  //     const { hiddenColumns } = view.config as ViewConfigType;
+
+  //     const allCols = await ctx.db
+  //       .select()
+  //       .from(columns)
+  //       .where(eq(columns.tableId, Number(input.tableId)))
+  //       .orderBy(columns.orderIndex);
+
+  //     const shownCols = await ctx.db
+  //       .select()
+  //       .from(columns)
+  //       .where(
+  //         and(
+  //           eq(columns.tableId, Number(input.tableId)),
+  //           notInArray(columns.id, hiddenColumns),
+  //         ),
+  //       )
+  //       .orderBy(columns.orderIndex);
+
+  //     return {
+  //       cols: allCols,
+  //       shownCols,
+  //     };
+  //   }),
 
   // ------------------ ROWS ------------------
   createRow: publicProcedure
