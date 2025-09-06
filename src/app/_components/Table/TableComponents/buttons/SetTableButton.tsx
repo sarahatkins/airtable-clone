@@ -36,11 +36,11 @@ const SetTableButton: React.FC<ButtonProps> = ({
 }) => {
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [showRenameModal, setShowRenameModal] = useState<boolean>(showRename);
-  const modalRef = useRef<any>(null);
+  const modalRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const handleClickOutside = (event: any) => {
-      if (modalRef.current && !modalRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
         setShowEditModal(false);
         setShowRenameModal(false);
       }

@@ -7,7 +7,7 @@ import { api } from "~/trpc/react";
 
 interface ViewNameModalProps {
   isOpen: boolean;
-  onClose: any;
+  onClose: () => void;
   tableId: number;
   currentName: string;
 }
@@ -21,7 +21,7 @@ const ViewNameModal: React.FC<ViewNameModalProps> = ({
   const utils = api.useUtils()
   const [name, setName] = useState(currentName);
   const modalRef = useRef<HTMLDivElement | null>(null);
-  const inputRef = useRef<any>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const createView = api.table.createView.useMutation({
     onSuccess: (newView) => {

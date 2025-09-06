@@ -1,4 +1,4 @@
-import { X, Plus, Baseline, Info } from "lucide-react";
+import { X, Plus, Baseline, Info, type LucideIcon } from "lucide-react";
 import React, {
   useEffect,
   useRef,
@@ -16,18 +16,30 @@ import PickColModal from "./PickColModal";
 
 interface SortModalProps {
   isOpen: boolean;
-  onClose: any;
+  onClose: () => void;
   cols: ColType[];
   setSort: Dispatch<SetStateAction<SortingType[]>>;
   currentSorts: SortingType[];
 }
 
-const SortModal: React.FC<SortModalProps> = ({ cols, isOpen, onClose, setSort, currentSorts }) => {
+export type SortModalColType = {
+  id: number;
+  name: string;
+  icon: LucideIcon;
+};
+
+const SortModal: React.FC<SortModalProps> = ({
+  cols,
+  isOpen,
+  onClose,
+  setSort,
+  currentSorts,
+}) => {
   const modalRef = useRef<HTMLDivElement | null>(null);
 
   const [showPickCol, setShowPickCol] = useState<boolean>(true);
   const [showAdditional, setShowAdditional] = useState<boolean>(false);
-  const [availableCols, setAvailableCols] = useState<any>([]);
+  const [availableCols, setAvailableCols] = useState<SortModalColType[]>([]);
 
   useEffect(() => {
     const mappedCols = cols
@@ -64,7 +76,7 @@ const SortModal: React.FC<SortModalProps> = ({ cols, isOpen, onClose, setSort, c
 
   const removeSortOption = (index: number) =>
     setSort(currentSorts.filter((_, i) => i !== index));
-  
+
   // Close on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

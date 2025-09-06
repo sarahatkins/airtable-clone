@@ -1,15 +1,12 @@
 import React, { useState, type Dispatch, type SetStateAction } from "react";
-import {
-  STATUS,
-  type ColType,
-  type TableType,
-} from "~/app/defaults";
+import { STATUS, type ColType, type TableType } from "~/app/defaults";
 import { api } from "~/trpc/react";
 import {
   clearPendingColEditsForCol,
   getPendingColEditsForCol,
 } from "../../helper/PendingEdits";
 import { Plus } from "lucide-react";
+import { number } from "zod";
 
 interface ColButtonProps {
   dbTable: TableType;
@@ -22,7 +19,7 @@ const CreateColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
   const [newColumnName, setNewColumnName] = useState("");
   const { mutate: setCellValue } = api.table.setCellValue.useMutation({
     onSuccess: () => {
-      console.log('New cell created!')
+      console.log("New cell created!");
     },
   });
 
@@ -36,11 +33,16 @@ const CreateColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
       // Check for pending and replace default id
       const pending = getPendingColEditsForCol(-1);
       pending.forEach((edit) => {
+        const editVal =
+          typeof edit.value === "number"
+            ? edit.value.toString()
+            : (edit.value ?? "");
+
         setCellValue({
-          tableId: edit.tableId,
+          tableId: edit.tableId ?? 0,
           rowId: edit.rowId,
           columnId: newCol.id,
-          value: edit.value,
+          value: editVal,
         });
       });
       clearPendingColEditsForCol(-1);
@@ -83,11 +85,8 @@ const CreateColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
 
   return (
     <>
-      <button
-        onClick={openAddColumn}
-        className="cursor-pointer"
-      >
-        <Plus height={18}/>
+      <button onClick={openAddColumn} className="cursor-pointer">
+        <Plus height={18} />
       </button>
       {isAddColumnOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">

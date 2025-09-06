@@ -7,10 +7,11 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
+import type { TableType } from "~/app/defaults";
 
 interface ButtonProps {
   baseId: string;
-  setSelectedTable: any;
+  setSelectedTable: Dispatch<SetStateAction<TableType | null>>;
   setFinishedTableSetup: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -23,15 +24,15 @@ const AddTableButton: React.FC<ButtonProps> = ({
   const { newTable, finishedTableSetup, handleCreateTable } =
     useDefaultTableSetup(baseId);
   const [showModal, setShowModal] = useState<boolean>(false);
-  const buttonRef = useRef<any>(null);
-  const modalRef = useRef<any>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const modalRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const handleClickOutside = (event: any) => {
+    const handleClickOutside = (event: MouseEvent) => {
       if (
-        modalRef.current &&
-        !modalRef.current.contains(event.target) &&
-        !buttonRef.current.contains(event.target)
+        modalRef.current && buttonRef.current && modalRef &&
+        !modalRef.current.contains(event.target as Node) &&
+        !buttonRef.current.contains(event.target as Node)
       ) {
         setShowModal(false);
       }

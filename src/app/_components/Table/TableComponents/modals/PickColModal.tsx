@@ -2,17 +2,20 @@
 import {
   useRef,
   useState,
+  type Dispatch,
+  type SetStateAction,
 } from "react";
 import {
   Info,
   Search,
 } from "lucide-react";
+import type { SortModalColType } from "./SortModal";
 
 interface ModalProps {
   isOpen: boolean;
-  onClose: any;
-  cols: any[];
-  onSelect: any;
+  onClose: () => void;
+  cols: SortModalColType[];
+  onSelect: (param: number) => void;
 }
 
 const PickColModal: React.FC<ModalProps> = ({

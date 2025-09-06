@@ -18,6 +18,8 @@ import {
   asc,
   desc,
   notInArray,
+  type InferModel,
+  type InferSelectModel,
 } from "drizzle-orm";
 import { faker } from "@faker-js/faker";
 import { db } from "~/server/db";
@@ -25,6 +27,7 @@ import {
   DEFAULT_VIEW_CONFIG,
   type CellNoId,
   type CellType,
+  type CellValue,
   type ColType,
   type RowType,
   type TableType,
@@ -36,6 +39,28 @@ import { buildSortingClauses } from "./helpers/sorting";
 import { alias } from "drizzle-orm/pg-core";
 
 // Types
+const ViewConfigSchema = z.object({
+  filters: z
+    .array(
+      z.object({
+        columnId: z.number(),
+        operator: z.string(),
+        value: z.union([z.string(), z.number(), z.boolean()]),
+        joiner: z.string().optional(),
+      }),
+    )
+    .optional(),
+  sorting: z
+    .array(
+      z.object({
+        columnId: z.number(),
+        direction: z.enum(["asc", "desc"]),
+      }),
+    )
+    .optional(),
+});
+
+type RowResult = Pick<InferSelectModel<typeof rows>, "id">;
 
 export const tableRouter = createTRPCRouter({
   // ------------------ TABLES ------------------
@@ -167,7 +192,7 @@ export const tableRouter = createTRPCRouter({
       // Use insertedRows with real IDs here
       for (const row of insertedRows) {
         for (const col of tableColumns) {
-          let fakeValue: any;
+          let fakeValue: CellValue;
 
           switch (col.type) {
             case "text":
@@ -217,7 +242,7 @@ export const tableRouter = createTRPCRouter({
       z.object({
         tableId: z.number(),
         name: z.string(),
-        config: z.any().optional(),
+        config: ViewConfigSchema.optional(),
       }),
     )
     .mutation(async ({ input }) => {
@@ -242,7 +267,7 @@ export const tableRouter = createTRPCRouter({
     .input(
       z.object({
         viewId: z.number(),
-        config: z.any(),
+        config: ViewConfigSchema,
       }),
     )
     .mutation(async ({ input }) => {
@@ -344,7 +369,7 @@ export const tableRouter = createTRPCRouter({
 
       // Base query (only rows)
       let rowQuery: any = ctx.db
-        .select({ id: rows.id })
+        .select({ id: rows.id }) // TypeScript can now infer the selection
         .from(rows)
         .where(and(...conditions));
 

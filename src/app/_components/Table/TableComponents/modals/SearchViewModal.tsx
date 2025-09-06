@@ -9,7 +9,7 @@ import React, {
 
 interface SearchViewModalProps {
   isOpen: boolean;
-  onClose: any;
+  onClose: () => void;
   setSearch: Dispatch<SetStateAction<string | undefined>>;
   currentSearch: string | undefined;
 }

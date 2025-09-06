@@ -4,7 +4,7 @@ type MenuItemProps = {
   icon: ReactNode;
   label: string;
   textColor?: string;
-  onClick?: any;
+  onClick?: () => void;
 };
 
 const MenuItem: React.FC<MenuItemProps> = ({ icon, label, textColor = 'text-gray-800', onClick }) => {

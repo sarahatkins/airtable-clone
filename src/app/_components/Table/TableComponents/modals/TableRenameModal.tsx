@@ -6,7 +6,7 @@ import {
 
 interface RenameModalProps {
   isOpen: boolean;
-  onClose: any;
+  onClose: () => void;
   tableId: number;
   currentName: string;
 }
@@ -20,7 +20,7 @@ const TableRenameModal: React.FC<RenameModalProps> = ({
   const [tableName, setTableName] = useState(currentName);
   const [recordLabel, setRecordLabel] = useState("Record");
   const modalRef = useRef<HTMLDivElement | null>(null);
-  const inputRef = useRef<any>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   // Close on outside click
   useEffect(() => {
