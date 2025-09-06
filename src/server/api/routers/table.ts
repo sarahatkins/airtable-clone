@@ -7,20 +7,7 @@ import {
   cellValues,
   views,
 } from "~/server/db/schemas/tableSchema"; // your Drizzle table
-import {
-  eq,
-  and,
-  inArray,
-  gt,
-  ilike,
-  lt,
-  sql,
-  asc,
-  desc,
-  notInArray,
-  type InferModel,
-  type InferSelectModel,
-} from "drizzle-orm";
+import { eq, and, inArray, gt, sql, asc, desc, notInArray } from "drizzle-orm";
 import { faker } from "@faker-js/faker";
 import { db } from "~/server/db";
 import {
@@ -35,21 +22,41 @@ import {
   type ViewType,
 } from "~/app/defaults";
 import { buildFilter, validateFilterGroup } from "./helpers/filtering";
-import { buildSortingClauses } from "./helpers/sorting";
 import { alias } from "drizzle-orm/pg-core";
 
 // Types
+const CellValueSchema = z.union([
+  z.string(),
+  z.number(),
+  z.boolean(),
+  z.null(),
+]);
+
+// Define FilterLeaf
+const FilterLeafSchema = z.object({
+  functionName: z.enum([
+    "eq",
+    "neq",
+    "contains",
+    "notContains",
+    "isEmpty",
+    "isNotEmpty",
+    "gt",
+    "lt",
+    "gte",
+    "lte",
+  ]),
+  args: z.tuple([z.number(), CellValueSchema]),
+});
+
+// Define FilterGroup
+const FilterGroupSchema = z.object({
+  functionName: z.enum(["and", "or"]),
+  args: z.array(FilterLeafSchema),
+});
+
 const ViewConfigSchema = z.object({
-  filters: z
-    .array(
-      z.object({
-        columnId: z.number(),
-        operator: z.string(),
-        value: z.union([z.string(), z.number(), z.boolean()]),
-        joiner: z.string().optional(),
-      }),
-    )
-    .optional(),
+  filters: FilterGroupSchema.optional(),
   sorting: z
     .array(
       z.object({
@@ -58,9 +65,8 @@ const ViewConfigSchema = z.object({
       }),
     )
     .optional(),
+  hiddenColumns: z.array(z.number()),
 });
-
-type RowResult = Pick<InferSelectModel<typeof rows>, "id">;
 
 export const tableRouter = createTRPCRouter({
   // ------------------ TABLES ------------------
@@ -302,7 +308,7 @@ export const tableRouter = createTRPCRouter({
         )
         .limit(1);
 
-      if (existing && existing[0] && existing.length > 0) {
+      if (existing?.[0]) {
         const [updated]: CellType[] = await db
           .update(cellValues)
           .set({ value: input.value })
@@ -369,9 +375,10 @@ export const tableRouter = createTRPCRouter({
 
       // Base query (only rows)
       let rowQuery: any = ctx.db
-        .select({ id: rows.id }) // TypeScript can now infer the selection
+        .select({ id: rows.id })
         .from(rows)
-        .where(and(...conditions));
+        .where(and(...conditions))
+        .$dynamic();
 
       // ========= SEARCH ============
       if (searchText) {
@@ -415,22 +422,22 @@ export const tableRouter = createTRPCRouter({
       rowQuery = rowQuery.orderBy(...orderBys).limit(limit + 1);
 
       // ========= Execute =========
-      const rowsRes = await rowQuery;
+      const rowsRes = (await rowQuery) as RowType[];
 
       if (rowsRes.length === 0) {
         return { rows: [], nextCursor: null };
       }
 
-      const rowIds = rowsRes.map((r) => r.id);
+      const rowIds = rowsRes.map((r: RowType) => r.id);
 
       // Fetch related cells separately
-      const cellsRes = await ctx.db
+      const cellsRes = (await ctx.db
         .select()
         .from(cellValues)
-        .where(inArray(cellValues.rowId, rowIds));
+        .where(inArray(cellValues.rowId, rowIds))) as CellType[];
 
       // Hydrate rows with cells
-      const rowsWithCells = rowsRes.map((r) => ({
+      const rowsWithCells = rowsRes.map((r: RowType) => ({
         ...r,
         cells: cellsRes.filter((c) => c.rowId === r.id),
       }));
