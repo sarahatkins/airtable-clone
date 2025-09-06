@@ -2,7 +2,7 @@ import { X } from "lucide-react";
 import React, {
   useEffect,
   useRef,
- 
+  useState,
   type Dispatch,
   type SetStateAction,
 } from "react";
@@ -21,6 +21,21 @@ const SearchViewModal: React.FC<SearchViewModalProps> = ({
   currentSearch,
 }) => {
   const modalRef = useRef<HTMLDivElement | null>(null);
+
+  // Local state for input
+  const [localSearch, setLocalSearch] = useState(currentSearch ?? "");
+
+  // Debounce search updates
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearch(localSearch || undefined);
+    }, 300); // 300ms debounce
+    return () => clearTimeout(handler);
+  }, [localSearch, setSearch]);
+
+  useEffect(() => {
+    setLocalSearch(currentSearch ?? "");
+  }, [currentSearch]);
 
   // Close on outside click
   useEffect(() => {
@@ -46,15 +61,14 @@ const SearchViewModal: React.FC<SearchViewModalProps> = ({
       ref={modalRef}
       className="absolute right-0 z-60 mt-2 w-[500px] rounded-lg border border-gray-200 bg-white shadow-xl"
     >
-      {/* Content */}
       <div className="space-y-3 px-4 py-3">
         <div className="flex items-center border-b px-3 py-2">
           <input
             type="text"
-            value={currentSearch ??  ""}
+            value={localSearch}
             placeholder="Find in view"
             className="flex-1 text-sm placeholder-gray-400 outline-none"
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => setLocalSearch(e.target.value)}
           />
           <button
             onClick={onClose}
@@ -63,8 +77,6 @@ const SearchViewModal: React.FC<SearchViewModalProps> = ({
             <X className="h-4 w-4" />
           </button>
         </div>
-
-        {/* Footer message */}
         <div className="px-3 py-2 text-xs text-gray-500">
           Use advanced search options in the{" "}
           <a href="#" className="text-blue-600 hover:underline">
