@@ -9,6 +9,9 @@ import {
   flexRender,
   getCoreRowModel,
   useReactTable,
+  type CellContext,
+  type ColumnDef,
+  type Table,
 } from "@tanstack/react-table";
 import type {
   CellType,
@@ -33,30 +36,18 @@ interface DataGridProps {
   searchText: string | undefined;
   setCols: React.Dispatch<React.SetStateAction<ColType[]>>;
 }
-interface ReactColumn {
-  accessorKey: string;
-  header: string;
-  size: number;
-  enableColumnFilter: boolean;
-  meta: { col: ColType; colIndex: number };
-  cell: (ctx: CellContext<NormalizedRow, CellValue>) => React.JSX.Element;
-}
 interface HydratedRows {
   id: number;
   cells: CellType[];
 }
 
-const ROW_HEIGHT = 41;
+const ROW_HEIGHT = 30;
 
 export type NormalizedRow = {
   id: number;
   tableId: number;
 } & Record<string, CellValue>;
 
-type ViewDataResult = {
-  rows: HydratedRows[];
-  nextCursor: number | null;
-};
 export type CellCoord = { row: number; col: number };
 
 const DataGrid: React.FC<DataGridProps> = ({
@@ -67,7 +58,6 @@ const DataGrid: React.FC<DataGridProps> = ({
   searchText,
 }) => {
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  const tableRef = useRef<HTMLTableElement>(null);
   const [rows, setRows] = useState<NormalizedRow[]>([]);
   const [focusedCell, setFocusedCell] = useState<CellCoord | null>(null);
 
@@ -126,18 +116,15 @@ const DataGrid: React.FC<DataGridProps> = ({
     }
   }, [virtualItems, hasNextPage, isFetchingNextPage]);
 
-  const reactColumns = cols.map((col, colIdx) => ({
-    accessorKey: `col_${col.id}`,
-    header: col.name,
-    size: 150,
-    enableColumnFilter: true,
-    meta: { col, colIndex: colIdx },
-    cell: EditableCell,
-  }));
-
-  const indexColumn: (typeof reactColumns)[number] = {
+  const indexColumn: ColumnDef<NormalizedRow, unknown> = {
     accessorKey: "__rowIndex",
-    header: "#",
+    header: ({ table }: { table: Table<NormalizedRow> }) => (
+      <input
+        type="checkbox"
+        checked={table.getIsAllRowsSelected()}
+        onChange={table.getToggleAllRowsSelectedHandler()}
+      />
+    ),
     size: 60,
     enableColumnFilter: false,
     meta: {
@@ -154,7 +141,17 @@ const DataGrid: React.FC<DataGridProps> = ({
     cell: ({ row }) => <div className="text-center">{row.index + 1}</div>,
   };
 
-  reactColumns.unshift(indexColumn);
+  const reactColumns: ColumnDef<NormalizedRow, CellValue>[] = [
+    indexColumn,
+    ...cols.map((col, colIdx) => ({
+      accessorKey: `col_${col.id}`,
+      header: col.name,
+      size: 200,
+      enableColumnFilter: true,
+      meta: { col, colIndex: colIdx },
+      cell: EditableCell,
+    })),
+  ];
 
   const reactTable = useReactTable({
     data: rows,
@@ -162,6 +159,7 @@ const DataGrid: React.FC<DataGridProps> = ({
     getCoreRowModel: getCoreRowModel(),
     enableColumnResizing: true,
     columnResizeMode: "onEnd",
+    enableRowSelection: true,
     meta: {
       updateData: (rowIndex: number, columnId: string, value: CellValue) => {
         setRows((prev) =>
@@ -175,6 +173,12 @@ const DataGrid: React.FC<DataGridProps> = ({
     },
   });
 
+  const contentWidth = useMemo(
+    () => reactColumns.reduce((sum, c) => sum + (c.size ?? 150), 0),
+    [reactColumns],
+  );
+
+  // Total width including buffer for scrolling
   const totalWidth = useMemo(
     () => reactColumns.reduce((sum, c) => sum + (c.size ?? 150) + 50, 0),
     [reactColumns],
@@ -183,7 +187,7 @@ const DataGrid: React.FC<DataGridProps> = ({
     <div className="flex h-full w-full flex-col">
       <div
         ref={scrollRef}
-        className="overflow-auto"
+        className="overflow-auto scrollbar-hidden"
         style={{ height: "100%" }}
         tabIndex={0} // make div focusable
         onKeyDown={(e) => {
@@ -219,11 +223,18 @@ const DataGrid: React.FC<DataGridProps> = ({
         <div style={{ width: Math.max(totalWidth + 200, 800) }}>
           {/* Header */}
           {reactTable.getHeaderGroups().map((hg) => (
-            <div key={hg.id} className="flex border-t border-b border-gray-200">
+            <div
+              key={hg.id}
+              className="flex border-t border-gray-200 bg-gray-50"
+            >
               {hg.headers.map((header) => (
                 <div
                   key={header.id}
-                  className="border-r border-gray-200 bg-white px-3 py-2 text-sm font-semibold"
+                  className={`border-b border-gray-200 bg-white px-3 py-1 text-sm font-semibold ${
+                    header.column.id !== "__rowIndex"
+                      ? "border-r"
+                      : "flex justify-center"
+                  }`}
                   style={{ width: header.getSize() }}
                 >
                   <>
@@ -243,7 +254,7 @@ const DataGrid: React.FC<DataGridProps> = ({
               ))}
               <div
                 key="column_add"
-                className="flex cursor-pointer items-center justify-center border-r border-gray-200 bg-white hover:bg-neutral-50"
+                className="flex cursor-pointer items-center justify-center border-r border-b border-gray-200 bg-white hover:bg-neutral-50"
                 style={{ minWidth: "120px" }}
               >
                 <CreateColButton dbTable={table} setCols={setCols} />
@@ -265,7 +276,7 @@ const DataGrid: React.FC<DataGridProps> = ({
               return (
                 <div
                   key={vr.key}
-                  className="absolute top-0 left-0 flex items-center border-b border-gray-200 hover:bg-neutral-50"
+                  className="absolute top-0 left-0 flex items-center border-b border-gray-200 bg-white hover:bg-neutral-50"
                   style={{
                     height: `${vr.size}px`,
                     transform: `translateY(${vr.start}px)`,
@@ -275,7 +286,10 @@ const DataGrid: React.FC<DataGridProps> = ({
                   {r.getVisibleCells().map((cell) => (
                     <div
                       key={cell.id}
-                      className="overflow-hidden border-r border-gray-200 text-ellipsis whitespace-nowrap"
+                      className={`overflow-hidden text-ellipsis whitespace-nowrap ${
+                        cell.column.id !== "__rowIndex" &&
+                        "border-r border-gray-200"
+                      }`}
                       style={{ width: cell.column.getSize() }}
                     >
                       {flexRender(
@@ -288,8 +302,9 @@ const DataGrid: React.FC<DataGridProps> = ({
               );
             })}
           </div>
-
-          <CreateRowButton dbTable={table} setRows={setRows} />
+          <div style={{ width: contentWidth }}>
+            <CreateRowButton dbTable={table} setRows={setRows} />
+          </div>
         </div>
       </div>
     </div>

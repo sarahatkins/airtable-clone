@@ -96,9 +96,10 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
   const isDataLoading = colsLoading || viewsLoading;
 
   return (
-    <div className="h-full w-full overflow-hidden bg-gray-50 text-sm text-gray-700">
+    <div className="h-full overflow-hidden bg-slate-50 text-sm text-gray-700">
       {/* Header - Grid view and field views */}
-      <div className="flex h-11 w-full items-center justify-between border-b border-gray-200 bg-white px-4 text-sm">
+      <div className="flex h-11 w-full items-center justify-between border-b border-gray-200 bg-white px-4 text-sm overflow-hidden">
+
         {/* Left section */}
         <div className="flex items-center gap-3">
           <button className="rounded p-1 hover:bg-gray-100">
@@ -160,7 +161,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
           />
         )}
 
-        <div className="min-h-0 w-full" style={{ height: "90%" }}>
+        <div className="min-h-0 w-full" style={{ height: "88%" }}>
           {!views.length || !currentView ? (
             <div>
               {views.length} {currentView?.id} Loading table...

@@ -9,6 +9,7 @@ import {
   getPendingEditsForRow,
 } from "../helper/PendingEdits";
 import type { NormalizedRow } from "../DataGrid";
+import { Plus } from "lucide-react";
 
 interface ColButtonProps {
   dbTable: TableType;
@@ -67,9 +68,9 @@ const CreateRowButton: React.FC<ColButtonProps> = ({
     <>
       <button
         onClick={addNewRow}
-        className="rounded bg-blue-600 px-2 py-1 text-white hover:bg-blue-700"
+        className="text-start w-full bg-white px-4.5 py-2 border-b border-r border-gray-200 text-gray hover:bg-neutral-50"
       >
-        + Add Row
+        <Plus height={15}/>
       </button>
     </>
   );

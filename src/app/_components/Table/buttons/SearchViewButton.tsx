@@ -14,7 +14,7 @@ const SearchViewButton: React.FC<ButtonProps> = ({
   const [modalOpen, setModalOpen] = useState<boolean>(false);
 
   return (
-    <div className="relative inline-block">
+    <div >
       <button className="cursor-pointer rounded p-1 hover:bg-gray-100" onClick={() => setModalOpen(true)}>
         <Search className="h-5 w-5" />
       </button>

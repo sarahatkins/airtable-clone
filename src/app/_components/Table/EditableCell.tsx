@@ -20,7 +20,6 @@ const EditableCell = (ctx: CellContext<NormalizedRow, CellValue>) => {
   const [value, setValue] = useState<CellValue>(initialValue);
   const inputRef = useRef<HTMLInputElement>(null);
   const columnIndex = (column.columnDef.meta as ColMeta)?.colIndex ?? 0;
-  console.log(columnIndex);
 
   const focusedCell = (
     table.options.meta as TableMeta & {

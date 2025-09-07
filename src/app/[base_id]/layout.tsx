@@ -21,7 +21,7 @@ export default function BaseLayout({
   );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex h-screen w-screen overflow-hidden bg-gray-50">
       {/* Sidebar */}
       <div className="flex h-full w-15 shrink-0 flex-col border-r border-gray-200 bg-white pt-2">
         <div className="flex-1">
@@ -41,9 +41,10 @@ export default function BaseLayout({
         </div>
       </div>
 
-      <div className="flex w-full flex-col">
+      <div className="flex flex-1 flex-col min-w-0">
+
         {/* Header */}
-        <div className="flex h-12 w-full items-center justify-between border-b border-gray-200 bg-white px-4 pt-2 text-sm">
+        <div className="flex h-12 items-center justify-between border-b border-gray-200 bg-white px-4 pt-2 text-sm">
           <div className="flex items-center">
             <div className="mr-2 rounded bg-blue-900 p-1">
               <Image
