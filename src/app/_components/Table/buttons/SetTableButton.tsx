@@ -1,9 +1,5 @@
 import { ChevronDown } from "lucide-react";
-import {
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   Pencil,
@@ -36,7 +32,10 @@ const SetTableButton: React.FC<ButtonProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target as Node)
+      ) {
         setShowEditModal(false);
         setShowRenameModal(false);
       }
@@ -47,11 +46,18 @@ const SetTableButton: React.FC<ButtonProps> = ({
   }, []);
 
   return (
-    <div onClick={setSelectedTable}>
-      <button className="cursor-pointer flex items-center rounded px-2 py-1 font-semibold text-gray-900 hover:bg-gray-100">
+    <div
+      onClick={setSelectedTable}
+      onContextMenu={(e) => {
+        e.preventDefault(); // prevent default right-click menu
+        setShowEditModal(true);
+      }}
+    >
+      <button className="flex cursor-pointer items-center rounded px-2 py-1 font-semibold text-gray-900 hover:bg-gray-100">
         {name}
         <ChevronDown className="ml-1 h-4 w-4 text-gray-500" />
       </button>
+
       {showEditModal && (
         <div
           ref={modalRef}

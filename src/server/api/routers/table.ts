@@ -90,6 +90,35 @@ export const tableRouter = createTRPCRouter({
       return db.select().from(table).where(eq(table.baseId, input.baseId));
     }),
 
+  deleteTable: publicProcedure
+    .input(z.object({ tableId: z.number() }))
+    .mutation(async ({ input }) => {
+      const deletedCount = await db
+        .delete(table)
+        .where(eq(table.id, input.tableId));
+
+      if (deletedCount.length === 0) {
+        throw new Error("Table not found or already deleted");
+      }
+
+      return { success: true };
+    }),
+
+  renameTable: publicProcedure
+    .input(z.object({ tableId: z.number(), newName: z.string().min(1) }))
+    .mutation(async ({ input }) => {
+      const updatedCount = await db
+        .update(table)
+        .set({ name: input.newName })
+        .where(eq(table.id, input.tableId));
+
+      if (updatedCount.length === 0) {
+        throw new Error("Table not found or update failed");
+      }
+
+      return { success: true, newName: input.newName };
+    }),
+
   // ------------------ COLUMNS ------------------
   createColumn: publicProcedure
     .input(
@@ -122,41 +151,35 @@ export const tableRouter = createTRPCRouter({
 
       return { cols: allCols };
     }),
-  // getColumnsByTable: publicProcedure
-  //   .input(z.object({ tableId: z.number(), viewId: z.number() }))
-  //   .query(async ({ input, ctx }) => {
-  //     const [view] = await ctx.db
-  //       .select({ config: views.config, tableId: views.tableId })
-  //       .from(views)
-  //       .where(eq(views.id, input.viewId));
 
-  //     if (!view) throw new Error("View not found");
+  deleteColumn: publicProcedure
+    .input(z.object({ columnId: z.number() }))
+    .mutation(async ({ input }) => {
+      const deletedCount = await db
+        .delete(columns)
+        .where(eq(columns.id, input.columnId));
 
-  //     // Extract config
-  //     const { hiddenColumns } = view.config as ViewConfigType;
+      if (deletedCount.length === 0) {
+        throw new Error("Column not found or already deleted");
+      }
 
-  //     const allCols = await ctx.db
-  //       .select()
-  //       .from(columns)
-  //       .where(eq(columns.tableId, Number(input.tableId)))
-  //       .orderBy(columns.orderIndex);
+      return { success: true };
+    }),
 
-  //     const shownCols = await ctx.db
-  //       .select()
-  //       .from(columns)
-  //       .where(
-  //         and(
-  //           eq(columns.tableId, Number(input.tableId)),
-  //           notInArray(columns.id, hiddenColumns),
-  //         ),
-  //       )
-  //       .orderBy(columns.orderIndex);
+  renameColumn: publicProcedure
+    .input(z.object({ colId: z.number(), newName: z.string().min(1) }))
+    .mutation(async ({ input }) => {
+      const updatedCount = await db
+        .update(columns)
+        .set({ name: input.newName })
+        .where(eq(columns.id, input.colId));
 
-  //     return {
-  //       cols: allCols,
-  //       shownCols,
-  //     };
-  //   }),
+      if (updatedCount.length === 0) {
+        throw new Error("Column not found or update failed");
+      }
+
+      return { success: true, newName: input.newName };
+    }),
 
   // ------------------ ROWS ------------------
   createRow: publicProcedure
@@ -170,6 +193,20 @@ export const tableRouter = createTRPCRouter({
         })
         .returning();
       return newRow;
+    }),
+
+  deleteRow: publicProcedure
+    .input(z.object({ rowId: z.number() }))
+    .mutation(async ({ input }) => {
+      const deletedCount = await db
+        .delete(rows)
+        .where(eq(rows.id, input.rowId));
+
+      if (deletedCount.length === 0) {
+        throw new Error("Column not found or already deleted");
+      }
+
+      return { success: true };
     }),
 
   createFilledRows: publicProcedure
@@ -293,6 +330,35 @@ export const tableRouter = createTRPCRouter({
         .where(eq(views.id, input.viewId))
         .returning();
       return updatedView;
+    }),
+
+  deleteView: publicProcedure
+    .input(z.object({ viewId: z.number() }))
+    .mutation(async ({ input }) => {
+      const deletedCount = await db
+        .delete(views)
+        .where(eq(views.id, input.viewId));
+
+      if (deletedCount.length === 0) {
+        throw new Error("View not found or already deleted");
+      }
+
+      return { success: true };
+    }),
+
+  renameView: publicProcedure
+    .input(z.object({ viewId: z.number(), newName: z.string().min(1) }))
+    .mutation(async ({ input }) => {
+      const updatedCount = await db
+        .update(views)
+        .set({ name: input.newName })
+        .where(eq(views.id, input.viewId));
+
+      if (updatedCount.length === 0) {
+        throw new Error("View not found or update failed");
+      }
+
+      return { success: true, newName: input.newName };
     }),
 
   // ------------------ CELL VALUES ------------------

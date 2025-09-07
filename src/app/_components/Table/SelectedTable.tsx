@@ -66,8 +66,8 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
   }, [views, currentView]);
 
   const updateConfig = api.table.updateViewConfig.useMutation({
-    onSuccess: async () => {
-      console.log("View Config has been updated...");
+    onSuccess: async (newConfig) => {
+      console.log("View Config has been updated...", newConfig);
       await utils.table.getFilterCells.invalidate();
     },
   });
@@ -98,7 +98,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
   return (
     <div className="h-full overflow-hidden bg-slate-50 text-sm text-gray-700">
       {/* Header - Grid view and field views */}
-      <div className="flex h-11 w-full items-center justify-between border-b border-gray-200 bg-white px-4 text-sm overflow-hidden">
+      <div className="flex h-11 w-full items-center justify-between border-b border-gray-200 bg-white px-4 text-sm">
 
         {/* Left section */}
         <div className="flex items-center gap-3">

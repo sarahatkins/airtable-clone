@@ -1,27 +1,43 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { api } from "~/trpc/react";
+import { useDefaultTableSetup } from "./Table/helper/CreateDefaultTable";
 
 interface LoadingProps {
   id: string;
 }
 
 const LoadBasePage: React.FC<LoadingProps> = ({ id }) => {
-  console.log("THIS IS ID", id);
+  const createdTableRef = useRef<boolean>(false);
   const router = useRouter();
   const { data: tables, isLoading } = api.table.getTablesByBase.useQuery(
     { baseId: id },
     { enabled: !!id },
   );
 
+  const { newTable, finishedTableSetup, handleCreateTable } =
+    useDefaultTableSetup(id);
+
   useEffect(() => {
-    if (!isLoading && tables?.[0]) {
-      console.log(tables[0])
-      // redirect to the first table by default
-      router.replace(`/${id}/${tables[0].id}`);
+    if (!isLoading) {
+      if (tables && tables?.[0]) {
+        // Redirect to first table if available
+        router.replace(`/${id}/${tables[0].id}`);
+      } else if (!createdTableRef.current) {
+        // No tables found, create a new one
+        createdTableRef.current = true;
+        handleCreateTable("Table x");
+      }
     }
-  }, [isLoading, tables, id, router]);
+  }, [isLoading, tables, id, router, handleCreateTable]);
+
+  // Now watch for when newTable is ready after creation and redirect
+  useEffect(() => {
+    if (finishedTableSetup && newTable) {
+      router.replace(`/${id}/${newTable.id}`);
+    }
+  }, [finishedTableSetup, newTable, id, router]);
 
   return <div className="p-4">Loading tables…</div>;
 };

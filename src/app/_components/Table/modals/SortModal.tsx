@@ -191,7 +191,7 @@ const SortModal: React.FC<SortModalProps> = ({
           )}
         </div>
 
-        <div className="relative">
+        <div className="relative inline-block">
           <button
             className="mt-2 flex items-center gap-1 text-blue-600"
             onClick={() => setShowAdditional(true)}
@@ -200,7 +200,7 @@ const SortModal: React.FC<SortModalProps> = ({
           </button>
 
           {showAdditional && (
-            <div ref={additionalRef} className="absolute z-50 mt-1">
+            <div ref={additionalRef} className="absolute left-[380] z-50 mt-[-30]">
               <PickColModal
                 isOpen={showAdditional}
                 onClose={() => setShowAdditional(false)}

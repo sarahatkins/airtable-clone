@@ -63,7 +63,7 @@ const PickColModal: React.FC<ModalProps> = ({
           {filteredFields.map((col) => (
             <li
               key={col.id}
-              className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm text-gray-800 hover:bg-gray-100"
+              className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm text-gray-800 bg-white hover:bg-gray-100"
               onClick={() => onSelect(col.id)}
             >
               <col.icon className="h-4 w-4 text-gray-500" />
