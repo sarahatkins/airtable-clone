@@ -17,9 +17,7 @@ import {
 import HomeWidget from "./Dashboard/HomeWidget";
 import { useSession } from "next-auth/react";
 import type { InferSelectModel } from "drizzle-orm";
-import type { base } from "~/server/db/schemas/tableSchema";
-
-type Base = InferSelectModel<typeof base>;
+import type { BaseType } from "../defaults";
 
 // app/page.tsx
 export default function Dashboard() {
@@ -31,7 +29,7 @@ export default function Dashboard() {
     { enabled: !!session }, // only run query when session exists
   );
 
-  const [baseList, setBaseList] = useState<Base[]>([]);
+  const [baseList, setBaseList] = useState<BaseType[]>([]);
 
   useEffect(() => {
     if (bases) {
@@ -40,9 +38,12 @@ export default function Dashboard() {
   }, [bases]);
 
   return (
-    <div className="flex h-screen flex-col bg-gray-50 overflow-hidden">
+    <div className="flex h-screen flex-col overflow-hidden bg-gray-50">
       {/* Header */}
-      <header className="flex items-center justify-between border-b border-gray-300 bg-white px-6 py-4 shadow-sm">
+      <header
+        style={{ height: "8vh" }}
+        className="flex items-center justify-between border-b border-gray-300 bg-white px-6 py-4 shadow-sm"
+      >
         <div className="flex items-center">
           <AlignJustify
             className="mr-5 h-5 w-5"
@@ -57,11 +58,11 @@ export default function Dashboard() {
           />
         </div>
         <div className="relative w-full max-w-sm">
-          <Search className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
+          <Search className="absolute top-1/2 left-3 h-4 w-5 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             placeholder="Search..."
-            className="w-full rounded-3xl border border-gray-300 py-2 pr-4 pl-10 focus:ring focus:ring-blue-200"
+            className="h-8 w-full rounded-3xl border border-gray-300 py-2 pr-4 pl-10 focus:ring focus:ring-blue-200"
           />
         </div>
         <div className="flex items-center space-x-4">
@@ -74,13 +75,15 @@ export default function Dashboard() {
       </header>
 
       {/* Main layout: sidebar + content */}
-      <div className="flex flex-1">
+      <div className="flex h-full flex-1">
         {/* Sidebar */}
-        <Sidebar expanded={expandedSidebar} />
+        <div style={{ height: "92vh" }}>
+          <Sidebar expanded={expandedSidebar} />
+        </div>
 
         {/* Main content */}
-        <div className="flex flex-1 flex-col p-10">
-          <div className="flex-1 space-y-5 ">
+        <div className="flex h-full flex-1 flex-col overflow-auto p-10 pb-10">
+          <div className="flex-1 space-y-5">
             {/* Build app card */}
             <h1 className="text-2xl font-bold">Home</h1>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -134,7 +137,7 @@ export default function Dashboard() {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5">
                 {baseList.map((b) => (
                   <BaseWidget key={b.id} base={b} />
                 ))}

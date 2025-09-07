@@ -17,11 +17,11 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ expanded }) => {
   return (
     <aside
-      className={`flex flex-col border-r border-gray-300 bg-white transition-all duration-300 ${
+      className={`flex h-full flex-col border-r border-gray-300 bg-white transition-all duration-300 ${
         expanded ? "w-64" : "w-20"
       }`}
     >
-      <nav className="flex-1 space-y-2 p-4">
+      <nav className="min-h-0 flex-1 space-y-2 overflow-hidden p-4">
         <button className="flex w-full items-center rounded-lg px-3 py-2 hover:bg-gray-100">
           <Home className="h-5 w-5" />
           {expanded && <span className="ml-2">Home</span>}
@@ -59,7 +59,7 @@ const Sidebar: React.FC<SidebarProps> = ({ expanded }) => {
         </button>
       </div>
 
-      <div className="p-4">
+      <div className="p-4 flex-none">
         <CreateBaseButton expanded={expanded} />
       </div>
     </aside>
