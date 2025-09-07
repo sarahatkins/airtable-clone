@@ -1,0 +1,94 @@
+import { useSession } from "next-auth/react";
+import React, { useEffect, useRef, type Dispatch } from "react";
+import { api } from "~/trpc/react";
+import type { NormalizedRow } from "../DataGrid";
+
+interface RowModalProps {
+  x: number;
+  y: number;
+  isOpen: boolean;
+  onClose: () => void;
+  setRows: Dispatch<React.SetStateAction<NormalizedRow[]>>;
+  selectedRows: number[];
+  setRowSelection: Dispatch<React.SetStateAction<number[]>>;
+}
+
+const RowModal: React.FC<RowModalProps> = ({
+  x,
+  y,
+  isOpen,
+  onClose,
+  setRows,
+  setRowSelection,
+}) => {
+  const utils = api.useUtils();
+  const modalRef = useRef<HTMLDivElement | null>(null);
+  const deleteRow = api.table.deleteRow.useMutation({
+    onSuccess: async () => {},
+  });
+
+  const handleDelete = () => {
+    // setRows((prev) => [prev.filter((r) => r.id != )])
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target as Node)
+      ) {
+        onClose();
+      }
+    };
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return;
+  return (
+    <div
+      ref={modalRef}
+      onContextMenu={(e) => e.preventDefault}
+      className="fixed z-50 w-48 rounded-md border border-gray-200 bg-white"
+      style={{ top: y, left: x }}
+      onClick={onClose}
+    >
+      <ul className="text-sm text-gray-700">
+        <li className="cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100">
+          ↑ Insert record above
+        </li>
+        <li className="cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100">
+          ↓ Insert record below
+        </li>
+        <li className="cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100">
+          Duplicate record
+        </li>
+        <li className="cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100">
+          Apply template
+        </li>
+        <li className="cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100">
+          Expand record
+        </li>
+        <li className="cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100">
+          Run field agent
+        </li>
+        <li className="cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100">
+          Add comment
+        </li>
+        <li className="cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100">
+          Copy record URL
+        </li>
+        <li className="cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100">
+          Send record
+        </li>
+        <li className="cursor-pointer px-4 py-2 text-red-600 hover:bg-red-100">
+          Delete record
+        </li>
+      </ul>
+    </div>
+  );
+};
+
+export default RowModal;

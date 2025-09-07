@@ -102,7 +102,7 @@ const EditableCell = (ctx: CellContext<NormalizedRow, CellValue>) => {
       ref={inputRef}
       value={value ? value.toString() : ""}
       onChange={(e) => setValue(e.target.value)}
-      onClick={onClick}
+      onClick={(e) => {e.preventDefault; onClick()}}
       onBlur={onBlur}
       className="w-full cursor-default border border-transparent bg-transparent text-sm text-gray-900 focus:border-blue-500 focus:ring-5 focus:ring-blue-500 focus:outline-none"
     />

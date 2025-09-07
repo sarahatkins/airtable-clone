@@ -4,6 +4,7 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  type Dispatch,
 } from "react";
 import {
   flexRender,
@@ -30,17 +31,15 @@ import CreateRowButton from "./buttons/CreateRowButton";
 import type { UseQueryResult } from "@tanstack/react-query";
 import FloatingAddRows from "./buttons/FloatingAddRows";
 import ColumnHeader from "./buttons/ColumnHeader";
+import IndexCell from "./buttons/IndexCell";
+import RowModal from "./modals/RowModal";
 
 interface DataGridProps {
   table: TableType;
   view: ViewType;
   cols: ColType[];
   searchText: string | undefined;
-  setCols: React.Dispatch<React.SetStateAction<ColType[]>>;
-}
-interface HydratedRows {
-  id: number;
-  cells: CellType[];
+  setCols: Dispatch<React.SetStateAction<ColType[]>>;
 }
 
 const ROW_HEIGHT = 30;
@@ -61,7 +60,18 @@ const DataGrid: React.FC<DataGridProps> = ({
 }) => {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [rows, setRows] = useState<NormalizedRow[]>([]);
+
   const [focusedCell, setFocusedCell] = useState<CellCoord | null>(null);
+  const [hoveredRowId, setHoveredRowId] = useState<string | null>(null);
+  const [rightClickedRowId, setRightClickedRowId] = useState<string | null>(
+    null,
+  );
+  const [rowSelection, setRowSelection] = useState<number[]>([]);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    rowId: string;
+  } | null>(null);
 
   const {
     data: viewData,
@@ -140,7 +150,16 @@ const DataGrid: React.FC<DataGridProps> = ({
       },
       colIndex: -1,
     },
-    cell: ({ row }) => <div className="text-center">{row.index + 1}</div>,
+    cell: ({ row }) => (
+      <IndexCell
+        row={row}
+        hoveredRowId={hoveredRowId}
+        rightClickedRowId={rightClickedRowId}
+        setHoveredRowId={setHoveredRowId}
+        setRightClickedRowId={setRightClickedRowId}
+        setSelectedRows={setRowSelection}
+      />
+    ),
   };
 
   const reactColumns: ColumnDef<NormalizedRow, CellValue>[] = [
@@ -148,14 +167,7 @@ const DataGrid: React.FC<DataGridProps> = ({
     ...cols.map((col, colIdx) => ({
       accessorKey: `col_${col.id}`,
       header: () => (
-        <ColumnHeader
-          title={col.name}
-          colId={col.id}
-          tableId={table.id}
-          onAction={(action) => {
-            console.log("Action for column:", col.id, action);
-          }}
-        />
+        <ColumnHeader title={col.name} colId={col.id} tableId={table.id} />
       ),
       size: 200,
       enableColumnFilter: true,
@@ -170,6 +182,7 @@ const DataGrid: React.FC<DataGridProps> = ({
     getCoreRowModel: getCoreRowModel(),
     enableColumnResizing: true,
     columnResizeMode: "onEnd",
+    getRowId: (row) => row.id.toString(),
     enableRowSelection: true,
     meta: {
       updateData: (rowIndex: number, columnId: string, value: CellValue) => {
@@ -200,7 +213,7 @@ const DataGrid: React.FC<DataGridProps> = ({
         ref={scrollRef}
         className="scrollbar-hidden overflow-auto"
         style={{ height: "100%" }}
-        tabIndex={0} // make div focusable
+        tabIndex={0}
         onKeyDown={(e) => {
           if (!focusedCell) return;
 
@@ -286,32 +299,53 @@ const DataGrid: React.FC<DataGridProps> = ({
             {virtualizer.getVirtualItems().map((vr) => {
               const r = reactTable.getRowModel().rows[vr.index];
               if (!r) return null;
+
+              const selectedRow = rowSelection.includes(r.original.id);
               return (
-                <div
-                  key={vr.key}
-                  className="absolute top-0 left-0 flex items-center border-b border-gray-200 bg-white hover:bg-neutral-50"
-                  style={{
-                    height: `${vr.size}px`,
-                    transform: `translateY(${vr.start}px)`,
-                  }}
-                  data-index={vr.index}
-                >
-                  {r.getVisibleCells().map((cell) => (
-                    <div
-                      key={cell.id}
-                      className={`overflow-hidden text-ellipsis whitespace-nowrap ${
-                        cell.column.id !== "__rowIndex" &&
-                        "border-r border-gray-200"
-                      }`}
-                      style={{ width: cell.column.getSize() }}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </div>
-                  ))}
-                </div>
+                <>
+                  <div
+                    key={vr.key}
+                    className={`absolute top-0 left-0 flex items-center border-b border-gray-200 ${selectedRow ? "bg-blue-50" : "bg-white"} hover:bg-neutral-50`}
+                    style={{
+                      height: `${vr.size}px`,
+                      transform: `translateY(${vr.start}px)`,
+                    }}
+                    data-index={vr.index}
+                    onContextMenu={(e) => {
+                      e.preventDefault;
+                      setContextMenu({
+                        x: e.clientX,
+                        y: e.clientY,
+                        rowId: r.id,
+                      });
+                    }}
+                  >
+                    {r.getVisibleCells().map((cell) => (
+                      <div
+                        key={cell.id}
+                        className={`overflow-hidden text-ellipsis whitespace-nowrap ${
+                          cell.column.id !== "__rowIndex" &&
+                          "border-r border-gray-200"
+                        }`}
+                        style={{ width: cell.column.getSize() }}
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <RowModal
+                    x={contextMenu?.x ?? 0}
+                    y={contextMenu?.y ?? 0}
+                    isOpen={contextMenu != null}
+                    onClose={() => setContextMenu(null)}
+                    setRows={setRows}
+                    selectedRows={rowSelection}
+                    setRowSelection={setRowSelection}
+                  />
+                </>
               );
             })}
           </div>

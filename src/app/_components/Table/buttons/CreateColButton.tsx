@@ -1,4 +1,4 @@
-import React, { useState, type Dispatch, type SetStateAction } from "react";
+import React, { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { STATUS, type ColType, type TableType } from "~/app/defaults";
 import { api } from "~/trpc/react";
 import {
@@ -13,6 +13,7 @@ interface ColButtonProps {
 }
 
 const CreateColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
+  const modalRef = useRef<HTMLDivElement | null>(null)
   const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
   const [newColumnType, setNewColumnType] = useState<STATUS | null>();
   const [newColumnName, setNewColumnName] = useState("");
@@ -82,55 +83,71 @@ const CreateColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
     });
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target as Node)
+      ) {
+        setIsAddColumnOpen(false)
+      }
+    };
+    if (isAddColumnOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isAddColumnOpen, setIsAddColumnOpen]);
+
   return (
     <>
-      <button onClick={openAddColumn} className="cursor-pointer">
+      <button
+        onClick={openAddColumn}
+        className="flex h-full w-full cursor-pointer items-center justify-center hover:bg-gray-100"
+      >
         <Plus height={18} />
       </button>
       {isAddColumnOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-96 rounded bg-white p-4">
-            {!newColumnType ? (
-              <>
-                <h3 className="mb-2 font-semibold">Select field type</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  {(Object.keys(STATUS) as STATUS[]).map((type) => (
-                    <button
-                      key={type}
-                      onClick={() => setNewColumnType(type)}
-                      className="rounded border p-2 hover:bg-gray-100"
-                    >
-                      {type}
-                    </button>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <>
-                <h3 className="mb-2 font-semibold">Enter field name</h3>
-                <input
-                  className="mb-2 w-full rounded border p-2"
-                  placeholder="Field name"
-                  value={newColumnName}
-                  onChange={(e) => setNewColumnName(e.target.value)}
-                />
-                <div className="flex justify-end gap-2">
+        <div ref={modalRef} className="absolute right-10 z-60 top-42 w-[300px] p-2 rounded-lg border border-gray-200 bg-white shadow-xl">
+          {!newColumnType ? (
+            <>
+              <h3 className="mb-2 font-semibold">Select field type</h3>
+              <div className="flex flex-col gap-2">
+                {(Object.keys(STATUS) as STATUS[]).map((type) => (
                   <button
-                    onClick={closeAddColumn}
-                    className="rounded border px-3 py-1"
+                    key={type}
+                    onClick={() => setNewColumnType(type)}
+                    className="rounded border p-2 hover:bg-gray-100 cursor-pointer"
                   >
-                    Cancel
+                    {type}
                   </button>
-                  <button
-                    onClick={handleAddNewColumn}
-                    className="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
-                  >
-                    Create field
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <h3 className="mb-2 font-semibold">Enter field name</h3>
+              <input
+                className="mb-2 w-full rounded border p-2"
+                placeholder="Field name"
+                value={newColumnName}
+                onChange={(e) => setNewColumnName(e.target.value)}
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={closeAddColumn}
+                  className="rounded border px-3 py-1"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddNewColumn}
+                  className="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
+                >
+                  Create field
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
     </>

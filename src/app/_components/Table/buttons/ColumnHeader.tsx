@@ -1,6 +1,6 @@
 // components/HeaderCell.tsx
 import { ArrowLeft, ArrowRight, Copy, Pencil, Trash } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type Dispatch, type SetStateAction } from "react";
 import { api } from "~/trpc/react";
 import RenameColModal from "../RenameColModal";
 
@@ -8,14 +8,13 @@ interface HeaderProps {
   title: string;
   tableId: number;
   colId: number;
-  onAction: (action: string) => void;
 }
 
 const ColumnHeader: React.FC<HeaderProps> = ({
   title,
   colId,
   tableId,
-  onAction,
+
 }) => {
   const utils = api.useUtils();
   const [contextMenu, setContextMenu] = useState<{
