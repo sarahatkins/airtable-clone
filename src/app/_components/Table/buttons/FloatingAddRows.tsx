@@ -11,12 +11,11 @@ interface ButtonProps {
 
 const FloatingAddRows: React.FC<ButtonProps> = ({ dbTable, setRows }) => {
   return (
-    <button
-      type="button"
+    <div
       className="fixed bottom-5 left-[340px] z-50 flex h-12 -translate-y-1/2 items-center justify-center rounded-2xl bg-white shadow-md transition hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none"
       aria-label="Add"
     >
-      <div className="w-20">
+      <div className="w-20 flex justify-center">
         <CreateRowButton
           dbTable={dbTable}
           setRows={setRows}
@@ -24,7 +23,7 @@ const FloatingAddRows: React.FC<ButtonProps> = ({ dbTable, setRows }) => {
         />
       </div>
       <HundredThousandButton tableId={dbTable.id} />
-    </button>
+    </div>
   );
 };
 

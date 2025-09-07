@@ -1,9 +1,11 @@
 import { useCallback, useState } from "react";
 import { api } from "~/trpc/react";
 import { DEFAULT_COLS, DEFAULT_NUM_ROWS, type ColType,  type RowType, type TableType } from "~/app/defaults";
+import { useRouter } from "next/navigation";
 
 export function useDefaultTableSetup(baseId: string) {
   const utils = api.useUtils();
+  const router = useRouter();
   const [newRows, setNewRows] = useState<RowType[]>([]);
   const [newCols, setNewCols] = useState<ColType[]>([]);
   const [newTable, setNewTable] = useState<TableType>();
@@ -47,6 +49,7 @@ export function useDefaultTableSetup(baseId: string) {
 
         await createView.mutateAsync({tableId, name: "Grid view"})
         setFinishedTableSetup(true);
+        router.push(`/${baseId}/${tableId}`)
       } catch (error) {
         console.error("Issue with default table setup", error);
       }

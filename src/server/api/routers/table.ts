@@ -24,6 +24,7 @@ import {
 import { buildFilter, validateFilterGroup } from "./helpers/filtering";
 import { alias } from "drizzle-orm/pg-core";
 import { ViewBuilder } from "drizzle-orm/gel-core";
+import { count } from "console";
 
 // Types
 const CellValueSchema = z.union([
@@ -238,6 +239,7 @@ export const tableRouter = createTRPCRouter({
           .values(chunk)
           .returning({ id: rows.id }); // Get back the inserted IDs
         insertedRows.push(...insertedChunk);
+        console.log("Row ", i);
       }
 
       // Fetch columns for the table
@@ -273,10 +275,13 @@ export const tableRouter = createTRPCRouter({
         }
       }
 
+      console.log("finished inserting rows");
+
       // Insert cells in chunks
       for (let i = 0; i < newCells.length; i += 1000) {
         const chunk = newCells.slice(i, i + 1000);
         await db.insert(cellValues).values(chunk);
+        console.log("cell ", i);
       }
 
       return {
@@ -293,6 +298,17 @@ export const tableRouter = createTRPCRouter({
         .select()
         .from(rows)
         .where(eq(rows.tableId, Number(input.tableId)));
+    }),
+
+  getNumRows: publicProcedure
+    .input(z.object({ tableId: z.number() }))
+    .query(async ({ input }) => {
+      const result = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(rows)
+        .where(eq(rows.tableId, input.tableId));
+
+      return { count: Number(result[0]?.count ?? 0) };
     }),
 
   // ------------------ ROWS ------------------

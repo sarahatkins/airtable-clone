@@ -29,6 +29,7 @@ import { api } from "~/trpc/react";
 import CreateRowButton from "./buttons/CreateRowButton";
 import type { UseQueryResult } from "@tanstack/react-query";
 import FloatingAddRows from "./buttons/FloatingAddRows";
+import ColumnHeader from "./buttons/ColumnHeader";
 
 interface DataGridProps {
   table: TableType;
@@ -146,7 +147,16 @@ const DataGrid: React.FC<DataGridProps> = ({
     indexColumn,
     ...cols.map((col, colIdx) => ({
       accessorKey: `col_${col.id}`,
-      header: col.name,
+      header: () => (
+        <ColumnHeader
+          title={col.name}
+          colId={col.id}
+          tableId={table.id}
+          onAction={(action) => {
+            console.log("Action for column:", col.id, action);
+          }}
+        />
+      ),
       size: 200,
       enableColumnFilter: true,
       meta: { col, colIndex: colIdx },
@@ -188,7 +198,7 @@ const DataGrid: React.FC<DataGridProps> = ({
     <div className="flex h-full w-full flex-col">
       <div
         ref={scrollRef}
-        className="overflow-auto scrollbar-hidden"
+        className="scrollbar-hidden overflow-auto"
         style={{ height: "100%" }}
         tabIndex={0} // make div focusable
         onKeyDown={(e) => {
@@ -221,6 +231,8 @@ const DataGrid: React.FC<DataGridProps> = ({
           virtualizer.scrollToIndex(next.row); // ensure visible
         }}
       >
+        {/* LONG LINE */}
+        {/* <div className="absolute left-136 top-31 bottom-8.5 w-px bg-gray-400 z-10" /> */}
         <div style={{ width: Math.max(totalWidth + 200, 800) }}>
           {/* Header */}
           {reactTable.getHeaderGroups().map((hg) => (
@@ -308,7 +320,7 @@ const DataGrid: React.FC<DataGridProps> = ({
           </div>
         </div>
       </div>
-      <FloatingAddRows dbTable={table} setRows={setRows}/>
+      <FloatingAddRows dbTable={table} setRows={setRows} />
     </div>
   );
 };
