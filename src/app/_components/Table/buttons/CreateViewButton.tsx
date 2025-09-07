@@ -11,8 +11,8 @@ const CreateViewButton: React.FC<ButtonProps> = ({ tableId }) => {
   const [showModal, setShowModal] = useState<boolean>(false);
 
   useEffect(() => {
-    setViewName("Grid");
-  }, [])
+    if (!showModal) setViewName("Grid");
+  }, [showModal]);
   return (
     <div>
       <button
@@ -27,6 +27,7 @@ const CreateViewButton: React.FC<ButtonProps> = ({ tableId }) => {
         onClose={() => setShowModal(false)}
         tableId={tableId}
         currentName={viewName}
+        isNewView={true}
       />
     </div>
   );

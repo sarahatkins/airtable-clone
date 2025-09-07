@@ -23,6 +23,7 @@ import {
 } from "~/app/defaults";
 import { buildFilter, validateFilterGroup } from "./helpers/filtering";
 import { alias } from "drizzle-orm/pg-core";
+import { ViewBuilder } from "drizzle-orm/gel-core";
 
 // Types
 const CellValueSchema = z.union([
@@ -95,7 +96,8 @@ export const tableRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const deletedCount = await db
         .delete(table)
-        .where(eq(table.id, input.tableId));
+        .where(eq(table.id, input.tableId))
+        .returning();
 
       if (deletedCount.length === 0) {
         throw new Error("Table not found or already deleted");
@@ -110,7 +112,8 @@ export const tableRouter = createTRPCRouter({
       const updatedCount = await db
         .update(table)
         .set({ name: input.newName })
-        .where(eq(table.id, input.tableId));
+        .where(eq(table.id, input.tableId))
+        .returning();
 
       if (updatedCount.length === 0) {
         throw new Error("Table not found or update failed");
@@ -157,7 +160,8 @@ export const tableRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const deletedCount = await db
         .delete(columns)
-        .where(eq(columns.id, input.columnId));
+        .where(eq(columns.id, input.columnId))
+        .returning();
 
       if (deletedCount.length === 0) {
         throw new Error("Column not found or already deleted");
@@ -172,7 +176,8 @@ export const tableRouter = createTRPCRouter({
       const updatedCount = await db
         .update(columns)
         .set({ name: input.newName })
-        .where(eq(columns.id, input.colId));
+        .where(eq(columns.id, input.colId))
+        .returning();
 
       if (updatedCount.length === 0) {
         throw new Error("Column not found or update failed");
@@ -200,7 +205,8 @@ export const tableRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const deletedCount = await db
         .delete(rows)
-        .where(eq(rows.id, input.rowId));
+        .where(eq(rows.id, input.rowId))
+        .returning();
 
       if (deletedCount.length === 0) {
         throw new Error("Column not found or already deleted");
@@ -337,7 +343,8 @@ export const tableRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const deletedCount = await db
         .delete(views)
-        .where(eq(views.id, input.viewId));
+        .where(eq(views.id, input.viewId))
+        .returning();
 
       if (deletedCount.length === 0) {
         throw new Error("View not found or already deleted");
@@ -352,7 +359,8 @@ export const tableRouter = createTRPCRouter({
       const updatedCount = await db
         .update(views)
         .set({ name: input.newName })
-        .where(eq(views.id, input.viewId));
+        .where(eq(views.id, input.viewId))
+        .returning();
 
       if (updatedCount.length === 0) {
         throw new Error("View not found or update failed");

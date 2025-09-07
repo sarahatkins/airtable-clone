@@ -70,7 +70,7 @@ const AddTableButton: React.FC<ButtonProps> = ({
         }}
       >
         <Plus className="h-4 w-4" />
-        Add or import
+        
       </button>
       {showModal && (
         <div

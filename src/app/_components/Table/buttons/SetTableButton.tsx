@@ -1,5 +1,11 @@
 import { ChevronDown } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 
 import {
   Pencil,
@@ -15,20 +21,40 @@ import {
 } from "lucide-react";
 import MenuItem from "../modals/MenuItem";
 import TableRenameModal from "../modals/TableRenameModal";
+import { api } from "~/trpc/react";
 interface ButtonProps {
   setSelectedTable: () => void;
   name: string;
+  tableId: number;
+  selected: boolean;
+  baseId: string;
   showRename?: boolean;
 }
 
 const SetTableButton: React.FC<ButtonProps> = ({
   name,
-  setSelectedTable,
+  tableId,
+  baseId,
   showRename = false,
+  selected,
+  setSelectedTable,
 }) => {
+  const utils = api.useUtils();
+  const [tableName, setTableName] = useState<string>(name ?? "");
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [showRenameModal, setShowRenameModal] = useState<boolean>(showRename);
   const modalRef = useRef<HTMLDivElement | null>(null);
+  const deleteTable = api.table.deleteTable.useMutation({
+    onSuccess: async (deleted) => {
+      console.log("table delete", deleted);
+      await utils.table.getTablesByBase.invalidate({ baseId });
+      setShowEditModal(false);
+    },
+  });
+
+  const handleDelete = () => {
+    if (!selected) deleteTable.mutate({ tableId });
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -47,14 +73,21 @@ const SetTableButton: React.FC<ButtonProps> = ({
 
   return (
     <div
-      onClick={setSelectedTable}
+      className="h-full"
       onContextMenu={(e) => {
         e.preventDefault(); // prevent default right-click menu
         setShowEditModal(true);
       }}
     >
-      <button className="flex cursor-pointer items-center rounded px-2 py-1 font-semibold text-gray-900 hover:bg-gray-100">
-        {name}
+      <button
+        className={`flex h-full cursor-pointer items-center rounded-t-md border px-3 py-1.5 text-sm font-semibold text-gray-900 transition-colors duration-150 ${
+          selected
+            ? "z-50 border-t border-r border-l border-gray-200 bg-white"
+            : "border border-transparent bg-[#f6f9ff] hover:bg-gray-100"
+        }`}
+        onClick={setSelectedTable}
+      >
+        {tableName}
         <ChevronDown className="ml-1 h-4 w-4 text-gray-500" />
       </button>
 
@@ -106,11 +139,14 @@ const SetTableButton: React.FC<ButtonProps> = ({
             />
             <li className="my-1 border-t border-gray-200" />
             <MenuItem icon={<X className="h-4 w-4" />} label="Clear data" />
-            <MenuItem
-              icon={<Trash className="h-4 w-4 text-red-600" />}
-              label="Delete table"
-              textColor="text-red-600"
-            />
+            {!selected && (
+              <MenuItem
+                icon={<Trash className="h-4 w-4 text-red-600" />}
+                label="Delete table"
+                textColor="text-red-600"
+                onClick={() => handleDelete()}
+              />
+            )}
           </ul>
         </div>
       )}
@@ -119,6 +155,8 @@ const SetTableButton: React.FC<ButtonProps> = ({
         isOpen={showRenameModal}
         onClose={() => setShowRenameModal(false)}
         currentName={name}
+        tableId={tableId}
+        setGivenTableName={setTableName}
       />
     </div>
   );

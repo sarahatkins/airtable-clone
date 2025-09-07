@@ -1,24 +1,48 @@
-import React, { useEffect, useRef, useState } from "react";
-import {
-  Mail,
-  Plus,
-} from "lucide-react";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
+import { Mail, Plus } from "lucide-react";
+import { api } from "~/trpc/react";
 
 interface RenameModalProps {
   isOpen: boolean;
   onClose: () => void;
+  tableId: number;
   currentName: string;
+  setGivenTableName?: Dispatch<SetStateAction<string>>;
 }
 
 const TableRenameModal: React.FC<RenameModalProps> = ({
+  tableId,
   currentName,
   isOpen,
   onClose,
+  setGivenTableName,
 }) => {
   const [tableName, setTableName] = useState(currentName);
   const [recordLabel, setRecordLabel] = useState("Record");
   const modalRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const renameTable = api.table.renameTable.useMutation({
+    onSuccess: (renamed) => {
+      if (!renamed) return;
+      console.log("renamed view", renamed);
+      onClose();
+    },
+  });
+
+  const handleRename = () => {
+    if (!tableName.trim()) return;
+
+    renameTable.mutate({ tableId, newName: tableName });
+    setGivenTableName && setGivenTableName(tableName);
+
+    onClose();
+  };
 
   // Close on outside click
   useEffect(() => {
@@ -93,7 +117,7 @@ const TableRenameModal: React.FC<RenameModalProps> = ({
           Cancel
         </button>
         <button
-          onClick={() => console.log("clicked")}
+          onClick={() => handleRename()}
           className="rounded bg-blue-600 px-4 py-1 text-white hover:bg-blue-700"
         >
           Save

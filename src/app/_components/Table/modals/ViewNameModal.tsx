@@ -1,15 +1,15 @@
-import React, { useEffect, useRef, useState } from "react";
-import {
-  Mail,
-  Plus,
-} from "lucide-react";
+import React, { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import { Mail, Plus } from "lucide-react";
 import { api } from "~/trpc/react";
 
 interface ViewNameModalProps {
   isOpen: boolean;
   onClose: () => void;
   tableId: number;
+  isNewView: boolean;
   currentName: string;
+  viewId?: number;
+  setButtonName?: Dispatch<SetStateAction<string>>
 }
 
 const ViewNameModal: React.FC<ViewNameModalProps> = ({
@@ -17,23 +17,40 @@ const ViewNameModal: React.FC<ViewNameModalProps> = ({
   isOpen,
   onClose,
   tableId,
+  isNewView,
+  viewId,
+  setButtonName
 }) => {
-  const utils = api.useUtils()
+  const utils = api.useUtils();
   const [name, setName] = useState(currentName);
   const modalRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
-
+  const renameView = api.table.renameView.useMutation({
+    onSuccess: (renamed) => {
+      if (!renamed) return;
+      console.log("renamed view", renamed);
+      onClose();
+    },
+  });
+  
   const createView = api.table.createView.useMutation({
     onSuccess: async (newView) => {
       if (!newView) return;
       console.log("Created view", newView);
-      await utils.table.getViewByTable.invalidate({tableId: newView.tableId})
+      await utils.table.getViewByTable.invalidate({ tableId: newView.tableId });
     },
   });
-
-  const handleClick = () => {
+  
+  const handleModificationClick = async () => {
     if (!name.trim()) return;
-    createView.mutate({ tableId, name });
+    if (isNewView) {
+      createView.mutate({ tableId, name });
+    }
+    if (!isNewView && viewId){
+      renameView.mutate({ viewId, newName: name });
+      setButtonName && setButtonName(name)
+    }
+    
     onClose();
   };
   // Close on outside click
@@ -94,7 +111,7 @@ const ViewNameModal: React.FC<ViewNameModalProps> = ({
           Cancel
         </button>
         <button
-          onClick={() => handleClick()}
+          onClick={() => handleModificationClick()}
           className="rounded bg-blue-600 px-4 py-1 text-white hover:bg-blue-700"
         >
           Save

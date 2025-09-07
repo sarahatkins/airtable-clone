@@ -33,18 +33,24 @@ const AirTable: React.FC<AirtableProps> = ({ baseId, tableId }) => {
   return (
     <div className="flex flex-col h-full">
       {/* Header 2: Table list */}
-      <div className="flex h-10 items-center justify-between border-b border-gray-200 bg-[#f8faff] px-4 text-sm">
-        <div className="flex items-center gap-3">
+      <div className="flex h-8 items-center justify-between border-b border-gray-200 bg-blue-50 pr-4 text-sm">
+        <div className="flex items-center h-full">
           {!isLoading &&
-            tables?.map((t) => (
+            tables?.map((t) => {
+              if(!t.id) return;
+
+              return(
               <SetTableButton
                 key={t.id}
+                selected={Number(tableId) === t.id}
+                baseId={baseId}
                 setSelectedTable={() => router.push(`/${baseId}/${t.id}`)}
                 name={t.name}
+                tableId={t.id}
               />
-            ))}
+            )})}
 
-          <div className="h-5 w-px bg-gray-300"></div>
+          {/* <div className="ml-4 h-5 w-px bg-gray-300"></div> */}
 
           <AddTableButton
             baseId={baseId}
