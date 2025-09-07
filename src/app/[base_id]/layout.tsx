@@ -6,14 +6,18 @@ import { api } from "~/trpc/react";
 import Image from "next/image";
 import { ChevronDown } from "lucide-react";
 
-export default function BaseLayout({ children }: { children: React.ReactNode }) {
+export default function BaseLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const params = useParams<{ base_id: string }>();
   const baseId = params.base_id;
   const router = useRouter();
 
   const { data: base, isLoading } = api.base.getById.useQuery(
     { id: baseId },
-    { enabled: !!baseId }
+    { enabled: !!baseId },
   );
 
   return (
@@ -26,7 +30,12 @@ export default function BaseLayout({ children }: { children: React.ReactNode }) 
               className="flex w-full justify-center text-gray-700 hover:bg-gray-100"
               onClick={() => router.replace("/")}
             >
-              <Image src="/airtable-logo-bw.svg" alt="Google" width={25} height={25} />
+              <Image
+                src="/airtable-logo-bw.svg"
+                alt="Google"
+                width={25}
+                height={25}
+              />
             </button>
           </div>
         </div>
@@ -37,14 +46,21 @@ export default function BaseLayout({ children }: { children: React.ReactNode }) 
         <div className="flex h-12 w-full items-center justify-between border-b border-gray-200 bg-white px-4 pt-2 text-sm">
           <div className="flex items-center">
             <div className="mr-2 rounded bg-blue-900 p-1">
-              <Image src="/airtable-logo-white.png" alt="Google" width={20} height={20} />
+              <Image
+                src="/airtable-logo-white.png"
+                alt="Google"
+                width={20}
+                height={20}
+              />
             </div>
-            <h1 className="mr-1 text-lg font-bold text-gray-800">{base?.name}</h1>
+            <h1 className="mr-1 text-lg font-bold text-gray-800">
+              {base?.name}
+            </h1>
             <ChevronDown className="h-4 w-4" />
           </div>
         </div>
 
-        {children}
+        <div className="min-h-0 flex-1">{children}</div>
       </div>
     </div>
   );

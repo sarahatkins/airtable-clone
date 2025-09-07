@@ -191,7 +191,6 @@ const AirTable: React.FC<AirtableProps> = ({ baseId, tableId }) => {
   const router = useRouter();
   const [selectedTable, setSelectedTable] = useState<TableType | null>(null);
   const [isTableSetup, setIsTableSetup] = useState<boolean>(true);
-  console.log("BASE ID", baseId)
   const { data: tables, isLoading } = api.table.getTablesByBase.useQuery({
     baseId: baseId,
   });
@@ -206,7 +205,7 @@ const AirTable: React.FC<AirtableProps> = ({ baseId, tableId }) => {
   }, [isLoading, tables, tableId]);
 
   return (
-    <>
+    <div className="flex flex-col h-full">
       {/* Header 2: Table list */}
       <div className="flex h-10 items-center justify-between border-b border-gray-200 bg-[#f8faff] px-4 text-sm">
         <div className="flex items-center gap-3">
@@ -214,9 +213,7 @@ const AirTable: React.FC<AirtableProps> = ({ baseId, tableId }) => {
             tables?.map((t) => (
               <SetTableButton
                 key={t.id}
-                setSelectedTable={() =>
-                  router.push(`/${baseId}/${t.id}`)
-                }
+                setSelectedTable={() => router.push(`/${baseId}/${t.id}`)}
                 name={t.name}
               />
             ))}
@@ -236,10 +233,12 @@ const AirTable: React.FC<AirtableProps> = ({ baseId, tableId }) => {
       </div>
 
       {/* Table content */}
-      {!isLoading && isTableSetup && selectedTable && (
-        <SelectedTable selectedTable={selectedTable} />
-      )}
-    </>
+      <div className="flex-1 min-h-0">
+        {!isLoading && isTableSetup && selectedTable && (
+          <SelectedTable selectedTable={selectedTable} />
+        )}
+      </div>
+    </div>
   );
 };
 

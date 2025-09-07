@@ -1,14 +1,10 @@
+"use client";
 import { Filter } from "lucide-react";
 import {
-  useEffect,
-  useRef,
   useState,
-  type Dispatch,
-  type SetStateAction,
 } from "react";
 import FilterModal from "../modals/FilterModal";
 import type { ColType, ViewConfigType, FilterGroup } from "~/app/defaults";
-import { api } from "~/trpc/react";
 
 interface ButtonProps {
   cols: ColType[];

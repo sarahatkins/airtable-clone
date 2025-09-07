@@ -1,6 +1,6 @@
 "use client";
 
-import LoadBasePage from "../_components/Table/LoadBasePage";
+import LoadBasePage from "../_components/LoadBasePage";
 
 interface TablePageProps {
   params: {

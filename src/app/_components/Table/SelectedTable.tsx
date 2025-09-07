@@ -21,23 +21,22 @@ import FilterButton from "./buttons/FilterButton";
 import SortButton from "./buttons/SortButton";
 import HiddenButton from "./buttons/HiddenButton";
 import SearchViewButton from "./buttons/SearchViewButton";
+import { view } from "drizzle-orm/sqlite-core";
 interface SelectedTableProps {
   selectedTable: TableType;
 }
 
 const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
   const utils = api.useUtils();
-  const [cols, setCols] = useState<ColType[]>([]);
-  // const [showCols, setShownCols] = useState<ColType[]>([]);
-  const [views, setViews] = useState<ViewType[] | null>(null);
+
   const [currentView, setCurrentView] = useState<ViewType | null>(null);
-  const [search, setSearch] = useState<string | undefined>(undefined);
   const [viewConfig, setViewConfig] =
     useState<ViewConfigType>(DEFAULT_VIEW_CONFIG);
 
-  const shownCols = useMemo(() => {
-    return cols.filter((c) => !viewConfig.hiddenColumns.includes(c.id));
-  }, [cols, viewConfig.hiddenColumns]);
+  const [cols, setCols] = useState<ColType[]>([]);
+  // const [views, setViews] = useState<ViewType[] | null>(null);
+  // const [showCols, setShownCols] = useState<ColType[]>([]);
+  const [search, setSearch] = useState<string | undefined>(undefined);
 
   const { data: loadedViews, isLoading: viewsLoading } =
     api.table.getViewByTable.useQuery(
@@ -52,9 +51,22 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
       { enabled: !!selectedTable?.id },
     );
 
+  const views = loadedViews ?? [];
+
+  const shownCols = useMemo(() => {
+    return cols.filter((c) => !viewConfig.hiddenColumns.includes(c.id));
+  }, [cols, viewConfig.hiddenColumns]);
+
+  useEffect(() => {
+    if (views?.[0] && !currentView) {
+      setCurrentView(views[0]);
+      setViewConfig(views[0]?.config as ViewConfigType);
+    }
+  }, [views, currentView]);
+
   const updateConfig = api.table.updateViewConfig.useMutation({
     onSuccess: async () => {
-      console.log("changed hidden columns");
+      console.log("View Config has been updated...");
       await utils.table.getFilterCells.invalidate();
     },
   });
@@ -65,22 +77,14 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
     }
   }, [colsLoading, loadedCols]);
 
-  useEffect(() => {
-    if (viewsLoading || !loadedViews) return;
-
-    setViews(loadedViews);
-    if (!currentView) {
-      setCurrentView(loadedViews[0]!);
-      setViewConfig(loadedViews[0]?.config as ViewConfigType);
-    }
-  }, [viewsLoading, loadedViews, currentView]);
-
   const onConfigChange = (newConfig: ViewConfigType) => {
-    setCurrentView((prev) => (prev ? { ...prev, config: newConfig } : null));
+    if (!currentView) return;
+
+    setCurrentView({ ...currentView, config: newConfig });
     setViewConfig(newConfig);
 
     updateConfig.mutate({
-      viewId: currentView?.id!,
+      viewId: currentView.id,
       config: {
         filters: newConfig.filters ?? undefined,
         sorting: newConfig.sorting,
@@ -145,26 +149,32 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
       </div>
 
       {/* Body */}
-      <div className="flex h-full">
-        {
-          /*!viewsLoading && */ views && currentView && (
-            <TableMenu
-              tableId={selectedTable.id}
-              views={views}
-              setSelectedView={setCurrentView}
-              selectedView={currentView}
-            />
-          )
-        }
-        {!isDataLoading && currentView && (
-          <DataGrid
-            table={selectedTable}
-            searchText={search}
-            cols={shownCols}
-            view={currentView}
-            setCols={setCols}
+      <div className="flex h-full min-h-0">
+        {views && currentView && (
+          <TableMenu
+            tableId={selectedTable.id}
+            views={views}
+            setSelectedView={setCurrentView}
+            selectedView={currentView}
           />
         )}
+
+        <div className="min-h-0 w-100" style={{height: "90%"}}>
+          {!views.length || !currentView ? (
+            <div>
+              {views.length} {currentView?.id} Loading table...
+            </div>
+          ) : (
+            <DataGrid
+              key={currentView.id}
+              table={selectedTable}
+              view={currentView}
+              cols={shownCols}
+              searchText={search}
+              setCols={setCols}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

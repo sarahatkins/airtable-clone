@@ -1,3 +1,4 @@
+"use client";
 import { Trash2 } from "lucide-react";
 import React, {
   useEffect,
@@ -50,7 +51,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
   cols,
 }) => {
   if (!isOpen) return null;
-  
+
   const modalRef = useRef<HTMLDivElement | null>(null);
   const [filterTree, setFilterTree] = useState<FilterGroup>(
     currentFilter ?? { functionName: "and", args: [] },
