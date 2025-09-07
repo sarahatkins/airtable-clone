@@ -5,7 +5,7 @@ import { createTable, users } from "./userSchema";
 // --------------------------------------
 // ---- BASE SCHEMA ---------------------
 // --------------------------------------
-export const base = createTable("base", (d) => ({
+export const bases = createTable("base", (d) => ({
   id: d
     .varchar({ length: 255 })
     .notNull()
@@ -31,7 +31,7 @@ export const table = createTable("tables", (d) => ({
   baseId: d
     .varchar({ length: 255 })
     .notNull()
-    .references(() => base.id, { onDelete: "cascade" }),
+    .references(() => bases.id, { onDelete: "cascade" }),
   name: d
     .varchar({ length: 255 })
     .notNull()

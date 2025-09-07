@@ -1,3 +1,4 @@
+import type { base } from "@faker-js/faker";
 import type { InferSelectModel } from "drizzle-orm";
 import { Baseline, CircleChevronDown, type LucideIcon } from "lucide-react";
 import type {
@@ -6,12 +7,14 @@ import type {
   rows,
   table,
   views,
+  bases,
 } from "~/server/db/schemas/tableSchema";
 
 // --------------------------------------------------
 // ------------- TYPES ------------------------------
 // --------------------------------------------------
 
+export type BaseType = InferSelectModel<typeof bases>;
 export type TableType = InferSelectModel<typeof table>;
 export type ColType = InferSelectModel<typeof columns>;
 export type ColNoId = Omit<ColType, "id">;

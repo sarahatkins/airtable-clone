@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 import Image from "next/image";
 import { ChevronDown } from "lucide-react";
+import OpenBaseModalButton from "../_components/Table/buttons/OpenBaseModalButton";
 
 export default function BaseLayout({
   children,
@@ -41,8 +42,7 @@ export default function BaseLayout({
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col min-w-0">
-
+      <div className="flex min-w-0 flex-1 flex-col">
         {/* Header */}
         <div className="flex h-12 items-center justify-between border-b border-gray-200 bg-white px-4 pt-2 text-sm">
           <div className="flex items-center">
@@ -54,9 +54,7 @@ export default function BaseLayout({
                 height={20}
               />
             </div>
-            <h1 className="mr-1 text-lg font-bold text-gray-800">
-              {base?.name}
-            </h1>
+            {base && <OpenBaseModalButton base={base} />}
             <ChevronDown className="h-4 w-4" />
           </div>
         </div>

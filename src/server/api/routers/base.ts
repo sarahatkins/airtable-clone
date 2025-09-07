@@ -1,10 +1,8 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { base } from "~/server/db/schemas/tableSchema"; // your Drizzle table
+import { bases } from "~/server/db/schemas/tableSchema"; // your Drizzle table
 import { eq, type InferSelectModel } from "drizzle-orm";
 import { db } from "~/server/db";
-
-export type Base = InferSelectModel<typeof base>;
 
 export const baseRouter = createTRPCRouter({
   // Create a new base
@@ -12,7 +10,7 @@ export const baseRouter = createTRPCRouter({
     .input(z.object({ name: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
       const [newBase] = await ctx.db
-        .insert(base)
+        .insert(bases)
         .values({
           name: input.name,
           userId: ctx.session.user.id,
@@ -28,7 +26,7 @@ export const baseRouter = createTRPCRouter({
   getAll: protectedProcedure
     .input(z.object({ userId: z.string().min(1) })) // assuming you store ownership
     .query(async ({ }) => {
-      const res = await db.select().from(base).orderBy(base.id);
+      const res = await db.select().from(bases).orderBy(bases.id);
 
       return res;
     }),
@@ -39,30 +37,28 @@ export const baseRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const [foundBase] = await ctx.db
         .select()
-        .from(base)
-        .where(eq(base.id, input.id));
+        .from(bases)
+        .where(eq(bases.id, input.id));
 
       return foundBase;
     }),
 
-  // Update a base name
-  update: protectedProcedure
+  renameBase: protectedProcedure
     .input(z.object({ id: z.string().min(1), name: z.string().min(1) }))
     .mutation(async ({ input }) => {
       const [updatedBase] = await db
-        .update(base)
+        .update(bases)
         .set({ name: input.name })
-        .where(eq(base.id, input.id))
+        .where(eq(bases.id, input.id))
         .returning();
 
       return updatedBase;
     }),
 
-  // Delete a base
-  delete: protectedProcedure
+  deleteBase: protectedProcedure
     .input(z.object({ id: z.string().min(1) }))
     .mutation(async ({ input }) => {
-      await db.delete(base).where(eq(base.id, input.id));
+      await db.delete(bases).where(eq(bases.id, input.id));
       return { success: true };
     }),
 });
