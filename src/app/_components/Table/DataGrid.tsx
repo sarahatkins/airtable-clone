@@ -33,7 +33,14 @@ interface DataGridProps {
   searchText: string | undefined;
   setCols: React.Dispatch<React.SetStateAction<ColType[]>>;
 }
-
+interface ReactColumn {
+  accessorKey: string;
+  header: string;
+  size: number;
+  enableColumnFilter: boolean;
+  meta: { col: ColType; colIndex: number };
+  cell: (ctx: CellContext<NormalizedRow, CellValue>) => React.JSX.Element;
+}
 interface HydratedRows {
   id: number;
   cells: CellType[];
@@ -127,6 +134,27 @@ const DataGrid: React.FC<DataGridProps> = ({
     meta: { col, colIndex: colIdx },
     cell: EditableCell,
   }));
+
+  const indexColumn: (typeof reactColumns)[number] = {
+    accessorKey: "__rowIndex",
+    header: "#",
+    size: 60,
+    enableColumnFilter: false,
+    meta: {
+      col: {
+        id: -1,
+        name: "Index",
+        type: "index",
+        tableId: table.id,
+        orderIndex: -1,
+        primary: null,
+      },
+      colIndex: -1,
+    },
+    cell: ({ row }) => <div className="text-center">{row.index + 1}</div>,
+  };
+
+  reactColumns.unshift(indexColumn);
 
   const reactTable = useReactTable({
     data: rows,
