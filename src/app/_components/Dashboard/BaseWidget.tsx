@@ -1,8 +1,8 @@
 import type { InferSelectModel } from "drizzle-orm";
 import { useRouter } from "next/navigation";
-import type { base } from "~/server/db/schemas/tableSchema";
+import type { bases } from "~/server/db/schemas/tableSchema";
 
-type Base = InferSelectModel<typeof base>;
+type Base = InferSelectModel<typeof bases>;
 
 interface BaseWidgetProps {
   base: Base;

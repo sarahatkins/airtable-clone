@@ -13,7 +13,7 @@ const OpenBaseModalButton: React.FC<ButtonProps> = ({ base }) => {
   return (
     <div className="relative inline-block">
       <button
-        className="mr-1 text-lg font-bold text-gray-800"
+        className="mr-1 text-lg font-bold text-gray-800 cursor-pointer"
         onClick={() => setShowModal(true)}
       >
         {baseName}
