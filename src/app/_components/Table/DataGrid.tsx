@@ -28,6 +28,7 @@ import CreateColButton from "./buttons/CreateColButton";
 import { api } from "~/trpc/react";
 import CreateRowButton from "./buttons/CreateRowButton";
 import type { UseQueryResult } from "@tanstack/react-query";
+import FloatingAddRows from "./buttons/FloatingAddRows";
 
 interface DataGridProps {
   table: TableType;
@@ -307,6 +308,7 @@ const DataGrid: React.FC<DataGridProps> = ({
           </div>
         </div>
       </div>
+      <FloatingAddRows dbTable={table} setRows={setRows}/>
     </div>
   );
 };

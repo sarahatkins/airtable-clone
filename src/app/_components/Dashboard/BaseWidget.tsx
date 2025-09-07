@@ -24,6 +24,7 @@ interface BaseWidgetProps {
 
 const BaseWidget: React.FC<BaseWidgetProps> = ({ base }) => {
   const utils = api.useUtils();
+  const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const { data: session } = useSession();
   const [hovered, setHovered] = useState(false);
@@ -81,6 +82,7 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({ base }) => {
       className={`relative flex w-75 cursor-pointer items-center gap-3 rounded-md border border-gray-200 bg-white p-4 transition-shadow ${
         hovered ? "bg-white shadow-md" : "bg-gray-50"
       }`}
+      onClick={() => router.push(`/${base.id}`)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => {
         setHovered(false);
@@ -98,9 +100,9 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({ base }) => {
       <div className="flex flex-1 flex-col">
         <input
           ref={inputRef}
-          readOnly={!isRenaming}
+          disabled={!isRenaming}
           onBlur={(e) => handleRename(e.target.value)}
-          className="focus:outline-none focus:p-1 focus:ring-2 focus:ring-blue-500 rounded w-35 font-semibold text-gray-900"
+          className="w-35 rounded font-semibold text-gray-900 focus:p-1 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           value={widgetName}
         />
         {!hovered && (

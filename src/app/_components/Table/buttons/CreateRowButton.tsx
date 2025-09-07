@@ -12,11 +12,13 @@ import type { NormalizedRow } from "../DataGrid";
 import { Plus } from "lucide-react";
 
 interface ColButtonProps {
+  style?: string;
   dbTable: TableType;
   setRows: Dispatch<SetStateAction<NormalizedRow[]>>;
 }
 
 const CreateRowButton: React.FC<ColButtonProps> = ({
+  style,
   dbTable,
   setRows,
 }) => {
@@ -68,7 +70,7 @@ const CreateRowButton: React.FC<ColButtonProps> = ({
     <>
       <button
         onClick={addNewRow}
-        className="text-start w-full bg-white px-4.5 py-2 border-b border-r border-gray-200 text-gray hover:bg-neutral-50"
+        className={style ?? `text-start w-full bg-white px-4.5 py-2 border-b border-r border-gray-200 text-gray hover:bg-neutral-50`}
       >
         <Plus height={15}/>
       </button>

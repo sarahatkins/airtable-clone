@@ -8,21 +8,25 @@ import Sidebar from "./Dashboard/Sidebar";
 import {
   AlignJustify,
   ArrowUp,
+  Bell,
   ChevronDown,
+  CircleQuestionMark,
   Grid2X2,
   Search,
   Sparkles,
   TableCellsSplit,
+  User,
 } from "lucide-react";
 import HomeWidget from "./Dashboard/HomeWidget";
 import { useSession } from "next-auth/react";
 import type { InferSelectModel } from "drizzle-orm";
 import type { BaseType } from "../defaults";
+import LougoutModal from "./Table/modals/LogoutModal";
 
 // app/page.tsx
 export default function Dashboard() {
   const [expandedSidebar, setExpandedSidebar] = useState<boolean>(true);
-
+  const [showLogout, setShowLogout] = useState<boolean>(false);
   const { data: session } = useSession();
   const { data: bases } = api.base.getAll.useQuery(
     { userId: session?.user.id ?? "" }, // pass empty string if session not ready
@@ -66,11 +70,14 @@ export default function Dashboard() {
           />
         </div>
         <div className="flex items-center space-x-4">
-          <button>❓</button>
-          <button>🔔</button>
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-600 text-white">
-            S
+          <button className="flex text-sm items-center"><CircleQuestionMark height={15} />Help</button>
+          <button className="border border-gray-100 rounded-2xl"><Bell /></button>
+          <div>
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-600 text-white" onClick={() => setShowLogout(true)}>
+            <User height={15}/>
           </div>
+          <LougoutModal isOpen={showLogout} onClose={() => setShowLogout(false)} />
+            </div>
         </div>
       </header>
 
