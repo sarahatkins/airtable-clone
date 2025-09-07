@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import HomeWidget from "./Dashboard/HomeWidget";
 import { useSession } from "next-auth/react";
-import type { InferSelectModel } from "drizzle-orm";
 import type { BaseType } from "../defaults";
 import LougoutModal from "./Table/modals/LogoutModal";
 

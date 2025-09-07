@@ -1,12 +1,11 @@
 import { ArrowDownUp } from "lucide-react";
 import SortModal from "../modals/SortModal";
-import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import { useState } from "react";
 import {
   type SortingType,
   type ColType,
   type ViewConfigType,
 } from "~/app/defaults";
-import { api } from "~/trpc/react";
 
 interface ButtonProps {
   cols: ColType[];

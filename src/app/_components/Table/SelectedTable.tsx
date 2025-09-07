@@ -21,8 +21,7 @@ import FilterButton from "./buttons/FilterButton";
 import SortButton from "./buttons/SortButton";
 import HiddenButton from "./buttons/HiddenButton";
 import SearchViewButton from "./buttons/SearchViewButton";
-import { view } from "drizzle-orm/sqlite-core";
-import HundredThousandButton from "./buttons/100kButton";
+import LoadingScreen from "./LoadingScreen";
 interface SelectedTableProps {
   selectedTable: TableType;
 }
@@ -114,6 +113,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
 
         {/* Right section */}
         <div className="flex items-center gap-5 text-gray-600">
+          {isDataLoading && <LoadingScreen />}
           {!isDataLoading && currentView && cols && (
             <>
               <HiddenButton
@@ -164,7 +164,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
         <div className="min-h-0 w-full" style={{ height: "88%" }}>
           {!views.length || !currentView ? (
             <div>
-              {views.length} {currentView?.id} Loading table...
+              <LoadingScreen />
             </div>
           ) : (
             <>

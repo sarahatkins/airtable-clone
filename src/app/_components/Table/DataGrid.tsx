@@ -3,32 +3,26 @@ import React, {
   useMemo,
   useState,
   useEffect,
-  useCallback,
   type Dispatch,
 } from "react";
 import {
   flexRender,
   getCoreRowModel,
   useReactTable,
-  type CellContext,
   type ColumnDef,
   type Table,
 } from "@tanstack/react-table";
 import type {
-  CellType,
   CellValue,
   ColType,
-  RowType,
   TableType,
   ViewType,
 } from "~/app/defaults";
 import EditableCell from "./EditableCell";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import HundredThousandButton from "./buttons/100kButton";
 import CreateColButton from "./buttons/CreateColButton";
 import { api } from "~/trpc/react";
 import CreateRowButton from "./buttons/CreateRowButton";
-import type { UseQueryResult } from "@tanstack/react-query";
 import FloatingAddRows from "./buttons/FloatingAddRows";
 import ColumnHeader from "./buttons/ColumnHeader";
 import IndexCell from "./buttons/IndexCell";
@@ -86,7 +80,7 @@ const DataGrid: React.FC<DataGridProps> = ({
     },
     {
       enabled: !!view?.id,
-      getNextPageParam: (lastPage, allPages) => {
+      getNextPageParam: (lastPage) => {
         return lastPage.nextCursor ?? undefined;
       },
     },
@@ -220,7 +214,7 @@ const DataGrid: React.FC<DataGridProps> = ({
           const maxRows = rows.length;
           const maxCols = cols.length;
 
-          let next = { ...focusedCell };
+          const next = { ...focusedCell };
 
           switch (e.key) {
             case "ArrowRight":
@@ -342,8 +336,8 @@ const DataGrid: React.FC<DataGridProps> = ({
                     isOpen={contextMenu != null}
                     onClose={() => setContextMenu(null)}
                     setRows={setRows}
-                    selectedRows={rowSelection}
-                    setRowSelection={setRowSelection}
+                    // selectedRows={rowSelection}
+                    // setRowSelection={setRowSelection}
                   />
                 </>
               );

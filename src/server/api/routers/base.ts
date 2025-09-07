@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { bases } from "~/server/db/schemas/tableSchema"; // your Drizzle table
-import { eq, type InferSelectModel } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "~/server/db";
 
 export const baseRouter = createTRPCRouter({

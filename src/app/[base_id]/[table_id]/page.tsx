@@ -3,6 +3,7 @@
 
 import { useParams } from "next/navigation";
 import AirTable from "~/app/_components/airtable";
+import LoadingScreen from "~/app/_components/Table/LoadingScreen";
 
 interface TablePageProps {
   params: Promise<{
@@ -18,7 +19,7 @@ const TablePage: React.FC<TablePageProps> = () => {
 
   // Only render AirTable once both IDs are defined
   if (!baseId || !tableId) {
-    return <div className="p-4">Loading table…</div>;
+    return <LoadingScreen />;
   }
 
   return <AirTable baseId={baseId} tableId={tableId} />;

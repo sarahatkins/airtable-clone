@@ -16,7 +16,7 @@ export default function BaseLayout({
   const baseId = params.base_id;
   const router = useRouter();
 
-  const { data: base, isLoading } = api.base.getById.useQuery(
+  const { data: base } = api.base.getById.useQuery(
     { id: baseId },
     { enabled: !!baseId },
   );

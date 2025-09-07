@@ -1,6 +1,4 @@
 import { useState, type Dispatch, type SetStateAction } from "react";
-import type { NormalizedRow } from "./DataGrid";
-import type { ColumnDef } from "@tanstack/react-table";
 import { api } from "~/trpc/react";
 
 interface EditFieldModalProps {

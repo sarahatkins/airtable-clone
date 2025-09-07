@@ -7,6 +7,7 @@ import type { TableType } from "../defaults";
 import AddTableButton from "./Table/buttons/AddTableButton";
 import SetTableButton from "./Table/buttons/SetTableButton";
 import SelectedTable from "./Table/SelectedTable";
+import LoadingScreen from "./Table/LoadingScreen";
 
 interface AirtableProps {
   baseId: string;
@@ -65,6 +66,7 @@ const AirTable: React.FC<AirtableProps> = ({ baseId, tableId }) => {
       </div>
 
       {/* Table content */}
+        {isLoading ||isTableSetup || !selectedTable && <div><LoadingScreen /></div>}
       <div className="flex-1 min-h-0">
         {!isLoading && isTableSetup && selectedTable && (
           <SelectedTable selectedTable={selectedTable} />

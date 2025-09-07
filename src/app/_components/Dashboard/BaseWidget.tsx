@@ -40,10 +40,10 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({ base }) => {
   });
 
   const deleteBase = api.base.deleteBase.useMutation({
-    onSuccess: (renamed) => {
+    onSuccess: async (renamed) => {
       if (!renamed) return;
       console.log("deleted base", renamed);
-      utils.base.getAll.invalidate({ userId: session?.user.id ?? "" });
+      await utils.base.getAll.invalidate({ userId: session?.user.id ?? "" });
     },
   });
 

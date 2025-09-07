@@ -39,7 +39,7 @@ const TableRenameModal: React.FC<RenameModalProps> = ({
     if (!tableName.trim()) return;
 
     renameTable.mutate({ tableId, newName: tableName });
-    setGivenTableName && setGivenTableName(tableName);
+    if(setGivenTableName) setGivenTableName(tableName);
 
     onClose();
   };

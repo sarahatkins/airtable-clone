@@ -1,12 +1,5 @@
-"use client";
 import { Trash2 } from "lucide-react";
-import React, {
-  useEffect,
-  useRef,
-  useState,
-  type Dispatch,
-  type SetStateAction,
-} from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type {
   CellValue,
   ColType,
@@ -50,8 +43,6 @@ const FilterModal: React.FC<FilterModalProps> = ({
   onSave,
   cols,
 }) => {
-  if (!isOpen) return null;
-
   const modalRef = useRef<HTMLDivElement | null>(null);
   const [filterTree, setFilterTree] = useState<FilterGroup>(
     currentFilter ?? { functionName: "and", args: [] },

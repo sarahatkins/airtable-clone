@@ -1,7 +1,6 @@
 // components/SortModal.tsx
-import { useEffect, useRef, useState } from "react";
-import { Eye, GripVertical, LogOut } from "lucide-react";
-import type { ColType, HiddenColType } from "~/app/defaults";
+import { useEffect, useRef } from "react";
+import {  LogOut } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 
 interface ModalProps {
@@ -11,7 +10,7 @@ interface ModalProps {
 
 const LougoutModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
   const modalRef = useRef<HTMLDivElement | null>(null);
-  const {data: session, status} = useSession();
+  const {data: session} = useSession();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

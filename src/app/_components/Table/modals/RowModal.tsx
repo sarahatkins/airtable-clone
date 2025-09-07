@@ -9,8 +9,8 @@ interface RowModalProps {
   isOpen: boolean;
   onClose: () => void;
   setRows: Dispatch<React.SetStateAction<NormalizedRow[]>>;
-  selectedRows: number[];
-  setRowSelection: Dispatch<React.SetStateAction<number[]>>;
+  // selectedRows: number[];
+  // setRowSelection: Dispatch<React.SetStateAction<number[]>>;
 }
 
 const RowModal: React.FC<RowModalProps> = ({
@@ -18,18 +18,17 @@ const RowModal: React.FC<RowModalProps> = ({
   y,
   isOpen,
   onClose,
-  setRows,
-  setRowSelection,
+  // setRows,
+  // setRowSelection,
 }) => {
-  const utils = api.useUtils();
   const modalRef = useRef<HTMLDivElement | null>(null);
-  const deleteRow = api.table.deleteRow.useMutation({
-    onSuccess: async () => {},
-  });
+  // const deleteRow = api.table.deleteRow.useMutation({
+  //   onSuccess: async () => {},
+  // });
 
-  const handleDelete = () => {
-    // setRows((prev) => [prev.filter((r) => r.id != )])
-  };
+  // const handleDelete = () => {
+  //   // setRows((prev) => [prev.filter((r) => r.id != )])
+  // };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

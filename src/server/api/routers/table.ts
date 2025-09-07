@@ -6,8 +6,8 @@ import {
   rows,
   cellValues,
   views,
-} from "~/server/db/schemas/tableSchema"; // your Drizzle table
-import { eq, and, inArray, gt, sql, asc, desc, notInArray } from "drizzle-orm";
+} from "~/server/db/schemas/tableSchema";
+import { eq, and, inArray, gt, sql, asc, desc } from "drizzle-orm";
 import { faker } from "@faker-js/faker";
 import { db } from "~/server/db";
 import {
@@ -23,8 +23,6 @@ import {
 } from "~/app/defaults";
 import { buildFilter, validateFilterGroup } from "./helpers/filtering";
 import { alias } from "drizzle-orm/pg-core";
-import { ViewBuilder } from "drizzle-orm/gel-core";
-import { count } from "console";
 
 // Types
 const CellValueSchema = z.union([

@@ -48,7 +48,7 @@ const ViewNameModal: React.FC<ViewNameModalProps> = ({
     }
     if (!isNewView && viewId){
       renameView.mutate({ viewId, newName: name });
-      setButtonName && setButtonName(name)
+      if(setButtonName) setButtonName(name)
     }
     
     onClose();

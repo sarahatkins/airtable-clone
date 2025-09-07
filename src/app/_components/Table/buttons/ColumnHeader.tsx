@@ -1,6 +1,6 @@
 // components/HeaderCell.tsx
 import { ArrowLeft, ArrowRight, Copy, Pencil, Trash } from "lucide-react";
-import { useState, useEffect, useRef, type Dispatch, type SetStateAction } from "react";
+import { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
 import RenameColModal from "../RenameColModal";
 

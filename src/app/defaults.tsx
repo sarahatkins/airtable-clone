@@ -1,4 +1,3 @@
-import type { base } from "@faker-js/faker";
 import type { InferSelectModel } from "drizzle-orm";
 import { Baseline, CircleChevronDown, type LucideIcon } from "lucide-react";
 import type {

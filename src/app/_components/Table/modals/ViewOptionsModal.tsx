@@ -1,6 +1,4 @@
-import { ApertureIcon } from "lucide-react";
 import {
-  useState,
   useRef,
   useEffect,
   type Dispatch,
@@ -47,7 +45,7 @@ const ViewOptionsModal: React.FC<ModalProps> = ({
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [onClose]);
 
   if (!isOpen) return;
   return (

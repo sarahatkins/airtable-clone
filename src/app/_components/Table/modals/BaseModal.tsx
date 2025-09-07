@@ -1,6 +1,4 @@
 import {
-  ChevronDownIcon,
-  ChevronLeftIcon,
   ChevronRightIcon,
   ChevronUpIcon,
   X,

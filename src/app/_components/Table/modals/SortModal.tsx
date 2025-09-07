@@ -3,8 +3,6 @@ import React, {
   useEffect,
   useRef,
   useState,
-  type Dispatch,
-  type SetStateAction,
 } from "react";
 import {
   type STATUS,

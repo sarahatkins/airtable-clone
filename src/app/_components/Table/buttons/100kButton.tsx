@@ -7,9 +7,9 @@ interface ButtonProps {
 const HundredThousandButton: React.FC<ButtonProps> = ({ tableId }) => {
   const utils = api.useUtils();
   const createRows = api.table.createFilledRows.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       console.log("generated cells")
-      utils.table.getFilterCells.invalidate();
+      await utils.table.getFilterCells.invalidate();
     }
   });
 
