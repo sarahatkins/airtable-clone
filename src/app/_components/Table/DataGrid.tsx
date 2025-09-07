@@ -62,6 +62,7 @@ const DataGrid: React.FC<DataGridProps> = ({
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const tableRef = useRef<HTMLTableElement>(null);
   const [rows, setRows] = useState<NormalizedRow[]>([]);
+  const [focusedCell, setFocusedCell] = useState<CellCoord | null>(null);
 
   const {
     data: viewData,
@@ -108,20 +109,22 @@ const DataGrid: React.FC<DataGridProps> = ({
   });
 
   const virtualItems = virtualizer.getVirtualItems();
+
   useEffect(() => {
     const lastItem = virtualItems[virtualItems.length - 1];
+
     if (!hasNextPage || isFetchingNextPage || !lastItem) return;
     if (lastItem.index >= rows.length - 1) {
       fetchNextPage();
     }
   }, [virtualItems, hasNextPage, isFetchingNextPage]);
 
-  const reactColumns = cols.map((col) => ({
+  const reactColumns = cols.map((col, colIdx) => ({
     accessorKey: `col_${col.id}`,
     header: col.name,
     size: 150,
     enableColumnFilter: true,
-    meta: { col },
+    meta: { col, colIndex: colIdx },
     cell: EditableCell,
   }));
 
@@ -139,6 +142,8 @@ const DataGrid: React.FC<DataGridProps> = ({
           ),
         );
       },
+      focusedCell,
+      setFocusedCell,
     },
   });
 
@@ -147,8 +152,42 @@ const DataGrid: React.FC<DataGridProps> = ({
     [reactColumns],
   );
   return (
-    <div ref={scrollRef} className="flex h-full w-full flex-col">
-      <div ref={scrollRef} className="overflow-auto" style={{ height: "100%" }}>
+    <div className="flex h-full w-full flex-col">
+      <div
+        ref={scrollRef}
+        className="overflow-auto"
+        style={{ height: "100%" }}
+        tabIndex={0} // make div focusable
+        onKeyDown={(e) => {
+          if (!focusedCell) return;
+
+          const maxRows = rows.length;
+          const maxCols = cols.length;
+
+          let next = { ...focusedCell };
+
+          switch (e.key) {
+            case "ArrowRight":
+              if (next.col < maxCols - 1) next.col += 1;
+              break;
+            case "ArrowLeft":
+              if (next.col > 0) next.col -= 1;
+              break;
+            case "ArrowDown":
+              if (next.row < maxRows - 1) next.row += 1;
+              break;
+            case "ArrowUp":
+              if (next.row > 0) next.row -= 1;
+              break;
+            default:
+              return;
+          }
+
+          e.preventDefault();
+          setFocusedCell(next);
+          virtualizer.scrollToIndex(next.row); // ensure visible
+        }}
+      >
         <div style={{ width: Math.max(totalWidth + 200, 800) }}>
           {/* Header */}
           {reactTable.getHeaderGroups().map((hg) => (
