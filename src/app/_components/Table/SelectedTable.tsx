@@ -22,6 +22,7 @@ import SortButton from "./buttons/SortButton";
 import HiddenButton from "./buttons/HiddenButton";
 import SearchViewButton from "./buttons/SearchViewButton";
 import { view } from "drizzle-orm/sqlite-core";
+import HundredThousandButton from "./buttons/100kButton";
 interface SelectedTableProps {
   selectedTable: TableType;
 }
@@ -149,7 +150,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
       </div>
 
       {/* Body */}
-      <div className="flex h-full min-h-0">
+      <div className="flex h-full min-h-0 w-full">
         {views && currentView && (
           <TableMenu
             tableId={selectedTable.id}
@@ -159,20 +160,25 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
           />
         )}
 
-        <div className="min-h-0 w-100" style={{height: "90%"}}>
+        <div className="min-h-0 w-full" style={{ height: "90%" }}>
           {!views.length || !currentView ? (
             <div>
               {views.length} {currentView?.id} Loading table...
             </div>
           ) : (
-            <DataGrid
-              key={currentView.id}
-              table={selectedTable}
-              view={currentView}
-              cols={shownCols}
-              searchText={search}
-              setCols={setCols}
-            />
+            <>
+              <DataGrid
+                key={currentView.id}
+                table={selectedTable}
+                view={currentView}
+                cols={shownCols}
+                searchText={search}
+                setCols={setCols}
+              />
+              <div className="flex bg-black">
+                <HundredThousandButton tableId={selectedTable.id} />
+              </div>
+            </>
           )}
         </div>
       </div>

@@ -92,7 +92,7 @@ const EditableCell = (ctx: CellContext<NormalizedRow, CellValue>) => {
       value={value ? value.toString() : ""}
       onChange={(e) => setValue(e.target.value)}
       onBlur={onBlur}
-      className="w-full cursor-default border border-transparent bg-transparent px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-5 focus:ring-blue-500 focus:outline-none"
+      className="w-full cursor-default border border-transparent bg-transparent text-sm text-gray-900 focus:border-blue-500 focus:ring-5 focus:ring-blue-500 focus:outline-none"
     />
   );
 };
