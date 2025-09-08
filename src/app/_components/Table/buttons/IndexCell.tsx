@@ -5,9 +5,7 @@ import type { NormalizedRow } from "../DataGrid";
 interface IndexCellProps {
   row: Row<NormalizedRow>;
   hoveredRowId: string | null;
-  rightClickedRowId: string | null;
   setHoveredRowId: Dispatch<SetStateAction<string | null>>;
-  setRightClickedRowId: Dispatch<SetStateAction<string | null>>;
   setSelectedRows: Dispatch<SetStateAction<number[]>>;
   selectedRows: number[];
 }
@@ -15,17 +13,15 @@ interface IndexCellProps {
 const IndexCell: React.FC<IndexCellProps> = ({
   row,
   hoveredRowId,
-  rightClickedRowId,
   setHoveredRowId,
-  setRightClickedRowId,
   setSelectedRows,
   selectedRows,
 }) => {
   const isSelected = selectedRows.includes(row.original.id);
   const isHovered = hoveredRowId === row.id.toString();
-  const isRightClicked = rightClickedRowId === row.id.toString();
+  // const isRightClicked = rightClickedRowId === row.id.toString();
 
-  const showCheckbox = isSelected || isHovered || isRightClicked;
+  const showCheckbox = isSelected || isHovered;
   useEffect(() => {
     setSelectedRows((prev) => {
       const isAlreadySelected = prev.includes(row.original.id);
@@ -41,6 +37,7 @@ const IndexCell: React.FC<IndexCellProps> = ({
       return prev;
     });
   }, [isSelected, row.original.id, setSelectedRows]);
+
   return (
     <div
       key={row.id}
@@ -50,7 +47,8 @@ const IndexCell: React.FC<IndexCellProps> = ({
       onContextMenu={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        setRightClickedRowId(row.id.toString());
+        setSelectedRows((prev) => [...prev, row.original.id]);
+        // setRightClickedRowId(row.id.toString());
       }}
     >
       {showCheckbox ? (

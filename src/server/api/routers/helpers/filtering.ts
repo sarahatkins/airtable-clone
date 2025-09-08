@@ -49,16 +49,22 @@ export function buildFilter(node: FilterGroup | FilterLeaf): SQL {
             AND NOT (cv."value"::text ILIKE '%' || ${value} || '%')
         )`;
       case "isEmpty":
-        return sql`EXISTS (
-        SELECT 1 FROM "airtable_cell_values" cv
-        WHERE cv."rowId" = ${rows.id}
-          AND cv."columnId" = ${columnId}
-          AND (
-            cv."value" IS NULL
-            OR cv."value"::jsonb = to_jsonb(''::text)
-          )
-      )
-      `;
+        return sql`
+            NOT EXISTS (
+              SELECT 1 FROM "airtable_cell_values" cv
+              WHERE cv."rowId" = ${rows.id}
+                AND cv."columnId" = ${columnId}
+            )
+            OR EXISTS (
+              SELECT 1 FROM "airtable_cell_values" cv
+              WHERE cv."rowId" = ${rows.id}
+                AND cv."columnId" = ${columnId}
+                AND (
+                  cv."value" IS NULL
+                  OR cv."value"::jsonb = to_jsonb(''::text)
+                )
+            )
+        `;
       case "isNotEmpty":
         return sql`EXISTS (
         SELECT 1 FROM ${cellValues} cv

@@ -63,14 +63,9 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
       setCurrentView(views[0]);
       setViewConfig(views[0]?.config as ViewConfigType);
     } else if (currentView) {
-      console.log("change view");
       setViewConfig(currentView?.config as ViewConfigType);
     }
   }, [views, currentView]);
-
-  useEffect(() => {
-    console.log("change current view");
-  }, [currentView]);
 
   const updateConfig = api.table.updateViewConfig.useMutation({
     onSuccess: async (newConfig) => {
@@ -169,9 +164,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
 
         <div className="min-h-0 w-full" style={{ height: "88%" }}>
           {!views.length || !currentView ? (
-            <div>
-              <LoadingScreen />
-            </div>
+            <LoadingScreen message=" table content..." />
           ) : (
             <>
               <DataGrid

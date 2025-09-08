@@ -10,9 +10,15 @@ import {
   getCoreRowModel,
   useReactTable,
   type ColumnDef,
-  type Table,
 } from "@tanstack/react-table";
-import type { CellValue, ColType, TableType, ViewType } from "~/app/defaults";
+import type {
+  CellValue,
+  ColType,
+  SortingType,
+  TableType,
+  ViewConfigType,
+  ViewType,
+} from "~/app/defaults";
 import EditableCell from "./EditableCell";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import CreateColButton from "./buttons/CreateColButton";
@@ -22,7 +28,6 @@ import FloatingAddRows from "./buttons/FloatingAddRows";
 import ColumnHeader from "./buttons/ColumnHeader";
 import IndexCell from "./buttons/IndexCell";
 import RowModal from "./modals/RowModal";
-import LoadingScreen from "./LoadingScreen";
 
 interface DataGridProps {
   table: TableType;
@@ -118,10 +123,9 @@ const DataGrid: React.FC<DataGridProps> = ({
     }
   }, [virtualItems, hasNextPage, isFetchingNextPage]);
 
-  
   const indexColumn: ColumnDef<NormalizedRow, unknown> = {
     accessorKey: "__rowIndex",
-    header: ({ table }: { table: Table<NormalizedRow> }) => (
+    header: () => (
       <input
         type="checkbox"
         checked={rowSelection.length === rows.length}
@@ -152,9 +156,7 @@ const DataGrid: React.FC<DataGridProps> = ({
         key={row.index}
         row={row}
         hoveredRowId={hoveredRowId}
-        rightClickedRowId={rightClickedRowId}
         setHoveredRowId={setHoveredRowId}
-        setRightClickedRowId={setRightClickedRowId}
         setSelectedRows={setRowSelection}
         selectedRows={rowSelection}
       />
@@ -207,7 +209,6 @@ const DataGrid: React.FC<DataGridProps> = ({
     [reactColumns],
   );
 
-
   return (
     <div className="flex h-full w-full flex-col">
       <div
@@ -254,31 +255,47 @@ const DataGrid: React.FC<DataGridProps> = ({
               key={hg.id}
               className="flex border-t border-gray-200 bg-gray-50"
             >
-              {hg.headers.map((header) => (
-                <div
-                  key={header.id}
-                  className={`border-b border-gray-200 bg-white px-3 py-1 text-sm font-semibold ${
-                    header.column.id !== "__rowIndex"
-                      ? "border-r"
-                      : "flex justify-center"
-                  }`}
-                  style={{ width: header.getSize() }}
-                >
-                  <>
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext(),
-                    )}
-                    {/* {header.getCanResize() && (
+              {hg.headers.map((header) => {
+                const colIdMatch = header.id.match(/_(\d+)/);
+                const colId = colIdMatch?.[1]
+                  ? parseInt(colIdMatch[1], 10)
+                  : null;
+
+                const filteredCell = (
+                  view.config as ViewConfigType
+                ).filters?.args.some((leaf) => leaf.args[0] === colId);
+                const sortedCell =
+                  colId !== null
+                    ? (view.config as ViewConfigType).sorting.some(
+                        (s: SortingType) => s.columnId === colId,
+                      )
+                    : false;
+                return (
+                  <div
+                    key={header.id}
+                    className={`border-b border-gray-200 px-3 py-1 text-sm font-semibold ${
+                      header.column.id !== "__rowIndex"
+                        ? "border-r"
+                        : "flex justify-center"
+                    } ${filteredCell ? "bg-green-50" : sortedCell ? "bg-orange-50" : "bg-white"}`}
+                    style={{ width: header.getSize() }}
+                  >
+                    <>
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                      {/* {header.getCanResize() && (
                       <div
                         onMouseDown={header.getResizeHandler()} // Attach resize handler
                         onTouchStart={header.getResizeHandler()}
                         className={`resizer ${header.column.getIsResizing() ? "isResizing" : ""}`}
                       />
                     )} */}
-                  </>
-                </div>
-              ))}
+                    </>
+                  </div>
+                );
+              })}
               <div
                 key="column_add"
                 className="flex cursor-pointer items-center justify-center border-r border-b border-gray-200 bg-white hover:bg-neutral-50"
@@ -320,21 +337,37 @@ const DataGrid: React.FC<DataGridProps> = ({
                       });
                     }}
                   >
-                    {r.getVisibleCells().map((cell) => (
-                      <div
-                        key={cell.id}
-                        className={`overflow-hidden text-ellipsis whitespace-nowrap ${
-                          cell.column.id !== "__rowIndex" &&
-                          "border-r border-gray-200"
-                        }`}
-                        style={{ width: cell.column.getSize() }}
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </div>
-                    ))}
+                    {r.getVisibleCells().map((cell) => {
+                      const colIdMatch = cell.column.id.match(/_(\d+)/);
+                      const colId = colIdMatch?.[1]
+                        ? parseInt(colIdMatch[1], 10)
+                        : null;
+
+                      const filteredCell = (
+                        view.config as ViewConfigType
+                      ).filters?.args.some((leaf) => leaf.args[0] === colId);
+                      const sortedCell =
+                        colId !== null
+                          ? (view.config as ViewConfigType).sorting.some(
+                              (s: SortingType) => s.columnId === colId,
+                            )
+                          : false;
+                      return (
+                        <div
+                          key={cell.id}
+                          className={`overflow-hidden text-ellipsis whitespace-nowrap ${
+                            cell.column.id !== "__rowIndex" &&
+                            "border-r border-gray-200"
+                          } ${filteredCell ? "bg-green-100" : sortedCell ? "bg-orange-100" : ""}`}
+                          style={{ width: cell.column.getSize() }}
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                   <RowModal
                     x={contextMenu?.x ?? 0}

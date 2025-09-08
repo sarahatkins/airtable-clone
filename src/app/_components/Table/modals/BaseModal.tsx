@@ -62,12 +62,15 @@ const EditBaseModal: React.FC<ModalProps> = ({
         !modalRef.current.contains(event.target as Node)
       ) {
         setShowOptions(false);
+        if (newBaseName != base.name) {
+          handleRename();
+        }
         onClose();
       } else if (
         optionsRef.current &&
         !optionsRef.current.contains(event.target as Node)
       ) {
-        console.log('hey')
+        console.log("hey");
         setShowOptions(false); // closes dropdown but not modal
       }
     };
@@ -87,7 +90,10 @@ const EditBaseModal: React.FC<ModalProps> = ({
         <input
           type="text"
           defaultValue={newBaseName}
-          onChange={(e) => setNewBaseName(e.target.value)}
+          onInput={(e) => {
+            setNewBaseName(e.currentTarget.value);
+            console.log("typing...");
+          }}
           onBlur={() => {
             handleRename();
           }}

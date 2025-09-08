@@ -19,7 +19,7 @@ const FilterButton: React.FC<ButtonProps> = ({
   viewConfig,
 }) => {
   const [showModal, setShowModal] = useState<boolean>(false);
-  console.log(currFilter) //does not update when you switch view
+
   const handleSave = (filters: FilterGroup | null) => {
     const newConfig: ViewConfigType = { ...viewConfig, filters };
     onConfigChange(newConfig);

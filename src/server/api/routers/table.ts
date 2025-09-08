@@ -284,11 +284,6 @@ export const tableRouter = createTRPCRouter({
 
 
       yield { type:'end', message: 'Stream finished.'}
-      // return {
-      //   success: true,
-      //   rowsInserted: insertedRows.length,
-      //   cellsInserted: newCells.length,
-      // };
     }),
 
   getRowsByTable: publicProcedure
