@@ -1,4 +1,3 @@
-import { useSession } from "next-auth/react";
 import React, { useEffect, useRef, type Dispatch } from "react";
 import { api } from "~/trpc/react";
 import type { NormalizedRow } from "../DataGrid";
@@ -31,7 +30,7 @@ const RowModal: React.FC<RowModalProps> = ({
     },
   });
   const handleDelete = () => {
-    console.log("handling..");
+    console.log("handling..", selectedRows, rowId);
     setRows((prev) => prev.filter((r) => r.id != rowId));
     setRowSelection((prev) => prev.filter((id) => id != rowId));
     deleteRows.mutate({ rowIds: selectedRows });

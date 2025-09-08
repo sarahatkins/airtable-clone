@@ -340,7 +340,7 @@ const DataGrid: React.FC<DataGridProps> = ({
                     setRows={setRows}
                     selectedRows={rowSelection}
                     setRowSelection={setRowSelection}
-                    rowId={Number(r.original.rowId) ?? 0}
+                    rowId={Number(r.id)}
                   />
                 </div>
               );
