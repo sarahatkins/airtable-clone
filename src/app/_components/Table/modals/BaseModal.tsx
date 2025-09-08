@@ -22,7 +22,6 @@ const EditBaseModal: React.FC<ModalProps> = ({
   base,
   setBaseName,
 }) => {
-  const router = useRouter();
   const modalRef = useRef<HTMLDivElement | null>(null);
   const optionsRef = useRef<HTMLDivElement | null>(null);
   const [guideOpen, setGuideOpen] = useState(true);
@@ -33,16 +32,6 @@ const EditBaseModal: React.FC<ModalProps> = ({
     onSuccess: (renamed) => {
       if (!renamed) return;
       console.log("renamed base", renamed);
-    },
-  });
-
-  const deleteBase = api.base.deleteBase.useMutation({
-    onSuccess: (renamed) => {
-      if (!renamed) return;
-      console.log("deleted base", renamed);
-      router.push(`/`);
-      setShowOptions(false);
-      onClose();
     },
   });
 
@@ -83,7 +72,7 @@ const EditBaseModal: React.FC<ModalProps> = ({
   return (
     <div
       ref={modalRef}
-      className="absolute left-[-45] z-50 mt-2 w-[450px] rounded-md border border-gray-200 bg-white p-3 shadow-lg"
+      className="absolute left-[-45] z-80 mt-2 w-[450px] rounded-md border border-gray-200 bg-white p-3 shadow-lg"
     >
       <div className="flex items-center justify-between border-b border-gray-200 p-1 pb-5">
         {/* Header */}
@@ -162,7 +151,7 @@ const EditBaseModal: React.FC<ModalProps> = ({
       {showOptions && (
         <div
           ref={optionsRef}
-          className="absolute top-12 right-[-200] z-50 w-60 rounded-md border border-gray-200 bg-white py-2 shadow-xl"
+          className="absolute top-12 right-[-200] z-100 w-60 rounded-md border border-gray-200 bg-white py-2 shadow-xl"
         >
           <button className="flex w-full cursor-not-allowed items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
             <svg
@@ -197,13 +186,6 @@ const EditBaseModal: React.FC<ModalProps> = ({
               />
             </svg>
             Slack notifications
-          </button>
-          <button
-            onClick={() => deleteBase.mutate({ id: base.id })}
-            className="flex w-full cursor-pointer items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-          >
-            <X height={15} className="mr-1 ml-[-3]" />
-            Delete base
           </button>
         </div>
       )}

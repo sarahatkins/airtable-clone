@@ -78,7 +78,7 @@ export function buildFilter(node: FilterGroup | FilterLeaf): SQL {
           SELECT 1 FROM ${cellValues} cv
           WHERE cv."rowId" = ${rows.id}
             AND cv."columnId" = ${columnId}
-            AND (cv."value" #>> '{}')::numeric > ${value}
+            AND (cv."value" #>> '{}')::numeric > ${String(value)}
         )`;
 
       case "lt":
@@ -86,7 +86,7 @@ export function buildFilter(node: FilterGroup | FilterLeaf): SQL {
           SELECT 1 FROM ${cellValues} cv
           WHERE cv."rowId" = ${rows.id}
             AND cv."columnId" = ${columnId}
-            AND (cv."value" #>> '{}')::numeric < ${value}
+            AND (cv."value" #>> '{}')::numeric < ${String(value)}
         )`;
 
       case "gte":
@@ -94,14 +94,14 @@ export function buildFilter(node: FilterGroup | FilterLeaf): SQL {
           SELECT 1 FROM ${cellValues} cv
           WHERE cv."rowId" = ${rows.id}
             AND cv."columnId" = ${columnId}
-            AND (cv."value" #>> '{}')::numeric >= ${value}
+            AND (cv."value" #>> '{}')::numeric >= ${String(value)}
         )`;
       case "lte":
         return sql`EXISTS (
           SELECT 1 FROM ${cellValues} cv
           WHERE cv."rowId" = ${rows.id}
             AND cv."columnId" = ${columnId}
-            AND (cv."value" #>> '{}')::numeric <= ${value}
+            AND (cv."value" #>> '{}')::numeric <= ${String(value)}
         )`;
     }
   }
