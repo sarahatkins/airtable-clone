@@ -1,6 +1,6 @@
 import type { CellNoId } from "~/app/defaults";
 
-const pendingEdits = new Map<number, CellNoId[]>(); 
+const pendingEdits = new Map<number, CellNoId[]>();
 
 // key: tempRowId (-1), value: array of edits
 export function addPendingRowEdit(edit: CellNoId) {
@@ -11,8 +11,10 @@ export function addPendingRowEdit(edit: CellNoId) {
   pendingEdits.get(key)!.push(edit);
 }
 
-export function getPendingEditsForRow(tempId: number) {
-  return pendingEdits.get(tempId) ?? [];
+export function getPendingEditsForRow() {
+  return [...pendingEdits.entries()]
+    .filter(([id]) => id < 0)
+    .flatMap(([_, edits]) => edits);
 }
 
 export function clearPendingEditsForRow(tempId: number) {
@@ -30,11 +32,12 @@ export function addPendingColEdit(edit: CellNoId) {
   pendingColEdits.get(key)!.push(edit);
 }
 
-export function getPendingColEditsForCol(tempId: number) {
-  return pendingColEdits.get(tempId) ?? [];
+export function getPendingColEditsForCol() {
+  return [...pendingColEdits.entries()]
+    .filter(([id]) => id < 0)
+    .flatMap(([_, edits]) => edits);
 }
 
 export function clearPendingColEditsForCol(tempId: number) {
   pendingColEdits.delete(tempId);
 }
-

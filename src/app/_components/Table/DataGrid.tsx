@@ -58,9 +58,7 @@ const DataGrid: React.FC<DataGridProps> = ({
 
   const [focusedCell, setFocusedCell] = useState<CellCoord | null>(null);
   const [hoveredRowId, setHoveredRowId] = useState<string | null>(null);
-  const [rightClickedRowId, setRightClickedRowId] = useState<string | null>(
-    null,
-  );
+
   const [rowSelection, setRowSelection] = useState<number[]>([]);
   const [contextMenu, setContextMenu] = useState<{
     x: number;
@@ -360,6 +358,9 @@ const DataGrid: React.FC<DataGridProps> = ({
                             "border-r border-gray-200"
                           } ${filteredCell ? "bg-green-100" : sortedCell ? "bg-orange-100" : ""}`}
                           style={{ width: cell.column.getSize() }}
+                          onContextMenu={() => {
+                            setRowSelection((prev) => [...prev, cell.row.original.id])
+                          }}
                         >
                           {flexRender(
                             cell.column.columnDef.cell,

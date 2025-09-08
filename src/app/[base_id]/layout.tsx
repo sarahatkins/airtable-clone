@@ -33,7 +33,7 @@ export default function BaseLayout({
             >
               <Image
                 src="/airtable-logo-bw.svg"
-                alt="Google"
+                alt="Back"
                 width={22}
                 height={25}
               />
@@ -49,7 +49,7 @@ export default function BaseLayout({
             <div className="mr-2 rounded-md bg-blue-900 p-1.25">
               <Image
                 src="/airtable-logo-white.png"
-                alt="Google"
+                alt="Airtable"
                 width={22}
                 height={20}
               />

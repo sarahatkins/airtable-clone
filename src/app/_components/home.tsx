@@ -54,7 +54,7 @@ export default function Dashboard() {
           />
           <Image
             src="/airtable-logo-name.png"
-            alt="Google"
+            alt="Airtable"
             width={100}
             height={100}
             className="mr-2"

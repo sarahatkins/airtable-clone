@@ -71,7 +71,7 @@ const TableRenameModal: React.FC<RenameModalProps> = ({
   return (
     <div
       ref={modalRef}
-      className="absolute z-50 mt-2 w-80 rounded-lg border border-gray-200 bg-white p-3.5 shadow-lg"
+      className="absolute z-50 top-22 w-80 rounded-lg border border-gray-200 bg-white p-3.5 shadow-lg"
     >
       {/* Table Name Input */}
       <input

@@ -1,5 +1,11 @@
-import React, { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
-import { STATUS, type ColType, type TableType } from "~/app/defaults";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
+import { DEFAULT_PENDING_KEY, STATUS, type ColType, type TableType } from "~/app/defaults";
 import { api } from "~/trpc/react";
 import {
   clearPendingColEditsForCol,
@@ -13,7 +19,7 @@ interface ColButtonProps {
 }
 
 const CreateColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
-  const modalRef = useRef<HTMLDivElement | null>(null)
+  const modalRef = useRef<HTMLDivElement | null>(null);
   const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
   const [newColumnType, setNewColumnType] = useState<STATUS | null>();
   const [newColumnName, setNewColumnName] = useState("");
@@ -27,11 +33,11 @@ const CreateColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
     onSuccess: (newCol) => {
       if (!newCol) return;
       setCols((prev: ColType[]) =>
-        prev.map((col) => (col.id === -1 ? { ...col, id: newCol.id } : col)),
+        prev.map((col) => (col.id < 0 ? { ...col, id: newCol.id } : col)),
       );
 
       // Check for pending and replace default id
-      const pending = getPendingColEditsForCol(-1);
+      const pending = getPendingColEditsForCol();
       pending.forEach((edit) => {
         const editVal =
           typeof edit.value === "number"
@@ -44,8 +50,8 @@ const CreateColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
           columnId: newCol.id,
           value: editVal,
         });
+        clearPendingColEditsForCol(edit.columnId);
       });
-      clearPendingColEditsForCol(-1);
     },
   });
 
@@ -60,7 +66,7 @@ const CreateColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
     if (!newColumnName.trim() || !newColumnType) return;
 
     const newCol: ColType = {
-      id: -1,
+      id: DEFAULT_PENDING_KEY(),
       name: newColumnName,
       type: newColumnType,
       tableId: dbTable.id,
@@ -89,7 +95,7 @@ const CreateColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
         modalRef.current &&
         !modalRef.current.contains(event.target as Node)
       ) {
-        setIsAddColumnOpen(false)
+        setIsAddColumnOpen(false);
       }
     };
     if (isAddColumnOpen) {
@@ -107,7 +113,10 @@ const CreateColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
         <Plus height={18} />
       </button>
       {isAddColumnOpen && (
-        <div ref={modalRef} className="absolute right-10 z-60 top-42 w-[300px] p-2 rounded-lg border border-gray-200 bg-white shadow-xl">
+        <div
+          ref={modalRef}
+          className="absolute top-42 right-10 z-60 w-[300px] rounded-lg border border-gray-200 bg-white p-2 shadow-xl"
+        >
           {!newColumnType ? (
             <>
               <h3 className="mb-2 font-semibold">Select field type</h3>
@@ -116,7 +125,7 @@ const CreateColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
                   <button
                     key={type}
                     onClick={() => setNewColumnType(type)}
-                    className="rounded border p-2 hover:bg-gray-100 cursor-pointer"
+                    className="cursor-pointer rounded border p-2 hover:bg-gray-100"
                   >
                     {type}
                   </button>

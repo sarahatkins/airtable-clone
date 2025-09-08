@@ -45,7 +45,7 @@ const EditableCell = (ctx: CellContext<NormalizedRow, CellValue>) => {
       const colId = (column.columnDef.meta as ColMeta).col.id;
 
       // New row/column, store in pending
-      if (rowId === -1) {
+      if (rowId < 0) {
         addPendingRowEdit({
           tableId: row.original.tableId,
           rowId,
@@ -55,7 +55,7 @@ const EditableCell = (ctx: CellContext<NormalizedRow, CellValue>) => {
         return;
       }
 
-      if (colId === -1) {
+      if (colId < 0) {
         addPendingColEdit({
           tableId: row.original.tableId,
           rowId,

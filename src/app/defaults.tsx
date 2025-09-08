@@ -67,7 +67,7 @@ export type FilterJoiner = | "and" | "or";
 // ------------- CONSTS -----------------------------
 // --------------------------------------------------
 
-export const DEFAULT_PENDING_KEY = -1;
+export const DEFAULT_PENDING_KEY = () => -1 * Math.floor(Math.random() * 10000);
 
 export enum STATUS {
   Text = "text",

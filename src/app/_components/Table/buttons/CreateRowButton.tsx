@@ -1,8 +1,5 @@
 import React, { type Dispatch, type SetStateAction } from "react";
-import {
-  DEFAULT_PENDING_KEY,
-  type TableType,
-} from "~/app/defaults";
+import { DEFAULT_PENDING_KEY, type TableType } from "~/app/defaults";
 import { api } from "~/trpc/react";
 import {
   clearPendingEditsForRow,
@@ -24,7 +21,7 @@ const CreateRowButton: React.FC<ColButtonProps> = ({
 }) => {
   const { mutate: setCellValue } = api.table.setCellValue.useMutation({
     onSuccess: () => {
-      console.log("New cell created!")
+      console.log("New cell created!");
     },
   });
 
@@ -34,13 +31,11 @@ const CreateRowButton: React.FC<ColButtonProps> = ({
 
       // normalize row
       setRows((prev) =>
-        prev.map((row) =>
-          row.id === DEFAULT_PENDING_KEY ? { ...row, id: newRow.id } : row,
-        ),
+        prev.map((row) => (row.id < 0 ? { ...row, id: newRow.id } : row)),
       );
 
       // Check for any pending edits on this row
-      const pending = getPendingEditsForRow(DEFAULT_PENDING_KEY);
+      const pending = getPendingEditsForRow();
       pending.forEach((edit) => {
         setCellValue({
           tableId: edit.tableId ?? 0,
@@ -48,18 +43,17 @@ const CreateRowButton: React.FC<ColButtonProps> = ({
           columnId: edit.columnId,
           value: edit.value as string,
         });
+        clearPendingEditsForRow(edit.rowId);
       });
-
-      clearPendingEditsForRow(DEFAULT_PENDING_KEY);
     },
   });
 
   const addNewRow = () => {
     // Update frontend state
     const normalizedRow: NormalizedRow = {
-      id: DEFAULT_PENDING_KEY,
+      id: DEFAULT_PENDING_KEY(),
       tableId: dbTable.id,
-    }
+    };
     setRows((prev) => [...prev, normalizedRow]);
 
     // Persist to backend
@@ -70,9 +64,12 @@ const CreateRowButton: React.FC<ColButtonProps> = ({
     <>
       <button
         onClick={addNewRow}
-        className={style ?? `text-start w-full bg-white px-4.5 py-2 border-b border-r border-gray-200 text-gray hover:bg-neutral-50`}
+        className={
+          style ??
+          `text-gray w-full border-r border-b border-gray-200 bg-white px-4.5 py-2 text-start hover:bg-neutral-50`
+        }
       >
-        <Plus height={15}/>
+        <Plus height={15} />
       </button>
     </>
   );
