@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import TableMenu from "./TableMenu";
 import { api } from "~/trpc/react";
-import DataGrid from "./DataGrid";
+import DataGrid, { type NormalizedRow } from "./DataGrid";
 import FilterButton from "./buttons/FilterButton";
 import SortButton from "./buttons/SortButton";
 import HiddenButton from "./buttons/HiddenButton";
@@ -35,6 +35,8 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
 
   const [cols, setCols] = useState<ColType[]>([]);
   const [search, setSearch] = useState<string | undefined>(undefined);
+  const [rows, setRows] = useState<NormalizedRow[]>([]);
+
   const { data: numRows } = api.table.getNumRows.useQuery(
     { tableId: selectedTable?.id ?? 0 },
     { enabled: !!selectedTable?.id },
@@ -70,6 +72,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
   const updateConfig = api.table.updateViewConfig.useMutation({
     onSuccess: async (newConfig) => {
       console.log("View Config has been updated...", newConfig);
+      setRows([]);
       await utils.table.getFilterCells.invalidate();
     },
   });
@@ -85,7 +88,6 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
 
     setCurrentView({ ...currentView, config: newConfig });
     setViewConfig(newConfig);
-
     updateConfig.mutate({
       viewId: currentView.id,
       config: {
@@ -174,6 +176,8 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
                 cols={shownCols}
                 searchText={search}
                 setCols={setCols}
+                rows={rows}
+                setRows={setRows}
               />
               <div className="flex h-10 border-t border-gray-100 bg-white pt-2 pl-2 text-xs">
                 {numRows?.count} records

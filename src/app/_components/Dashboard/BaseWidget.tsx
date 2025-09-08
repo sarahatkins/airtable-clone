@@ -12,17 +12,22 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
-import type { bases } from "~/server/db/schemas/tableSchema";
+import {
+  useState,
+  useRef,
+  useEffect,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
+import type { BaseType } from "~/app/defaults";
 import { api } from "~/trpc/react";
 
-type Base = InferSelectModel<typeof bases>;
-
 interface BaseWidgetProps {
-  base: Base;
+  base: BaseType;
+  setBases: Dispatch<SetStateAction<BaseType[]>>;
 }
 
-const BaseWidget: React.FC<BaseWidgetProps> = ({ base }) => {
+const BaseWidget: React.FC<BaseWidgetProps> = ({ base, setBases }) => {
   const utils = api.useUtils();
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -56,6 +61,12 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({ base }) => {
 
     renameBase.mutate({ id: base.id, name });
     setWidgetName(name);
+  };
+
+  const handleDelete = () => {
+    console.log("deleting");
+    setBases((prev) => prev.filter((b) => b.id !== base.id));
+    deleteBase.mutate({ id: base.id });
   };
 
   useEffect(() => {
@@ -171,7 +182,7 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({ base }) => {
                     <Paintbrush /> Customize appearance
                   </li>
                   <li
-                    onClick={() => deleteBase.mutate({ id: base.id })}
+                    onClick={() => handleDelete()}
                     className="mt-1 flex cursor-pointer items-center gap-2 border-t border-gray-200 px-4 py-2 text-red-600 hover:bg-red-100"
                   >
                     <Trash /> Delete

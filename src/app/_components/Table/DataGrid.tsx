@@ -4,6 +4,7 @@ import React, {
   useState,
   useEffect,
   type Dispatch,
+  type SetStateAction,
 } from "react";
 import {
   flexRender,
@@ -34,7 +35,9 @@ interface DataGridProps {
   view: ViewType;
   cols: ColType[];
   searchText: string | undefined;
-  setCols: Dispatch<React.SetStateAction<ColType[]>>;
+  setCols: Dispatch<SetStateAction<ColType[]>>;
+  rows: NormalizedRow[]
+  setRows: Dispatch<SetStateAction<NormalizedRow[]>>
 }
 
 const ROW_HEIGHT = 30;
@@ -52,9 +55,10 @@ const DataGrid: React.FC<DataGridProps> = ({
   cols,
   setCols,
   searchText,
+  rows,
+  setRows
 }) => {
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  const [rows, setRows] = useState<NormalizedRow[]>([]);
 
   const [focusedCell, setFocusedCell] = useState<CellCoord | null>(null);
   const [hoveredRowId, setHoveredRowId] = useState<string | null>(null);
