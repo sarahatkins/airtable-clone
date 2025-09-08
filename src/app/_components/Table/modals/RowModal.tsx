@@ -5,7 +5,6 @@ import type { NormalizedRow } from "../DataGrid";
 interface RowModalProps {
   x: number;
   y: number;
-  rowId: number;
   isOpen: boolean;
   onClose: () => void;
   setRows: Dispatch<React.SetStateAction<NormalizedRow[]>>;
@@ -16,7 +15,6 @@ interface RowModalProps {
 const RowModal: React.FC<RowModalProps> = ({
   x,
   y,
-  rowId,
   isOpen,
   onClose,
   setRows,
@@ -30,9 +28,10 @@ const RowModal: React.FC<RowModalProps> = ({
     },
   });
   const handleDelete = () => {
-    console.log("handling..", selectedRows, rowId);
-    setRows((prev) => prev.filter((r) => r.id != rowId));
-    setRowSelection((prev) => prev.filter((id) => id != rowId));
+    selectedRows.map((sr) => {
+      setRows((prev) => prev.filter((r) => r.id != sr));
+    })
+    setRowSelection([]);
     deleteRows.mutate({ rowIds: selectedRows });
     onClose();
   };
