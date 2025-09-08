@@ -221,7 +221,8 @@ export const tableRouter = createTRPCRouter({
         count: z.number(),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async function* ({ input }) {
+      yield{type: "start", message: 'Started streaming...'}
       const newRows = Array.from({ length: input.count }, () => ({
         tableId: input.tableId,
         createdAt: new Date(),
@@ -229,6 +230,7 @@ export const tableRouter = createTRPCRouter({
 
       // Insert rows in chunks and collect inserted rows with IDs
       const insertedRows: { id: number }[] = [];
+      const newCells: CellNoId[] = [];
 
       for (let i = 0; i < newRows.length; i += 1000) {
         const chunk = newRows.slice(i, i + 1000);
@@ -237,56 +239,57 @@ export const tableRouter = createTRPCRouter({
           .values(chunk)
           .returning({ id: rows.id }); // Get back the inserted IDs
         insertedRows.push(...insertedChunk);
-        console.log("Row ", i);
-      }
 
-      // Fetch columns for the table
-      const tableColumns = await db
-        .select()
-        .from(columns)
-        .where(eq(columns.tableId, input.tableId));
+        // Fetch columns for the table
+        const tableColumns = await db
+          .select()
+          .from(columns)
+          .where(eq(columns.tableId, input.tableId));
 
-      const newCells: CellNoId[] = [];
+        // Use insertedRows with real IDs here
+        // loop through rows in chunks and form the cells that need to be push
+        for (const row of insertedChunk) {
+          for (const col of tableColumns) {
+            let fakeValue: CellValue;
 
-      // Use insertedRows with real IDs here
-      for (const row of insertedRows) {
-        for (const col of tableColumns) {
-          let fakeValue: CellValue;
+            switch (col.type) {
+              case "text":
+                fakeValue = faker.lorem.words(3);
+                break;
+              case "number":
+                fakeValue = faker.number.int({ max: 100 });
+                break;
+              default:
+                fakeValue = faker.lorem.word();
+            }
 
-          switch (col.type) {
-            case "text":
-              fakeValue = faker.lorem.words(3);
-              break;
-            case "number":
-              fakeValue = faker.number.int({ max: 100 });
-              break;
-            default:
-              fakeValue = faker.lorem.word();
+            newCells.push({
+              tableId: input.tableId,
+              rowId: row.id,
+              columnId: col.id,
+              value: JSON.stringify(fakeValue),
+            });
           }
-
-          newCells.push({
-            tableId: input.tableId,
-            rowId: row.id, // now valid
-            columnId: col.id,
-            value: JSON.stringify(fakeValue),
-          });
         }
+
+        // Insert cells in chunks
+        for (let j = 0; j < newCells.length; j += 1000) {
+          const chunk = newCells.slice(j, j + 1000);
+          await db.insert(cellValues).values(chunk);
+          console.log("cell ", j);
+        }
+        
+        yield { type: "rowsFilled", value: i };
+        newCells.slice(0, newCells.length);
       }
 
-      console.log("finished inserting rows");
 
-      // Insert cells in chunks
-      for (let i = 0; i < newCells.length; i += 1000) {
-        const chunk = newCells.slice(i, i + 1000);
-        await db.insert(cellValues).values(chunk);
-        console.log("cell ", i);
-      }
-
-      return {
-        success: true,
-        rowsInserted: insertedRows.length,
-        cellsInserted: newCells.length,
-      };
+      yield { type:'end', message: 'Stream finished.'}
+      // return {
+      //   success: true,
+      //   rowsInserted: insertedRows.length,
+      //   cellsInserted: newCells.length,
+      // };
     }),
 
   getRowsByTable: publicProcedure

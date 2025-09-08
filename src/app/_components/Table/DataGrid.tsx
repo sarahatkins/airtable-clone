@@ -113,7 +113,7 @@ const DataGrid: React.FC<DataGridProps> = ({
     const lastItem = virtualItems[virtualItems.length - 1];
 
     if (!hasNextPage || isFetchingNextPage || !lastItem) return;
-    if (lastItem.index >= rows.length - 1) {
+    if (lastItem.index >= rows.length - 100) {
       fetchNextPage();
     }
   }, [virtualItems, hasNextPage, isFetchingNextPage]);
