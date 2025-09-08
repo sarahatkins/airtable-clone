@@ -54,7 +54,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
 
   const getColType = (colId: number) => {
     const col = cols.find((c) => c.id === colId);
-    return col?.type === "number" ? "number" : "text";
+    return col?.type.toLowerCase() === "number" ? "number" : "text";
   };
 
   const updateCondition = (
