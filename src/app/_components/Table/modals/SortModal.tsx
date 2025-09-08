@@ -1,9 +1,5 @@
 import { X, Plus, Baseline, Info, type LucideIcon } from "lucide-react";
-import React, {
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   type STATUS,
   typeToIconMap,
@@ -159,11 +155,17 @@ const SortModal: React.FC<SortModalProps> = ({
                     value={opt.columnId ?? ""}
                     onChange={(e) => updateColumn(idx, Number(e.target.value))}
                   >
-                    {cols.map((col: ColType) => (
-                      <option key={col.id} value={col.id}>
-                        {col.name}
-                      </option>
-                    ))}
+                    {cols
+                      .filter(
+                        (col) =>
+                          !sorts.some((s) => s.columnId === col.id) ||
+                          col.id === opt.columnId,
+                      )
+                      .map((col) => (
+                        <option key={col.id} value={col.id}>
+                          {col.name}
+                        </option>
+                      ))}
                   </select>
 
                   <select
@@ -198,7 +200,10 @@ const SortModal: React.FC<SortModalProps> = ({
           </button>
 
           {showAdditional && (
-            <div ref={additionalRef} className="absolute left-[380] z-50 mt-[-30]">
+            <div
+              ref={additionalRef}
+              className="absolute left-[380] z-50 mt-[-30]"
+            >
               <PickColModal
                 isOpen={showAdditional}
                 onClose={() => setShowAdditional(false)}
