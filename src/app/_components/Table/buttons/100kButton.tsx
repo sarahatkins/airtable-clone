@@ -24,7 +24,9 @@ const HundredThousandButton: React.FC<ButtonProps> = ({ tableId }) => {
           break;
         case "rowsFilled":
           console.log(`Rows filled: ${chunk.value}`);
-          await utils.table.getFilterCells.invalidate();
+          if(chunk?.value && chunk.value <= 1000) {
+            await utils.table.getFilterCells.invalidate();
+          }
           break;
         case "end":
           console.log(chunk.message);

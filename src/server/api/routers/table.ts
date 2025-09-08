@@ -276,7 +276,6 @@ export const tableRouter = createTRPCRouter({
         for (let j = 0; j < newCells.length; j += 1000) {
           const chunk = newCells.slice(j, j + 1000);
           await db.insert(cellValues).values(chunk);
-          console.log("cell ", j);
         }
         
         yield { type: "rowsFilled", value: i };
