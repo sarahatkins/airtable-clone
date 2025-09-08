@@ -9,6 +9,7 @@ interface IndexCellProps {
   setHoveredRowId: Dispatch<SetStateAction<string | null>>;
   setRightClickedRowId: Dispatch<SetStateAction<string | null>>;
   setSelectedRows: Dispatch<SetStateAction<number[]>>;
+  selectedRows: number[];
 }
 
 const IndexCell: React.FC<IndexCellProps> = ({
@@ -18,8 +19,9 @@ const IndexCell: React.FC<IndexCellProps> = ({
   setHoveredRowId,
   setRightClickedRowId,
   setSelectedRows,
+  selectedRows,
 }) => {
-  const isSelected = row.getIsSelected();
+  const isSelected = selectedRows.includes(row.original.id);
   const isHovered = hoveredRowId === row.id.toString();
   const isRightClicked = rightClickedRowId === row.id.toString();
 
@@ -29,16 +31,13 @@ const IndexCell: React.FC<IndexCellProps> = ({
       const isAlreadySelected = prev.includes(row.original.id);
 
       if (isSelected && !isAlreadySelected) {
-        // Add the id only if it's not already selected
         return [...prev, row.original.id];
       }
 
       if (!isSelected && isAlreadySelected) {
-        // Remove the id only if it was selected before
         return prev.filter((id) => id !== row.original.id);
       }
 
-      // No changes needed
       return prev;
     });
   }, [isSelected, row.original.id, setSelectedRows]);
@@ -50,6 +49,7 @@ const IndexCell: React.FC<IndexCellProps> = ({
       onMouseLeave={() => setHoveredRowId(null)}
       onContextMenu={(e) => {
         e.preventDefault();
+        e.stopPropagation();
         setRightClickedRowId(row.id.toString());
       }}
     >
@@ -57,8 +57,14 @@ const IndexCell: React.FC<IndexCellProps> = ({
         <input
           type="checkbox"
           checked={isSelected}
-          onChange={row.getToggleSelectedHandler()}
-          onClick={(e) => e.stopPropagation()}
+          onChange={(e) => {
+            setSelectedRows((prev) =>
+              e.target.checked
+                ? [...prev, row.original.id]
+                : prev.filter((id) => id !== row.original.id),
+            );
+          }}
+          // onClick={(e) => e.stopPropagation()}
         />
       ) : (
         <div className="select-none">{row.index + 1}</div>

@@ -40,7 +40,7 @@ const LoadBasePage: React.FC<LoadingProps> = ({ id }) => {
     }
   }, [finishedTableSetup, newTable, id, router]);
 
-  return <div>Hello<LoadingScreen /></div>;
+  return <div><LoadingScreen /></div>;
 };
 
 export default LoadBasePage;

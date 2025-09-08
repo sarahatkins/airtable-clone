@@ -113,7 +113,6 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
 
         {/* Right section */}
         <div className="flex items-center gap-5 text-gray-600">
-          {isDataLoading && <LoadingScreen />}
           {!isDataLoading && currentView && cols && (
             <>
               <HiddenButton

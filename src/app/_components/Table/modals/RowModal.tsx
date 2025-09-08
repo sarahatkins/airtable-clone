@@ -6,29 +6,37 @@ import type { NormalizedRow } from "../DataGrid";
 interface RowModalProps {
   x: number;
   y: number;
+  rowId: number;
   isOpen: boolean;
   onClose: () => void;
   setRows: Dispatch<React.SetStateAction<NormalizedRow[]>>;
-  // selectedRows: number[];
-  // setRowSelection: Dispatch<React.SetStateAction<number[]>>;
+  selectedRows: number[];
+  setRowSelection: Dispatch<React.SetStateAction<number[]>>;
 }
 
 const RowModal: React.FC<RowModalProps> = ({
   x,
   y,
+  rowId,
   isOpen,
   onClose,
-  // setRows,
-  // setRowSelection,
+  setRows,
+  selectedRows,
+  setRowSelection,
 }) => {
   const modalRef = useRef<HTMLDivElement | null>(null);
-  // const deleteRow = api.table.deleteRow.useMutation({
-  //   onSuccess: async () => {},
-  // });
-
-  // const handleDelete = () => {
-  //   // setRows((prev) => [prev.filter((r) => r.id != )])
-  // };
+  const deleteRows = api.table.deleteRows.useMutation({
+    onSuccess: async () => {
+      console.log("deleted rows");
+    },
+  });
+  const handleDelete = () => {
+    console.log("handling..");
+    setRows((prev) => prev.filter((r) => r.id != rowId));
+    setRowSelection((prev) => prev.filter((id) => id != rowId));
+    deleteRows.mutate({ rowIds: selectedRows });
+    onClose();
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -39,20 +47,22 @@ const RowModal: React.FC<RowModalProps> = ({
         onClose();
       }
     };
+
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("click", handleClickOutside);
     }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return;
+  if (!isOpen) return null;
   return (
     <div
       ref={modalRef}
-      onContextMenu={(e) => e.preventDefault}
+      // onContextMenu={(e) => e.preventDefault()}
       className="fixed z-50 w-48 rounded-md border border-gray-200 bg-white"
       style={{ top: y, left: x }}
-      onClick={onClose}
     >
       <ul className="text-sm text-gray-700">
         <li className="cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100">
@@ -82,8 +92,11 @@ const RowModal: React.FC<RowModalProps> = ({
         <li className="cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100">
           Send record
         </li>
-        <li className="cursor-pointer px-4 py-2 text-red-600 hover:bg-red-100">
-          Delete record
+        <li
+          className="cursor-pointer px-4 py-2 text-red-600 hover:bg-red-100"
+          onClick={() => handleDelete()}
+        >
+          Delete selected record(s)
         </li>
       </ul>
     </div>

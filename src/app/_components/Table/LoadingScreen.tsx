@@ -12,7 +12,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({
 }) => {
   return (
     <div className="bg-opacity-90 flex h-full w-full flex-col items-center justify-center bg-white select-none">
-      <Image src={loadingGifUrl} alt="Loading..." className="mb-3 h-16 w-16" />
+      {/* <Image src={loadingGifUrl} alt="Loading..." className="mb-3 h-16 w-16" /> */}
       <span className="font-sans text-sm font-semibold text-gray-600">
         {message}
       </span>

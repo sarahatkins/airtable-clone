@@ -133,7 +133,6 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({ base }) => {
               aria-label="More options"
               className="rounded p-1 hover:bg-gray-100"
               onClick={(e) => {
-                e.stopPropagation();
                 setMenuOpen((prev) => !prev);
               }}
             >

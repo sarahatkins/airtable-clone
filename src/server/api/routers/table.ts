@@ -199,12 +199,12 @@ export const tableRouter = createTRPCRouter({
       return newRow;
     }),
 
-  deleteRow: publicProcedure
-    .input(z.object({ rowId: z.number() }))
+  deleteRows: publicProcedure
+    .input(z.object({ rowIds: z.array(z.number()) }))
     .mutation(async ({ input }) => {
       const deletedCount = await db
         .delete(rows)
-        .where(eq(rows.id, input.rowId))
+        .where(inArray(rows.id, input.rowIds))
         .returning();
 
       if (deletedCount.length === 0) {

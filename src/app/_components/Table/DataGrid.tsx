@@ -12,12 +12,7 @@ import {
   type ColumnDef,
   type Table,
 } from "@tanstack/react-table";
-import type {
-  CellValue,
-  ColType,
-  TableType,
-  ViewType,
-} from "~/app/defaults";
+import type { CellValue, ColType, TableType, ViewType } from "~/app/defaults";
 import EditableCell from "./EditableCell";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import CreateColButton from "./buttons/CreateColButton";
@@ -127,8 +122,14 @@ const DataGrid: React.FC<DataGridProps> = ({
     header: ({ table }: { table: Table<NormalizedRow> }) => (
       <input
         type="checkbox"
-        checked={table.getIsAllRowsSelected()}
-        onChange={table.getToggleAllRowsSelectedHandler()}
+        checked={rowSelection.length === rows.length}
+        onChange={(e) => {
+          if (e.target.checked) {
+            setRowSelection(rows.map((r) => r.id));
+          } else {
+            setRowSelection([]);
+          }
+        }}
       />
     ),
     size: 60,
@@ -146,12 +147,14 @@ const DataGrid: React.FC<DataGridProps> = ({
     },
     cell: ({ row }) => (
       <IndexCell
+        key={row.index}
         row={row}
         hoveredRowId={hoveredRowId}
         rightClickedRowId={rightClickedRowId}
         setHoveredRowId={setHoveredRowId}
         setRightClickedRowId={setRightClickedRowId}
         setSelectedRows={setRowSelection}
+        selectedRows={rowSelection}
       />
     ),
   };
@@ -292,13 +295,12 @@ const DataGrid: React.FC<DataGridProps> = ({
           >
             {virtualizer.getVirtualItems().map((vr) => {
               const r = reactTable.getRowModel().rows[vr.index];
-              if (!r) return null;
+              if (!r || !rows.includes(r.original)) return null;
 
               const selectedRow = rowSelection.includes(r.original.id);
               return (
-                <>
+                <div key={vr.key}>
                   <div
-                    key={vr.key}
                     className={`absolute top-0 left-0 flex items-center border-b border-gray-200 ${selectedRow ? "bg-blue-50" : "bg-white"} hover:bg-neutral-50`}
                     style={{
                       height: `${vr.size}px`,
@@ -336,10 +338,11 @@ const DataGrid: React.FC<DataGridProps> = ({
                     isOpen={contextMenu != null}
                     onClose={() => setContextMenu(null)}
                     setRows={setRows}
-                    // selectedRows={rowSelection}
-                    // setRowSelection={setRowSelection}
+                    selectedRows={rowSelection}
+                    setRowSelection={setRowSelection}
+                    rowId={Number(r.original.rowId) ?? 0}
                   />
-                </>
+                </div>
               );
             })}
           </div>
