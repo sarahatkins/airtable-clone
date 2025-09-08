@@ -26,12 +26,15 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({ base }) => {
   const utils = api.useUtils();
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
   const { data: session } = useSession();
+
   const [hovered, setHovered] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement | null>(null);
   const [widgetName, setWidgetName] = useState<string>(base.name);
   const [isRenaming, setIsRenaming] = useState<boolean>(false);
+
   const renameBase = api.base.renameBase.useMutation({
     onSuccess: (renamed) => {
       if (!renamed) return;
@@ -79,14 +82,16 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({ base }) => {
 
   return (
     <div
-      className={`relative flex w-75 cursor-pointer items-center gap-3 rounded-md border border-gray-200 bg-white p-4 transition-shadow ${
+      className={`relative flex w-full cursor-pointer items-center gap-3 rounded-md border border-gray-200 bg-white p-4 transition-shadow ${
         hovered ? "bg-white shadow-md" : "bg-gray-50"
       }`}
-      onClick={() => router.push(`/${base.id}`)}
+      onClick={() => {
+        if (!menuOpen) router.push(`/${base.id}`);
+      }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => {
         setHovered(false);
-        setMenuOpen(false); // close menu on mouse leave
+        setMenuOpen(false);
       }}
     >
       {/* Icon */}
@@ -103,6 +108,7 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({ base }) => {
           disabled={!isRenaming}
           onBlur={(e) => handleRename(e.target.value)}
           className="w-35 rounded font-semibold text-gray-900 focus:p-1 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          onChange={(e) => setWidgetName(e.target.value)}
           value={widgetName}
         />
         {!hovered && (
@@ -131,8 +137,9 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({ base }) => {
             <button
               type="button"
               aria-label="More options"
-              className="rounded p-1 hover:bg-gray-100"
+              className="bg-red h-10 rounded p-1 hover:bg-gray-100"
               onClick={(e) => {
+                e.stopPropagation();
                 setMenuOpen((prev) => !prev);
               }}
             >
@@ -140,7 +147,7 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({ base }) => {
             </button>
 
             {menuOpen && (
-              <div className="absolute top-full right-[-200] z-50 mt-[-20] w-48 rounded-md border border-gray-200 bg-white shadow-lg">
+              <div className="absolute top-full right-0 z-50 mt-[-10] w-48 rounded-md border border-gray-200 bg-white shadow-lg">
                 <ul className="py-1">
                   <li
                     onClick={() => {

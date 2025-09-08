@@ -69,9 +69,7 @@ const AirTable: React.FC<AirtableProps> = ({ baseId, tableId }) => {
 
       {/* Table content */}
       {(isLoading || !isTableSetup) && (
-        <div>
           <LoadingScreen />
-        </div>
       )}
       <div className="min-h-0 flex-1">
         {!isLoading && isTableSetup && selectedTable && (
