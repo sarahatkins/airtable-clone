@@ -72,7 +72,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
   const updateConfig = api.table.updateViewConfig.useMutation({
     onSuccess: async (newConfig) => {
       console.log("View Config has been updated...", newConfig);
-      setRows([]);
+      
       await utils.table.getFilterCells.invalidate();
     },
   });
@@ -88,6 +88,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
 
     setCurrentView({ ...currentView, config: newConfig });
     setViewConfig(newConfig);
+    if(newConfig.hiddenColumns === viewConfig.hiddenColumns) setRows([]);
     updateConfig.mutate({
       viewId: currentView.id,
       config: {
