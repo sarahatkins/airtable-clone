@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { trpcClient } from "~/trpc/query-client";
 import { api } from "~/trpc/react";
 
