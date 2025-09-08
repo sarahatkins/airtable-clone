@@ -299,7 +299,7 @@ const DataGrid: React.FC<DataGridProps> = ({
 
               const selectedRow = rowSelection.includes(r.original.id);
               return (
-                <div key={vr.key}>
+                <div key={vr.key} onContextMenu={(e) => e.stopPropagation()}>
                   <div
                     className={`absolute top-0 left-0 flex items-center border-b border-gray-200 ${selectedRow ? "bg-blue-50" : "bg-white"} hover:bg-neutral-50`}
                     style={{
@@ -308,7 +308,7 @@ const DataGrid: React.FC<DataGridProps> = ({
                     }}
                     data-index={vr.index}
                     onContextMenu={(e) => {
-                      e.preventDefault;
+                      e.preventDefault();
                       setContextMenu({
                         x: e.clientX,
                         y: e.clientY,
