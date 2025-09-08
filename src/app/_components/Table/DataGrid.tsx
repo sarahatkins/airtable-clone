@@ -22,6 +22,7 @@ import FloatingAddRows from "./buttons/FloatingAddRows";
 import ColumnHeader from "./buttons/ColumnHeader";
 import IndexCell from "./buttons/IndexCell";
 import RowModal from "./modals/RowModal";
+import LoadingScreen from "./LoadingScreen";
 
 interface DataGridProps {
   table: TableType;
@@ -117,6 +118,7 @@ const DataGrid: React.FC<DataGridProps> = ({
     }
   }, [virtualItems, hasNextPage, isFetchingNextPage]);
 
+  
   const indexColumn: ColumnDef<NormalizedRow, unknown> = {
     accessorKey: "__rowIndex",
     header: ({ table }: { table: Table<NormalizedRow> }) => (
@@ -204,6 +206,8 @@ const DataGrid: React.FC<DataGridProps> = ({
     () => reactColumns.reduce((sum, c) => sum + (c.size ?? 150) + 50, 0),
     [reactColumns],
   );
+
+
   return (
     <div className="flex h-full w-full flex-col">
       <div

@@ -7,6 +7,7 @@ import type React from "react";
 import type { ViewType } from "~/app/defaults";
 import ViewNameModal from "../modals/ViewNameModal";
 import ViewOptionsModal from "../modals/ViewOptionsModal";
+import { Table2 } from "lucide-react";
 
 interface ButtonProps {
   view: ViewType;
@@ -31,9 +32,10 @@ const GridViewButton: React.FC<ButtonProps> = ({
       }}
     >
       <button
-        className={`flex w-full items-center ${selected ? "bg-gray-100" : "bg-transparent"} cursor-pointer px-3 py-2 font-medium text-black hover:bg-gray-100`}
+        className={`flex w-full items-center ${selected ? "bg-gray-100" : "bg-transparent"} cursor-pointer px-3 py-2 font-medium text-black hover:bg-gray-100 text-xs`}
         onClick={() => setSelectedView(view)}
       >
+        <Table2 width={15} className="text-blue-600 mr-1"/>
         {viewName}
       </button>
 

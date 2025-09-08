@@ -62,8 +62,15 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
     if (views?.[0] && !currentView) {
       setCurrentView(views[0]);
       setViewConfig(views[0]?.config as ViewConfigType);
+    } else if (currentView) {
+      console.log("change view");
+      setViewConfig(currentView?.config as ViewConfigType);
     }
   }, [views, currentView]);
+
+  useEffect(() => {
+    console.log("change current view");
+  }, [currentView]);
 
   const updateConfig = api.table.updateViewConfig.useMutation({
     onSuccess: async (newConfig) => {
@@ -175,7 +182,9 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
                 searchText={search}
                 setCols={setCols}
               />
-              <div className="flex h-10 bg-white border-t border-gray-100 pt-2 pl-2 text-xs">{numRows?.count} records</div>
+              <div className="flex h-10 border-t border-gray-100 bg-white pt-2 pl-2 text-xs">
+                {numRows?.count} records
+              </div>
             </>
           )}
         </div>

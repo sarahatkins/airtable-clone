@@ -24,7 +24,7 @@ export default function BaseLayout({
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-gray-50">
       {/* Sidebar */}
-      <div className="flex h-full w-15 shrink-0 flex-col border-r border-gray-200 bg-white pt-2">
+      <div className="flex h-full w-13 shrink-0 flex-col border-r border-gray-200 bg-white pt-1.5">
         <div className="flex-1">
           <div className="p-2">
             <button
@@ -34,7 +34,7 @@ export default function BaseLayout({
               <Image
                 src="/airtable-logo-bw.svg"
                 alt="Google"
-                width={25}
+                width={22}
                 height={25}
               />
             </button>
@@ -44,20 +44,48 @@ export default function BaseLayout({
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Header */}
-        <div className="flex h-12 items-center justify-between border-b border-gray-200 bg-white px-4 pt-2 text-sm">
+        <div className="flex h-13 items-center justify-between border-b border-gray-200 bg-white px-4 text-sm">
           <div className="flex items-center">
-            <div className="mr-2 rounded bg-blue-900 p-1">
+            <div className="mr-2 rounded-md bg-blue-900 p-1.25">
               <Image
                 src="/airtable-logo-white.png"
                 alt="Google"
-                width={20}
+                width={22}
                 height={20}
               />
             </div>
             {base && <OpenBaseModalButton base={base} />}
-            <ChevronDown className="h-4 w-4" />
+            <ChevronDown className="h-4 w-3.5 mt-1" />
           </div>
-        </div>
+
+          {/* Middle nav */}
+            <div className="ml-10 flex items-center gap-6">
+              <button className="border-b-2 border-blue-600 font-medium text-blue-600">
+                Data
+              </button>
+              <button className="text-gray-600 hover:text-gray-900">
+                Automations
+              </button>
+              <button className="text-gray-600 hover:text-gray-900">
+                Interfaces
+              </button>
+              <button className="text-gray-600 hover:text-gray-900">
+                Forms
+              </button>
+            </div>
+
+            {/* Right section */}
+            <div className="flex items-center gap-4">
+              <button className="rounded border border-gray-300 px-3 py-1 text-xs hover:bg-gray-50">
+                Launch
+              </button>
+              <button className="rounded bg-sky-800 px-3 py-1 text-xs font-semibold text-white hover:bg-blue-700">
+                Share
+              </button>
+            </div>
+          </div>
+     
+
 
         <div className="min-h-0 flex-1">{children}</div>
       </div>

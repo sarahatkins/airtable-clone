@@ -1,8 +1,4 @@
-import {
-  ChevronRightIcon,
-  ChevronUpIcon,
-  X,
-} from "lucide-react";
+import { ChevronRightIcon, ChevronUpIcon, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   useEffect,
@@ -45,7 +41,8 @@ const EditBaseModal: React.FC<ModalProps> = ({
       if (!renamed) return;
       console.log("deleted base", renamed);
       router.push(`/`);
-      onClose()
+      setShowOptions(false);
+      onClose();
     },
   });
 
@@ -64,12 +61,20 @@ const EditBaseModal: React.FC<ModalProps> = ({
         modalRef.current &&
         !modalRef.current.contains(event.target as Node)
       ) {
+        setShowOptions(false);
         onClose();
+      } else if (
+        optionsRef.current &&
+        !optionsRef.current.contains(event.target as Node)
+      ) {
+        console.log('hey')
+        setShowOptions(false); // closes dropdown but not modal
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [onClose]);
+  }, [onClose, setShowOptions]);
 
   if (!isOpen) return;
   return (
@@ -89,7 +94,7 @@ const EditBaseModal: React.FC<ModalProps> = ({
           className="w-full rounded px-2 py-1 text-2xl font-medium text-gray-700 transition-discrete hover:bg-gray-100 focus:bg-gray-100 focus:ring-2 focus:ring-blue-200 focus:outline-none"
         />
         <button
-          onClick={() => setShowOptions((prev) => !prev)}
+          onClick={() => setShowOptions(true)}
           className="ml-2 p-1 text-gray-500 hover:text-gray-700"
         >
           <div className="text-xl font-bold">⋯</div>
@@ -151,9 +156,9 @@ const EditBaseModal: React.FC<ModalProps> = ({
       {showOptions && (
         <div
           ref={optionsRef}
-          className="absolute top-10 right-0 z-50 w-60 rounded-md border border-gray-200 bg-white py-2 shadow-xl"
+          className="absolute top-12 right-[-200] z-50 w-60 rounded-md border border-gray-200 bg-white py-2 shadow-xl"
         >
-          <button className="cursor-not-allowed flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+          <button className="flex w-full cursor-not-allowed items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="mr-2 h-4 w-4"
@@ -170,7 +175,7 @@ const EditBaseModal: React.FC<ModalProps> = ({
             </svg>
             Duplicate base
           </button>
-          <button className="cursor-not-allowed flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+          <button className="flex w-full cursor-not-allowed items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="mr-2 h-4 w-4"
@@ -187,8 +192,11 @@ const EditBaseModal: React.FC<ModalProps> = ({
             </svg>
             Slack notifications
           </button>
-          <button onClick={() => deleteBase.mutate({id: base.id})} className="cursor-pointer flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
-            <X  height={15} className="ml-[-3] mr-1"/>
+          <button
+            onClick={() => deleteBase.mutate({ id: base.id })}
+            className="flex w-full cursor-pointer items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+          >
+            <X height={15} className="mr-1 ml-[-3]" />
             Delete base
           </button>
         </div>

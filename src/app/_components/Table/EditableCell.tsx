@@ -104,7 +104,7 @@ const EditableCell = (ctx: CellContext<NormalizedRow, CellValue>) => {
       onChange={(e) => setValue(e.target.value)}
       onClick={(e) => {e.preventDefault(); onClick()}}
       onBlur={onBlur}
-      className="w-full cursor-default border border-transparent bg-transparent text-sm text-gray-900 focus:border-blue-500 focus:ring-5 focus:ring-blue-500 focus:outline-none"
+      className="w-full h-6.75 cursor-default border border-transparent bg-transparent text-sm p-0.75 text-gray-900 focus:border-blue-500 focus:ring-5 focus:ring-blue-500 focus:outline-none"
     />
   );
 };

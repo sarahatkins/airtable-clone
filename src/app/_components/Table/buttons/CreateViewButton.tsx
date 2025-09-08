@@ -16,7 +16,7 @@ const CreateViewButton: React.FC<ButtonProps> = ({ tableId }) => {
   return (
     <div>
       <button
-        className="flex w-full items-center rounded-md px-2 py-1.5 text-gray-700 hover:bg-gray-100"
+        className="flex w-full items-center rounded-md px-2 py-1.5 text-gray-700 hover:bg-gray-100 text-xs"
         onClick={() => setShowModal(true)}
       >
         <Plus className="mr-2 h-4 w-4" />

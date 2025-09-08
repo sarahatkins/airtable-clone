@@ -1,9 +1,5 @@
 import { ChevronDown } from "lucide-react";
-import {
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   Pencil,
@@ -71,28 +67,28 @@ const SetTableButton: React.FC<ButtonProps> = ({
 
   return (
     <div
-      className="h-full"
+      className="h-full flex items-center hover:bg-gray-100 "
       onContextMenu={(e) => {
-        e.preventDefault(); // prevent default right-click menu
+        e.preventDefault();
         setShowEditModal(true);
       }}
     >
       <button
-        className={`flex h-full cursor-pointer items-center rounded-t-md border px-3 py-1.5 text-sm font-semibold text-gray-900 transition-colors duration-150 ${
+        className={`flex  ${selected ? "h-[33px] w-21 border-b-0" : "h-5 w-16 border-r border-gray-200"} cursor-pointer items-center rounded-t-sm border px-3 py-1.5 text-xs text-gray-900 transition-colors duration-150 ${
           selected
             ? "z-50 border-t border-r border-l border-gray-200 bg-white"
-            : "border border-transparent bg-[#f6f9ff] hover:bg-gray-100"
+            : "border border-transparent "
         }`}
         onClick={setSelectedTable}
       >
         {tableName}
-        <ChevronDown className="ml-1 h-4 w-4 text-gray-500" />
+        {selected && <ChevronDown className="ml-1 h-4 w-4 text-gray-500" />}
       </button>
 
       {showEditModal && (
         <div
           ref={modalRef}
-          className="absolute z-50 mt-2 w-72 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
+          className="absolute z-50 top-[100] w-72 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
         >
           {/* Header */}
           <ul className="text-sm text-gray-700">
