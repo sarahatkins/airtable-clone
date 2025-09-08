@@ -71,7 +71,6 @@ const CreateColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
       type: newColumnType,
       tableId: dbTable.id,
       orderIndex: 0,
-      primary: false,
     };
 
     // Add column optimistically

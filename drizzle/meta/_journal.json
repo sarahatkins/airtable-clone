@@ -57,6 +57,13 @@
       "when": 1757029461211,
       "tag": "0007_flawless_network",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1757341664497,
+      "tag": "0008_boring_expediter",
+      "breakpoints": true
     }
   ]
 }

@@ -149,7 +149,6 @@ const DataGrid: React.FC<DataGridProps> = ({
         type: "index",
         tableId: table.id,
         orderIndex: -1,
-        primary: null,
       },
       colIndex: -1,
     },

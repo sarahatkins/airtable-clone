@@ -1,0 +1,1 @@
+ALTER TABLE "airtable_columns" DROP COLUMN "primary";
