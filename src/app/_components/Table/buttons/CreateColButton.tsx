@@ -115,7 +115,7 @@ const CreateColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
       {isAddColumnOpen && (
         <div
           ref={modalRef}
-          className="absolute top-42 right-10 z-60 w-[300px] rounded-lg border border-gray-200 bg-white p-2 shadow-xl"
+          className="absolute top-42 ml-[-160] z-60 w-[300px] rounded-lg border border-gray-200 bg-white p-2 shadow-xl"
         >
           {!newColumnType ? (
             <>

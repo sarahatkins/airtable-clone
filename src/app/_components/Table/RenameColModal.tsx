@@ -35,7 +35,7 @@ const RenameColModal: React.FC<EditFieldModalProps> = ({
 
   return (
     <div
-      className="absolute right-5 z-60 mt-2 w-[380px] rounded-lg border border-gray-200 bg-white shadow-xl p-5"
+      className="absolute z-60 ml-[-20] mt-3 w-[380px] rounded-lg border border-gray-200 bg-white shadow-xl p-5"
       onClick={(e) => e.stopPropagation()}
     >
         <label className="mb-1 block text-sm font-medium">Name</label>

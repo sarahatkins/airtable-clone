@@ -14,7 +14,6 @@ const ColumnHeader: React.FC<HeaderProps> = ({
   title,
   colId,
   tableId,
-
 }) => {
   const utils = api.useUtils();
   const [contextMenu, setContextMenu] = useState<{
