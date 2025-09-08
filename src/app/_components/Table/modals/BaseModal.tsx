@@ -1,6 +1,6 @@
-import { ChevronRightIcon, ChevronUpIcon, X } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { ChevronRightIcon, ChevronUpIcon } from "lucide-react";
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -35,14 +35,14 @@ const EditBaseModal: React.FC<ModalProps> = ({
     },
   });
 
-  const handleRename = () => {
+  const handleRename = useCallback(() => {
     if (!newBaseName.trim()) return;
 
     renameBase.mutate({ id: base.id, name: newBaseName });
     setBaseName(newBaseName);
 
     onClose();
-  };
+  }, [newBaseName, setBaseName, base.id, renameBase, onClose]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -59,14 +59,13 @@ const EditBaseModal: React.FC<ModalProps> = ({
         optionsRef.current &&
         !optionsRef.current.contains(event.target as Node)
       ) {
-        console.log("hey");
         setShowOptions(false); // closes dropdown but not modal
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [onClose, setShowOptions]);
+  }, [onClose, setShowOptions, base.name, newBaseName, handleRename]);
 
   if (!isOpen) return;
   return (
@@ -81,7 +80,6 @@ const EditBaseModal: React.FC<ModalProps> = ({
           defaultValue={newBaseName}
           onInput={(e) => {
             setNewBaseName(e.currentTarget.value);
-            console.log("typing...");
           }}
           onBlur={() => {
             handleRename();

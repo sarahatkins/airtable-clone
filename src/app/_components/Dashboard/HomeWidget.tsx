@@ -1,6 +1,5 @@
 import { type LucideIcon } from "lucide-react";
 
-
 interface WidgetProps {
   name: string;
   desc: string;

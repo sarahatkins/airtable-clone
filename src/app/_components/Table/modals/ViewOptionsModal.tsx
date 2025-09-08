@@ -1,9 +1,5 @@
-import {
-  useRef,
-  useEffect,
-  type Dispatch,
-  type SetStateAction,
-} from "react";
+import { Copy, Pencil, Trash } from "lucide-react";
+import { useRef, useEffect, type Dispatch, type SetStateAction } from "react";
 import { api } from "~/trpc/react";
 
 interface ModalProps {
@@ -11,7 +7,7 @@ interface ModalProps {
   onClose: () => void;
   isCurrView: boolean;
   viewId: number;
-  tableId:number;
+  tableId: number;
   setShowRename: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -21,14 +17,14 @@ const ViewOptionsModal: React.FC<ModalProps> = ({
   setShowRename,
   viewId,
   tableId,
-  isCurrView
+  isCurrView,
 }) => {
   const utils = api.useUtils();
   const modalRef = useRef<HTMLDivElement | null>(null);
   const deleteView = api.table.deleteView.useMutation({
     onSuccess: async (deleted) => {
       console.log("view delete", deleted);
-      await utils.table.getViewByTable.invalidate({tableId});
+      await utils.table.getViewByTable.invalidate({ tableId });
       onClose();
     },
   });
@@ -56,24 +52,26 @@ const ViewOptionsModal: React.FC<ModalProps> = ({
       <button
         className="flex w-full items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
         onClick={() => {
-          console.log("clicked");
           setShowRename(true);
           onClose();
         }}
       >
-        ✏️ Rename view
-      </button>
-      <button disabled={true} className="flex w-full cursor-not-allowed items-center gap-2 px-4 py-2 text-sm hover:bg-gray-50">
-        🗂️ Duplicate view
+        <Pencil height={18} /> Rename view
       </button>
       <button
-        className="disabled:text-gray-500 disabled:bg-gray-100 disabled:cursor-not-allowed flex w-full items-center gap-2 px-4 py-2 text-sm text-red-500 hover:bg-gray-50"
+        disabled={true}
+        className="flex w-full cursor-not-allowed items-center gap-2 px-4 py-2 text-sm hover:bg-gray-50"
+      >
+        <Copy height={18} /> Duplicate view
+      </button>
+      <button
+        className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-500 hover:bg-gray-50 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
         disabled={isCurrView}
         onClick={() => {
           deleteView.mutate({ viewId });
         }}
       >
-        🗑️ Delete view
+        <Trash height={18} /> Delete view
       </button>
     </div>
   );

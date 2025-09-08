@@ -54,7 +54,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
       { enabled: !!selectedTable?.id },
     );
 
-  const views = loadedViews ?? [];
+  const views = useMemo(() => loadedViews ?? [], [loadedViews]);
 
   const shownCols = useMemo(() => {
     return cols.filter((c) => !viewConfig.hiddenColumns.includes(c.id));
@@ -72,7 +72,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
   const updateConfig = api.table.updateViewConfig.useMutation({
     onSuccess: async (newConfig) => {
       console.log("View Config has been updated...", newConfig);
-      
+
       await utils.table.getFilterCells.invalidate();
     },
   });
@@ -88,7 +88,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
 
     setCurrentView({ ...currentView, config: newConfig });
     setViewConfig(newConfig);
-    if(newConfig.hiddenColumns === viewConfig.hiddenColumns) setRows([]);
+    if (newConfig.hiddenColumns === viewConfig.hiddenColumns) setRows([]);
     updateConfig.mutate({
       viewId: currentView.id,
       config: {

@@ -1,4 +1,3 @@
-import { trpcClient } from "~/trpc/query-client";
 import { api } from "~/trpc/react";
 
 interface ButtonProps {
@@ -8,38 +7,6 @@ interface ButtonProps {
 const HundredThousandButton: React.FC<ButtonProps> = ({ tableId }) => {
   const utils = api.useUtils();
 
-  // const handleClick = async (tableId: number, count: number) => {
-  //   for await (const chunk of await trpcClient.table.createFilledRows.mutate(
-  //     { tableId, count },
-  //     {
-  //       context: {
-  //         skipBatch: true,
-  //       },
-  //     },
-  //   )) {
-  //     switch (chunk.type) {
-  //       case "start":
-  //         console.log(chunk.message);
-  //         break;
-  //       case "rowsFilled":
-  //         console.log(`Rows filled: ${chunk.value}`);
-  //         if(chunk?.value && chunk.value <= 1000) {
-  //           await utils.table.getFilterCells.invalidate();
-  //         }
-  //         break;
-  //       case "end":
-  //         console.log(chunk.message);
-  //         break;
-  //     }
-  //   }
-  // };
-
-  // const {data, mutate: createRows} = api.table.createFilledRows.useMutation({
-  //   onSuccess: async () => {
-  //     console.log("generated cells")
-  //     await utils.table.getFilterCells.invalidate();
-  //   }
-  // });
   const handleHundreds = api.hundreds.generateLargeTable.useMutation({
     onSuccess: async () => {
       console.log("Generated 100k rows");
@@ -50,7 +17,6 @@ const HundredThousandButton: React.FC<ButtonProps> = ({ tableId }) => {
   return (
     <button
       className="h-full w-full cursor-pointer rounded rounded-tr-3xl rounded-br-3xl border-l border-gray-100 p-1 font-semibold hover:bg-gray-50"
-      // onClick={() => handleClick(tableId, 100000)}
       onClick={() => handleHundreds.mutate({ tableId })}
     >
       Generate 100k rows

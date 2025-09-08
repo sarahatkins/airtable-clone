@@ -469,7 +469,7 @@ export const tableRouter = createTRPCRouter({
       }
 
       // Base query (only rows)
-      let rowQuery: any = ctx.db
+      let rowQuery = ctx.db
         .select({ id: rows.id })
         .from(rows)
         .where(and(...conditions))
@@ -502,7 +502,8 @@ export const tableRouter = createTRPCRouter({
           ),
         );
       });
-      const orderBys = sorting.map((sort, i) => {
+      
+      const orderBys: any = sorting.map((sort, i) => {
         const sortAlias = sortAliases[i];
         if (!sortAlias) return;
         return sort.direction === "asc"

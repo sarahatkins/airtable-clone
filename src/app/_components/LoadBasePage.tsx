@@ -33,7 +33,6 @@ const LoadBasePage: React.FC<LoadingProps> = ({ id }) => {
     }
   }, [isLoading, tables, id, router, handleCreateTable]);
 
-  // Now watch for when newTable is ready after creation and redirect
   useEffect(() => {
     if (finishedTableSetup && newTable) {
       router.replace(`/${id}/${newTable.id}`);

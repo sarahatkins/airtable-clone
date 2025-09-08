@@ -32,7 +32,6 @@ const ColumnHeader: React.FC<HeaderProps> = ({
     },
   });
 
-  // Close menu on outside click
   useEffect(() => {
     const handleClick = () => {
       setContextMenu(null);

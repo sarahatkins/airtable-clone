@@ -36,8 +36,8 @@ interface DataGridProps {
   cols: ColType[];
   searchText: string | undefined;
   setCols: Dispatch<SetStateAction<ColType[]>>;
-  rows: NormalizedRow[]
-  setRows: Dispatch<SetStateAction<NormalizedRow[]>>
+  rows: NormalizedRow[];
+  setRows: Dispatch<SetStateAction<NormalizedRow[]>>;
 }
 
 const ROW_HEIGHT = 30;
@@ -56,7 +56,7 @@ const DataGrid: React.FC<DataGridProps> = ({
   setCols,
   searchText,
   rows,
-  setRows
+  setRows,
 }) => {
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -106,7 +106,7 @@ const DataGrid: React.FC<DataGridProps> = ({
     );
 
     setRows(normalized);
-  }, [viewData, table.id]);
+  }, [viewData, table.id, setRows]);
 
   const virtualizer = useVirtualizer({
     count: rows.length,
@@ -117,66 +117,89 @@ const DataGrid: React.FC<DataGridProps> = ({
   const virtualItems = virtualizer.getVirtualItems();
 
   useEffect(() => {
-    const lastItem = virtualItems[virtualItems.length - 1];
+    const loadMore = async () => {
+      const lastItem = virtualItems[virtualItems.length - 1];
 
-    if (!hasNextPage || isFetchingNextPage || !lastItem) return;
-    if (lastItem.index >= rows.length - 100) {
-      fetchNextPage();
-    }
-  }, [virtualItems, hasNextPage, isFetchingNextPage]);
+      if (!hasNextPage || isFetchingNextPage || !lastItem) return;
+      if (lastItem.index >= rows.length - 500) {
+        await fetchNextPage();
+      }
+    };
 
-  const indexColumn: ColumnDef<NormalizedRow, unknown> = {
-    accessorKey: "__rowIndex",
-    header: () => (
-      <input
-        type="checkbox"
-        checked={rowSelection.length === rows.length}
-        onChange={(e) => {
-          if (e.target.checked) {
-            setRowSelection(rows.map((r) => r.id));
-          } else {
-            setRowSelection([]);
-          }
-        }}
-      />
-    ),
-    size: 60,
-    enableColumnFilter: false,
-    meta: {
-      col: {
-        id: -1,
-        name: "Index",
-        type: "index",
-        tableId: table.id,
-        orderIndex: -1,
-      },
-      colIndex: -1,
-    },
-    cell: ({ row }) => (
-      <IndexCell
-        key={row.index}
-        row={row}
-        hoveredRowId={hoveredRowId}
-        setHoveredRowId={setHoveredRowId}
-        setSelectedRows={setRowSelection}
-        selectedRows={rowSelection}
-      />
-    ),
-  };
+    void loadMore();
+  }, [
+    virtualItems,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    rows.length,
+  ]);
 
-  const reactColumns: ColumnDef<NormalizedRow, CellValue>[] = [
-    indexColumn,
-    ...cols.map((col, colIdx) => ({
-      accessorKey: `col_${col.id}`,
+  const indexColumn = useMemo<ColumnDef<NormalizedRow, unknown>>(
+    () => ({
+      accessorKey: "__rowIndex",
       header: () => (
-        <ColumnHeader title={col.name} colId={col.id} tableId={table.id} />
+        <input
+          type="checkbox"
+          checked={rowSelection.length === rows.length}
+          onChange={(e) => {
+            if (e.target.checked) {
+              setRowSelection(rows.map((r) => r.id));
+            } else {
+              setRowSelection([]);
+            }
+          }}
+        />
       ),
-      size: 200,
-      enableColumnFilter: true,
-      meta: { col, colIndex: colIdx },
-      cell: EditableCell,
-    })),
-  ];
+      size: 60,
+      enableColumnFilter: false,
+      meta: {
+        col: {
+          id: -1,
+          name: "Index",
+          type: "index",
+          tableId: table.id,
+          orderIndex: -1,
+        },
+        colIndex: -1,
+      },
+      cell: ({ row }) => (
+        <IndexCell
+          key={row.index}
+          row={row}
+          hoveredRowId={hoveredRowId}
+          setHoveredRowId={setHoveredRowId}
+          setSelectedRows={setRowSelection}
+          selectedRows={rowSelection}
+        />
+      ),
+    }),
+    [
+      rowSelection,
+      rows,
+      hoveredRowId,
+      setHoveredRowId,
+      setRowSelection,
+      table.id,
+    ],
+  );
+
+  const reactColumns = useMemo<ColumnDef<NormalizedRow, CellValue>[]>(
+    () => [
+      indexColumn,
+      ...cols.map((col, colIdx) => ({
+        accessorKey: `col_${col.id}`,
+        header: () => (
+          <ColumnHeader title={col.name} colId={col.id} tableId={table.id} />
+        ),
+        size: 200,
+        enableColumnFilter: true,
+        meta: { col, colIndex: colIdx },
+        cell: EditableCell,
+      })),
+    ],
+    [cols, table.id, indexColumn],
+  );
 
   const reactTable = useReactTable({
     data: rows,
@@ -257,10 +280,10 @@ const DataGrid: React.FC<DataGridProps> = ({
               className="flex border-t border-gray-200 bg-gray-50"
             >
               {hg.headers.map((header) => {
-                const colIdMatch = header.id.match(/_(\d+)/);
+                const colIdMatch = /_(\d+)/.exec(header.id);
                 const colId = colIdMatch?.[1]
-                  ? parseInt(colIdMatch[1], 10)
-                  : null;
+                  ? Number(colIdMatch[1])
+                  : undefined;
 
                 const filteredCell = (
                   view.config as ViewConfigType
@@ -286,13 +309,6 @@ const DataGrid: React.FC<DataGridProps> = ({
                         header.column.columnDef.header,
                         header.getContext(),
                       )}
-                      {/* {header.getCanResize() && (
-                      <div
-                        onMouseDown={header.getResizeHandler()} // Attach resize handler
-                        onTouchStart={header.getResizeHandler()}
-                        className={`resizer ${header.column.getIsResizing() ? "isResizing" : ""}`}
-                      />
-                    )} */}
                     </>
                   </div>
                 );
@@ -339,10 +355,10 @@ const DataGrid: React.FC<DataGridProps> = ({
                     }}
                   >
                     {r.getVisibleCells().map((cell) => {
-                      const colIdMatch = cell.column.id.match(/_(\d+)/);
+                      const colIdMatch = /_(\d+)/.exec(cell.column.id);
                       const colId = colIdMatch?.[1]
-                        ? parseInt(colIdMatch[1], 10)
-                        : null;
+                        ? Number(colIdMatch[1])
+                        : undefined;
 
                       const filteredCell = (
                         view.config as ViewConfigType
@@ -362,7 +378,10 @@ const DataGrid: React.FC<DataGridProps> = ({
                           } ${filteredCell ? "bg-green-100" : sortedCell ? "bg-orange-100" : ""}`}
                           style={{ width: cell.column.getSize() }}
                           onContextMenu={() => {
-                            setRowSelection((prev) => [...prev, cell.row.original.id])
+                            setRowSelection((prev) => [
+                              ...prev,
+                              cell.row.original.id,
+                            ]);
                           }}
                         >
                           {flexRender(

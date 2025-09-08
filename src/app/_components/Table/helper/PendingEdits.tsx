@@ -2,7 +2,7 @@ import type { CellNoId } from "~/app/defaults";
 
 const pendingEdits = new Map<number, CellNoId[]>();
 
-// key: tempRowId (-1), value: array of edits
+// key: tempRowId (-#), value: array of edits
 export function addPendingRowEdit(edit: CellNoId) {
   const key = edit.rowId;
   if (!pendingEdits.has(key)) {
@@ -21,7 +21,6 @@ export function clearPendingEditsForRow(tempId: number) {
   pendingEdits.delete(tempId);
 }
 
-// pendingEdits.ts
 const pendingColEdits = new Map<number, CellNoId[]>();
 
 export function addPendingColEdit(edit: CellNoId) {

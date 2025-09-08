@@ -54,7 +54,7 @@ export function useDefaultTableSetup(baseId: string) {
         console.error("Issue with default table setup", error);
       }
     },
-    [createColumn, createRow, createView, baseId],
+    [createColumn, createRow, createView, baseId, router],
   );
 
   // --- table creation mutation ---

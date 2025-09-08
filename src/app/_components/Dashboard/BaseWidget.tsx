@@ -63,7 +63,6 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({ base, setBases }) => {
   };
 
   const handleDelete = () => {
-    console.log("deleting");
     setBases((prev) => prev.filter((b) => b.id !== base.id));
     deleteBase.mutate({ id: base.id });
   };

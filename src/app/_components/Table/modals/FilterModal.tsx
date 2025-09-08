@@ -60,7 +60,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
   const updateCondition = (
     index: number,
     key: "functionName" | "args",
-    value: any,
+    value: FilterOperator | [number, CellValue],
   ) => {
     const newArgs = filterTree.args.map((c, i) =>
       i === index ? { ...c, [key]: value } : c,
@@ -76,7 +76,6 @@ const FilterModal: React.FC<FilterModalProps> = ({
     const newArgs = filterTree.args.map((cond, i) => {
       if (i !== index) return cond;
       const args: [number, CellValue] = [...cond.args];
-      console.log("ARG INDEX", argIndex, value);
       if (argIndex === 0) {
         args[0] = Number(value);
       } else {

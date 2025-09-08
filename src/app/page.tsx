@@ -8,7 +8,7 @@ export default async function Page() {
   const session = await auth();
 
   if (!session?.user) {
-    redirect("./login"); // Replace with the actual path to your latest post page
+    redirect("./login");
   }
 
   return (

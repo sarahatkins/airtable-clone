@@ -1,4 +1,4 @@
-import React, { useEffect, type Dispatch, type SetStateAction } from "react";
+import React, { type Dispatch, type SetStateAction } from "react";
 import type { Row } from "@tanstack/react-table";
 import type { NormalizedRow } from "../DataGrid";
 
@@ -19,24 +19,8 @@ const IndexCell: React.FC<IndexCellProps> = ({
 }) => {
   const isSelected = selectedRows.includes(row.original.id);
   const isHovered = hoveredRowId === row.id.toString();
-  // const isRightClicked = rightClickedRowId === row.id.toString();
 
   const showCheckbox = isSelected || isHovered;
-  useEffect(() => {
-    setSelectedRows((prev) => {
-      const isAlreadySelected = prev.includes(row.original.id);
-
-      if (isSelected && !isAlreadySelected) {
-        return [...prev, row.original.id];
-      }
-
-      if (!isSelected && isAlreadySelected) {
-        return prev.filter((id) => id !== row.original.id);
-      }
-
-      return prev;
-    });
-  }, [isSelected, row.original.id, setSelectedRows]);
 
   return (
     <div
@@ -48,7 +32,6 @@ const IndexCell: React.FC<IndexCellProps> = ({
         e.preventDefault();
         e.stopPropagation();
         setSelectedRows((prev) => [...prev, row.original.id]);
-        // setRightClickedRowId(row.id.toString());
       }}
     >
       {showCheckbox ? (
@@ -62,7 +45,6 @@ const IndexCell: React.FC<IndexCellProps> = ({
                 : prev.filter((id) => id !== row.original.id),
             );
           }}
-          // onClick={(e) => e.stopPropagation()}
         />
       ) : (
         <div className="select-none">{row.index + 1}</div>

@@ -53,7 +53,6 @@ const AirTable: React.FC<AirtableProps> = ({ baseId, tableId }) => {
               );
             })}
 
-          {/* <div className="ml-4 h-5 w-px bg-gray-300"></div> */}
           <ChevronDown height={18} className="mt-0.5 text-gray-700" />
           <AddTableButton
             baseId={baseId}
