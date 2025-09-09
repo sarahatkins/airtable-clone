@@ -1,5 +1,6 @@
 import { Trash2 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
+import { set } from "zod";
 import type {
   CellValue,
   ColType,
@@ -44,6 +45,10 @@ const FilterModal: React.FC<FilterModalProps> = ({
   cols,
 }) => {
   const modalRef = useRef<HTMLDivElement | null>(null);
+  const [typeChange, setTypeChange] = useState<boolean>(false);
+  const [valueInput, setValueInput] = useState<string>("");
+  const [currType, setCurrType] = useState<"text" | "number">("text");
+
   const [filterTree, setFilterTree] = useState<FilterGroup>(
     currentFilter ?? { functionName: "and", args: [] },
   );
@@ -101,6 +106,13 @@ const FilterModal: React.FC<FilterModalProps> = ({
     onSave({ ...filterTree, args: [...filterTree.args, newCond] });
   };
 
+  useEffect(() => {
+    if (typeChange) {
+      setValueInput("");
+      setTypeChange(false);
+    }
+  }, [typeChange, setValueInput]);
+
   // Close modal on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -124,9 +136,6 @@ const FilterModal: React.FC<FilterModalProps> = ({
     >
       <div className="space-y-3 px-4 py-3">
         <p className="text-xs text-gray-700">In this view, show records</p>
-
-        {/* Logic selector */}
-
         {/* Condition rows */}
         <div className="space-y-2">
           {filterTree.args.map((cond, index) => (
@@ -156,7 +165,14 @@ const FilterModal: React.FC<FilterModalProps> = ({
               <div className="flex rounded border border-gray-200">
                 <select
                   value={cond.args[0]}
-                  onChange={(e) => updateArg(index, 0, Number(e.target.value))}
+                  onChange={(e) => {
+                    const newType = getColType(Number(e.target.value));
+                    if (newType !== currType) {
+                      setTypeChange(true);
+                      setCurrType(newType.toLowerCase() as "text" | "number");
+                    }
+                    updateArg(index, 0, Number(e.target.value));
+                  }}
                   className="border-r border-r-gray-200 px-1 py-1"
                 >
                   {cols.map((col) => (
@@ -169,13 +185,13 @@ const FilterModal: React.FC<FilterModalProps> = ({
                 {/* Operator */}
                 <select
                   value={cond.functionName}
-                  onChange={(e) =>
+                  onChange={(e) => {
                     updateCondition(
                       index,
                       "functionName",
                       e.target.value as FilterOperator,
-                    )
-                  }
+                    );
+                  }}
                   className="border-r border-r-gray-200 px-1 py-1"
                 >
                   {(getColType(cond.args[0]) === "text"
@@ -196,12 +212,16 @@ const FilterModal: React.FC<FilterModalProps> = ({
                       cond.functionName !== "isNotEmpty" &&
                       cond.args[1] !== null &&
                       cond.args[1] !== undefined;
+                    const inputVal = usableInput ? valueInput : "";
                     return (
                       <input
-                        type="text"
-                        value={usableInput ? cond.args[1]?.toString() : ""}
+                        type={currType}
+                        value={inputVal}
                         disabled={!usableInput}
-                        onChange={(e) => updateArg(index, 1, e.target.value)}
+                        onChange={(e) => {
+                          updateArg(index, 1, e.target.value);
+                          setValueInput(e.target.value);
+                        }}
                         className="flex-1 border-r border-gray-200 px-2 py-1 focus:outline-none"
                         placeholder={usableInput ? "Enter a value" : ""}
                       />
