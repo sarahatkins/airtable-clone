@@ -93,7 +93,7 @@ const DataGrid: React.FC<DataGridProps> = ({
     },
   );
 
-  const cellsLoading = (rows.length === 0 && numRows != 0) || !viewData?.pages;
+  const cellsLoading = (rows.length === 0 && numRows != 0) || !viewData;
 
   const matchedCells: CellType[] = useMemo(() => {
     if (!viewData?.pages) return []
