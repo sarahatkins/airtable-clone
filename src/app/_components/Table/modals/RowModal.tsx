@@ -21,10 +21,12 @@ const RowModal: React.FC<RowModalProps> = ({
   selectedRows,
   setRowSelection,
 }) => {
+  const utils = api.useUtils();
   const modalRef = useRef<HTMLDivElement | null>(null);
   const deleteRows = api.table.deleteRows.useMutation({
     onSuccess: async () => {
       console.log("deleted rows");
+      await utils.table.getNumRows.invalidate();
     },
   });
   const handleDelete = () => {

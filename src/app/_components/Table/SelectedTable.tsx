@@ -41,6 +41,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
     { tableId: selectedTable?.id ?? 0 },
     { enabled: !!selectedTable?.id },
   );
+  
   const { data: loadedViews, isLoading: viewsLoading } =
     api.table.getViewByTable.useQuery(
       { tableId: selectedTable?.id ?? 0 },
@@ -180,8 +181,8 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
                 rows={rows}
                 setRows={setRows}
               />
-              <div className="flex h-10 border-t border-gray-100 bg-white pt-2 pl-2 text-xs">
-                {numRows?.count} records
+              <div className="flex h-10 border-t border-gray-100 bg-white items-center pl-2 text-xs">
+                {numRows?.count} record{numRows && numRows?.count > 1  ? "s" : ""}
               </div>
             </>
           )}
