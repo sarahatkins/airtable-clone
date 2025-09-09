@@ -11,6 +11,7 @@ const HundredThousandButton: React.FC<ButtonProps> = ({ tableId }) => {
     onSuccess: async () => {
       console.log("Generated 100k rows");
       await utils.table.getFilterCells.invalidate();
+      await utils.table.getNumRows.invalidate();
     },
   });
 

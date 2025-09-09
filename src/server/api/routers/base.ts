@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { bases } from "~/server/db/schemas/tableSchema"; // your Drizzle table
-import { eq } from "drizzle-orm";
+import { eq, and, isNull } from "drizzle-orm";
 import { db } from "~/server/db";
 
 export const baseRouter = createTRPCRouter({
@@ -16,7 +16,7 @@ export const baseRouter = createTRPCRouter({
           userId: ctx.session.user.id,
           createdAt: new Date(),
         })
-        
+
         .returning();
 
       return newBase;
@@ -26,7 +26,11 @@ export const baseRouter = createTRPCRouter({
   getAll: protectedProcedure
     .input(z.object({ userId: z.string().min(1) }))
     .query(async ({ input }) => {
-      const res = await db.select().from(bases).where(eq(bases.userId, input.userId)).orderBy(bases.id);
+      const res = await db
+        .select()
+        .from(bases)
+        .where(and(eq(bases.userId, input.userId), isNull(bases.deletedAt)))
+        .orderBy(bases.id);
 
       return res;
     }),
@@ -58,8 +62,8 @@ export const baseRouter = createTRPCRouter({
   deleteBase: protectedProcedure
     .input(z.object({ id: z.string().min(1) }))
     .mutation(async ({ input }) => {
+      await db.update(bases).set({ deletedAt: new Date() }).where(eq(bases.id, input.id));
       await db.delete(bases).where(eq(bases.id, input.id));
       return { success: true };
     }),
 });
-

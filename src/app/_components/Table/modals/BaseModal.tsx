@@ -1,4 +1,11 @@
-import { ChevronRightIcon, ChevronUpIcon } from "lucide-react";
+import {
+  ChevronRightIcon,
+  ChevronUpIcon,
+  Copy,
+  Slack,
+  Trash,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
 import {
   useCallback,
   useEffect,
@@ -22,6 +29,7 @@ const EditBaseModal: React.FC<ModalProps> = ({
   base,
   setBaseName,
 }) => {
+  const router = useRouter();
   const modalRef = useRef<HTMLDivElement | null>(null);
   const optionsRef = useRef<HTMLDivElement | null>(null);
   const [guideOpen, setGuideOpen] = useState(true);
@@ -35,6 +43,13 @@ const EditBaseModal: React.FC<ModalProps> = ({
     },
   });
 
+  const deleteBase = api.base.deleteBase.useMutation({
+    onSuccess: async (deleted) => {
+      if (!deleted) return;
+      console.log("deleted base", deleted);
+    },
+  });
+
   const handleRename = useCallback(() => {
     if (!newBaseName.trim()) return;
 
@@ -43,6 +58,11 @@ const EditBaseModal: React.FC<ModalProps> = ({
 
     onClose();
   }, [newBaseName, setBaseName, base.id, renameBase, onClose]);
+
+  const handleDelete = () => {
+    deleteBase.mutate({ id: base.id });
+    router.push("/");
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -71,9 +91,9 @@ const EditBaseModal: React.FC<ModalProps> = ({
   return (
     <div
       ref={modalRef}
-      className="absolute left-[-45] z-80 mt-2 w-[450px] rounded-md border border-gray-200 bg-white p-3 shadow-lg"
+      className="absolute left-[-45] z-80 mt-2 w-[380px] rounded-md border border-gray-200 bg-white p-4 shadow-lg"
     >
-      <div className="flex items-center justify-between border-b border-gray-200 p-1 pb-5">
+      <div className="flex items-center justify-between border-b border-gray-200 p-1 pb-3">
         {/* Header */}
         <input
           type="text"
@@ -84,7 +104,7 @@ const EditBaseModal: React.FC<ModalProps> = ({
           onBlur={() => {
             handleRename();
           }}
-          className="w-full rounded px-2 py-1 text-2xl font-medium text-gray-700 transition-discrete hover:bg-gray-100 focus:bg-gray-100 focus:ring-2 focus:ring-blue-200 focus:outline-none"
+          className="w-full rounded px-2 text-xl text-gray-700 transition-discrete hover:bg-gray-100 focus:bg-gray-100 focus:ring-2 focus:ring-blue-200 focus:outline-none"
         />
         <button
           onClick={() => setShowOptions(true)}
@@ -97,18 +117,18 @@ const EditBaseModal: React.FC<ModalProps> = ({
       {/* Appearance Section */}
       <button
         onClick={() => setAppearanceOpen(!appearanceOpen)}
-        className="flex w-full items-center border-b border-gray-200 py-2 text-left text-lg font-medium"
+        className="mt-2 flex w-full items-center border-b border-gray-200 py-3 text-left text-lg font-medium"
       >
         {appearanceOpen ? (
           <ChevronUpIcon className="mt-1 h-4 w-4 text-gray-500" />
         ) : (
           <ChevronRightIcon className="mt-1 h-4 w-4 text-gray-500" />
         )}
-        <span className="ml-1">Appearance</span>
+        <span className="ml-1 text-sm">Appearance</span>
       </button>
 
       {appearanceOpen && (
-        <div className="p-2 text-sm text-gray-700">
+        <div className="p-2 text-xs text-gray-700">
           Appearance settings content...
         </div>
       )}
@@ -123,10 +143,10 @@ const EditBaseModal: React.FC<ModalProps> = ({
         ) : (
           <ChevronRightIcon className="h-4 w-4 text-gray-500" />
         )}
-        <span className="ml-1">Base guide</span>
+        <span className="ml-1 text-sm">Base guide</span>
       </button>
       {guideOpen && (
-        <div className="space-y-3 px-1 pt-2 text-sm text-gray-700">
+        <div className="space-y-3 px-1 pt-2 text-xs text-gray-700">
           <p>
             Use this space to share the goals and details of your base with your
             team.
@@ -151,39 +171,20 @@ const EditBaseModal: React.FC<ModalProps> = ({
           ref={optionsRef}
           className="absolute top-12 right-[-200] z-100 w-60 rounded-md border border-gray-200 bg-white py-2 shadow-xl"
         >
-          <button className="flex w-full cursor-not-allowed items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="mr-2 h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 7h8M8 11h8m-8 4h8"
-              />
-            </svg>
+          <button className="flex w-full cursor-not-allowed items-center px-4 py-2 text-xs text-gray-700 hover:bg-gray-100">
+            <Copy width={12} className="mr-2" />
             Duplicate base
           </button>
-          <button className="flex w-full cursor-not-allowed items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="mr-2 h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M16 12H8m0 0v8m0-8L5 15m3-3l3 3"
-              />
-            </svg>
+          <button className="flex w-full cursor-not-allowed items-center px-4 py-2 text-xs text-gray-700 hover:bg-gray-100">
+            <Slack width={12} className="mr-2" />
             Slack notifications
+          </button>
+          <button
+            onClick={() => handleDelete()}
+            className="flex w-full cursor-pointer items-center px-4 py-2 text-xs text-gray-700 hover:bg-gray-100"
+          >
+            <Trash width={12} className="mr-2" />
+            Delete base
           </button>
         </div>
       )}

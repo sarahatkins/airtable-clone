@@ -1,0 +1,1 @@
+ALTER TABLE "airtable_base" RENAME COLUMN "last_open" TO "deleted_at";

@@ -20,7 +20,7 @@ export const bases = createTable("base", (d) => ({
     .notNull()
     .$defaultFn(() => "Untitled Base"),
   createdAt: d.timestamp("created_at", { withTimezone: true }).defaultNow(),
-  lastOpened: d.timestamp("last_open", { withTimezone: true }).defaultNow(),
+  deletedAt: d.timestamp("deleted_at", { withTimezone: true }),
 }));
 
 // --------------------------------------
