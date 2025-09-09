@@ -25,8 +25,8 @@ export const baseRouter = createTRPCRouter({
   // Get all base for a user
   getAll: protectedProcedure
     .input(z.object({ userId: z.string().min(1) })) // assuming you store ownership
-    .query(async ({ }) => {
-      const res = await db.select().from(bases).orderBy(bases.id);
+    .query(async ({ input }) => {
+      const res = await db.select().from(bases).where(eq(bases.userId, input.userId)).orderBy(bases.id);
 
       return res;
     }),
