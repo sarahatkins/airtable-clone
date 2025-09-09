@@ -116,7 +116,7 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({ base, setBases }) => {
           ref={inputRef}
           disabled={!isRenaming}
           onBlur={(e) => handleRename(e.target.value)}
-          className="w-35 rounded font-semibold text-gray-900 focus:p-1 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          className="w-fit rounded font-semibold text-gray-900 focus:p-1 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           onChange={(e) => setWidgetName(e.target.value)}
           value={widgetName}
         />

@@ -166,6 +166,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
                     const newType = getColType(Number(e.target.value));
                     if (newType !== currType) {
                       setTypeChange(true);
+                      console.log("new", newType)
                       setCurrType(newType.toLowerCase() as "text" | "number");
                     }
                     updateArg(index, 0, Number(e.target.value));
