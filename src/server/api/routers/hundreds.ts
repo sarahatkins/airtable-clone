@@ -18,7 +18,7 @@ export const hundredsRouter = createTRPCRouter({
         await client.query("BEGIN");
         const tableId = input.tableId;
 
-        // 1️⃣ Fetch columns and their types
+        // Fetch columns and their types
         const { rows: columns } = await client.query(
           `SELECT id, type FROM airtable_columns WHERE "tableId" = $1`,
           [tableId]
@@ -28,7 +28,7 @@ export const hundredsRouter = createTRPCRouter({
           throw new Error("No columns found for this table");
         }
 
-        // 2️⃣ Insert rows and cell_values in chunks
+        //  Insert rows and cell_values in chunks
         for (let start = 1; start <= numRows; start += chunkSize) {
           const end = Math.min(start + chunkSize - 1, numRows);
 

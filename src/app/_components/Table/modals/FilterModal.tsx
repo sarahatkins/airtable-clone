@@ -45,7 +45,6 @@ const FilterModal: React.FC<FilterModalProps> = ({
 }) => {
   const modalRef = useRef<HTMLDivElement | null>(null);
   const [typeChange, setTypeChange] = useState<boolean>(false);
-  const [valueInput, setValueInput] = useState<string>("");
   const [currType, setCurrType] = useState<"text" | "number">("text");
 
   const [filterTree, setFilterTree] = useState<FilterGroup>(
@@ -107,10 +106,9 @@ const FilterModal: React.FC<FilterModalProps> = ({
 
   useEffect(() => {
     if (typeChange) {
-      setValueInput("");
       setTypeChange(false);
     }
-  }, [typeChange, setValueInput]);
+  }, [setTypeChange, typeChange]);
 
   // Close modal on outside click
   useEffect(() => {
@@ -131,7 +129,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
   return (
     <div
       ref={modalRef}
-      className="absolute right-0 z-60 mt-2 w-[550px] rounded-lg border border-gray-200 bg-white shadow-xl"
+      className="absolute right-0 z-60 mt-2 w-[530px] rounded-lg border border-gray-200 bg-white shadow-xl"
     >
       <div className="space-y-3 px-4 py-3">
         <p className="text-xs text-gray-700">In this view, show records</p>
@@ -191,7 +189,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
                       e.target.value as FilterOperator,
                     );
                   }}
-                  className="border-r border-r-gray-200 px-1 py-1"
+                  className="border-r border-r-gray-200 px-1 w-30 py-1"
                 >
                   {(getColType(cond.args[0]) === "text"
                     ? textOperators
@@ -211,15 +209,14 @@ const FilterModal: React.FC<FilterModalProps> = ({
                       cond.functionName !== "isNotEmpty" &&
                       cond.args[1] !== null &&
                       cond.args[1] !== undefined;
-                    const inputVal = usableInput ? valueInput : "";
+
                     return (
                       <input
                         type={currType}
-                        value={inputVal}
+                        value={usableInput ? cond.args[1]?.toString() : ""}
                         disabled={!usableInput}
                         onChange={(e) => {
                           updateArg(index, 1, e.target.value);
-                          setValueInput(e.target.value);
                         }}
                         className="flex-1 border-r border-gray-200 px-2 py-1 focus:outline-none"
                         placeholder={usableInput ? "Enter a value" : ""}

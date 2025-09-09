@@ -34,6 +34,7 @@ import LoadingScreen from "./LoadingScreen";
 
 interface DataGridProps {
   table: TableType;
+  numRows: number;
   view: ViewType;
   cols: ColType[];
   searchText: string | undefined;
@@ -53,6 +54,7 @@ export type CellCoord = { row: number; col: number };
 
 const DataGrid: React.FC<DataGridProps> = ({
   table,
+  numRows,
   view,
   cols,
   setCols,
@@ -90,8 +92,8 @@ const DataGrid: React.FC<DataGridProps> = ({
       },
     },
   );
-  
-  const cellsLoading = rows.length === 0 || !viewData;
+
+  const cellsLoading = (rows.length === 0 && numRows != 0) || !viewData;
 
   const matchedCells: CellType[] = useMemo(() => {
     if (!viewData?.pages) return []

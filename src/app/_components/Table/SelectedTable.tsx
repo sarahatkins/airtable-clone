@@ -41,7 +41,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
     { tableId: selectedTable?.id ?? 0 },
     { enabled: !!selectedTable?.id },
   );
-  
+
   const { data: loadedViews, isLoading: viewsLoading } =
     api.table.getViewByTable.useQuery(
       { tableId: selectedTable?.id ?? 0 },
@@ -173,6 +173,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
             <>
               <DataGrid
                 key={currentView.id}
+                numRows={numRows?.count ?? 0}
                 table={selectedTable}
                 view={currentView}
                 cols={shownCols}
