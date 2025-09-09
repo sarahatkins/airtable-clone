@@ -5,13 +5,19 @@ import React, {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import { DEFAULT_PENDING_KEY, STATUS, type ColType, type TableType } from "~/app/defaults";
+import {
+  DEFAULT_PENDING_KEY,
+  STATUS,
+  type ColType,
+  type TableType,
+} from "~/app/defaults";
 import { api } from "~/trpc/react";
 import {
   clearPendingColEditsForCol,
   getPendingColEditsForCol,
 } from "../helper/PendingEdits";
-import { Plus } from "lucide-react";
+import { Baseline, Hash, Plus } from "lucide-react";
+import ReactDOM from "react-dom";
 
 interface ColButtonProps {
   dbTable: TableType;
@@ -19,7 +25,12 @@ interface ColButtonProps {
 }
 
 const CreateColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
   const modalRef = useRef<HTMLDivElement | null>(null);
+  const [modalPos, setModalPos] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
   const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
   const [newColumnType, setNewColumnType] = useState<STATUS | null>();
   const [newColumnName, setNewColumnName] = useState("");
@@ -55,7 +66,39 @@ const CreateColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
     },
   });
 
-  const openAddColumn = () => setIsAddColumnOpen(true);
+  const openAddColumn = () => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setModalPos({
+        top: rect.bottom + window.scrollY,
+        left: rect.right + window.scrollX - 350,
+      });
+    }
+    setIsAddColumnOpen(true);
+  };
+
+  useEffect(() => {
+    // ...existing click outside logic...
+    const updatePos = () => {
+      if (buttonRef.current) {
+        const rect = buttonRef.current.getBoundingClientRect();
+        setModalPos({
+          top: rect.bottom + window.scrollY,
+          left: rect.right + window.scrollX - 350,
+        });
+      }
+    };
+    if (isAddColumnOpen) {
+      window.addEventListener("scroll", updatePos, true);
+      window.addEventListener("resize", updatePos);
+      updatePos();
+    }
+    return () => {
+      window.removeEventListener("scroll", updatePos, true);
+      window.removeEventListener("resize", updatePos);
+    };
+  }, [isAddColumnOpen]);
+
   const closeAddColumn = () => {
     setIsAddColumnOpen(false);
     setNewColumnType(null);
@@ -106,58 +149,70 @@ const CreateColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
   return (
     <>
       <button
+        ref={buttonRef}
         onClick={openAddColumn}
         className="flex h-full w-full cursor-pointer items-center justify-center hover:bg-gray-100"
       >
         <Plus height={18} />
       </button>
-      {isAddColumnOpen && (
-        <div
-          ref={modalRef}
-          className="absolute top-42 ml-[-160] z-60 w-[300px] rounded-lg border border-gray-200 bg-white p-2 shadow-xl"
-        >
-          {!newColumnType ? (
-            <>
-              <h3 className="mb-2 font-semibold">Select field type</h3>
-              <div className="flex flex-col gap-2">
-                {(Object.keys(STATUS) as STATUS[]).map((type) => (
+      {isAddColumnOpen &&
+        modalPos &&
+        ReactDOM.createPortal(
+          <div
+            ref={modalRef}
+            style={{
+              position: "fixed",
+              top: modalPos.top,
+              left: modalPos.left,
+              zIndex: 60,
+              width: 350,
+            }}
+            className="rounded-lg border border-gray-200 bg-white p-3 shadow-lg"
+          >
+            {!newColumnType ? (
+              <>
+                <h3 className="mb-2 text-gray-500">Select field type</h3>
+                <div className="flex flex-col gap-1">
+                  {(Object.keys(STATUS) as STATUS[]).map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => setNewColumnType(type)}
+                      className="text-left flex cursor-pointer rounded p-2 hover:bg-gray-100 items-center text-sm"
+                    >
+                      {type.toLowerCase() === STATUS.Text ? <Baseline width={18} className="mr-1"/> : <Hash width={18} className="mr-1" />}
+                      {type}
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="mb-2 font-semibold">Enter field name</h3>
+                <input
+                  className="mb-2 w-full rounded border p-2"
+                  placeholder="Field name"
+                  value={newColumnName}
+                  onChange={(e) => setNewColumnName(e.target.value)}
+                />
+                <div className="flex justify-end gap-2">
                   <button
-                    key={type}
-                    onClick={() => setNewColumnType(type)}
-                    className="cursor-pointer rounded border p-2 hover:bg-gray-100"
+                    onClick={closeAddColumn}
+                    className="rounded border px-3 py-1"
                   >
-                    {type}
+                    Cancel
                   </button>
-                ))}
-              </div>
-            </>
-          ) : (
-            <>
-              <h3 className="mb-2 font-semibold">Enter field name</h3>
-              <input
-                className="mb-2 w-full rounded border p-2"
-                placeholder="Field name"
-                value={newColumnName}
-                onChange={(e) => setNewColumnName(e.target.value)}
-              />
-              <div className="flex justify-end gap-2">
-                <button
-                  onClick={closeAddColumn}
-                  className="rounded border px-3 py-1"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleAddNewColumn}
-                  className="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
-                >
-                  Create field
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      )}
+                  <button
+                    onClick={handleAddNewColumn}
+                    className="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
+                  >
+                    Create field
+                  </button>
+                </div>
+              </>
+            )}
+          </div>,
+          document.body,
+        )}
     </>
   );
 };

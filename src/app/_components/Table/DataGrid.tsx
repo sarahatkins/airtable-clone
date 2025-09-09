@@ -197,7 +197,7 @@ const DataGrid: React.FC<DataGridProps> = ({
       ...cols.map((col, colIdx) => ({
         accessorKey: `col_${col.id}`,
         header: () => (
-          <ColumnHeader title={col.name} colId={col.id} tableId={table.id} />
+          <ColumnHeader title={col.name} type={col.type} colId={col.id} tableId={table.id} />
         ),
         size: 200,
         enableColumnFilter: true,

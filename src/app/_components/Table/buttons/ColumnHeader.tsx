@@ -1,17 +1,28 @@
 // components/HeaderCell.tsx
-import { ArrowLeft, ArrowRight, Copy, Pencil, Trash } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Baseline,
+  Copy,
+  Hash,
+  Pencil,
+  Trash,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
 import RenameColModal from "../RenameColModal";
+import { STATUS } from "~/app/defaults";
 
 interface HeaderProps {
   title: string;
+  type: string;
   tableId: number;
   colId: number;
 }
 
 const ColumnHeader: React.FC<HeaderProps> = ({
   title,
+  type,
   colId,
   tableId,
 }) => {
@@ -49,9 +60,16 @@ const ColumnHeader: React.FC<HeaderProps> = ({
   return (
     <div
       onContextMenu={handleContextMenu}
-      className="cursor-context-menu px-2 py-1 select-none"
+      className="cursor-context-menu py-1 select-none"
     >
-      {columnName}
+      <div className="flex items-center">
+        {type.toLowerCase() === STATUS.Text ? (
+          <Baseline width={13} className="mr-1 mt-0.25" />
+        ) : (
+          <Hash width={13} className="mr-1" />
+        )}
+        {columnName}
+      </div>
 
       {contextMenu && !showRename && (
         <div
@@ -67,9 +85,7 @@ const ColumnHeader: React.FC<HeaderProps> = ({
               <Pencil height={15} className="mr-2" />
               Edit field
             </li>
-            <li
-              className="center flex cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100"
-            >
+            <li className="center flex cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100">
               <Copy height={15} className="mr-2" />
               Duplicate field
             </li>
@@ -77,15 +93,13 @@ const ColumnHeader: React.FC<HeaderProps> = ({
               <ArrowLeft height={15} className="mr-2" />
               Insert left
             </li>
-            <li
-              className="center flex cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100"
-            >
+            <li className="center flex cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100">
               <ArrowRight height={15} className="mr-2" />
               Insert right
             </li>
             <li
               className="flex cursor-pointer items-center px-4 py-2 hover:bg-gray-100"
-              onClick={() => deleteColumn.mutate({columnId: colId})}
+              onClick={() => deleteColumn.mutate({ columnId: colId })}
             >
               <Trash height={15} className="mr-2" />
               Delete field
@@ -97,7 +111,10 @@ const ColumnHeader: React.FC<HeaderProps> = ({
       <RenameColModal
         open={showRename}
         colId={colId}
-        onClose={() => {setShowRename(false); setContextMenu(null);}}
+        onClose={() => {
+          setShowRename(false);
+          setContextMenu(null);
+        }}
         currName={columnName}
         setModalName={setColumnName}
       />
