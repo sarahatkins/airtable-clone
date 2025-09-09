@@ -47,7 +47,7 @@ export const hundredsRouter = createTRPCRouter({
             await client.query(
               `INSERT INTO airtable_cell_values ("tableId", "rowId", "columnId", "value")
                SELECT $1, r.id, $2,
-                 CASE $3
+                 CASE LOWER($3)
                    WHEN 'text' THEN to_jsonb(substr(md5(random()::text), 1, 8))
                    WHEN 'number' THEN to_jsonb(floor(random() * 1000)::int)
                  END
