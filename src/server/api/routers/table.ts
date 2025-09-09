@@ -503,19 +503,21 @@ export const tableRouter = createTRPCRouter({
         );
       });
       
-      const orderBys: any = sorting.map((sort, i) => {
+      const orderBys: (ReturnType<typeof asc> | ReturnType<typeof desc> | undefined)[] = sorting.map((sort, i) => {
         const sortAlias = sortAliases[i];
         if (!sortAlias) return;
         return sort.direction === "asc"
-          ? asc(sql`${sortAlias.value}::text`)
-          : desc(sql`${sortAlias.value}::text`);
+          ? asc(sql`LOWER(${sortAlias.value}::text)`)
+          : desc(sql`LOWER(${sortAlias.value}::text)`);
       });
 
       // Always add rows.id for stable pagination (last tiebreaker)
       orderBys.push(asc(rows.id));
 
       // ========= Pagination =========
-      rowQuery = rowQuery.orderBy(...orderBys).limit(limit + 1);
+      rowQuery = rowQuery.orderBy(
+        ...orderBys.filter((o): o is Exclude<typeof o, undefined> => o !== undefined)
+      ).limit(limit + 1);
 
       // ========= Execute =========
       const rowsRes = (await rowQuery) as RowType[];
