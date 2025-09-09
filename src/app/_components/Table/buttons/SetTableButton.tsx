@@ -67,17 +67,17 @@ const SetTableButton: React.FC<ButtonProps> = ({
 
   return (
     <div
-      className="h-full flex items-center hover:bg-gray-100 "
+      className="scrollbar-hidden overflow-x-auto max-w-[75vw] ml-[-1] flex h-full items-center hover:bg-gray-100"
       onContextMenu={(e) => {
         e.preventDefault();
         setShowEditModal(true);
       }}
     >
       <button
-        className={`flex  ${selected ? "h-[33px] w-21 border-b-0" : "h-5 w-16 border-r border-gray-200"} cursor-pointer items-center rounded-t-sm border px-3 py-1.5 text-xs text-gray-900 transition-colors duration-150 ${
+        className={`flex ${selected ? "h-[33px] w-fit border-b-0" : "h-5 w-fit border-r border-gray-200"} cursor-pointer items-center rounded-t-sm border px-3 py-1.5 text-xs text-gray-900 transition-colors duration-150 ${
           selected
-            ? "z-50 border-t border-r border-l border-gray-200 bg-white"
-            : "border border-transparent "
+            ? "z-50 border-t border-r border-gray-200 bg-white"
+            : "border border-transparent"
         }`}
         onClick={setSelectedTable}
       >
@@ -88,7 +88,7 @@ const SetTableButton: React.FC<ButtonProps> = ({
       {showEditModal && (
         <div
           ref={modalRef}
-          className="absolute z-50 top-[100] w-72 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
+          className="absolute top-[100] z-50 w-72 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
         >
           {/* Header */}
           <ul className="text-sm text-gray-700">
