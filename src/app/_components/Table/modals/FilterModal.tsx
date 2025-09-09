@@ -1,6 +1,5 @@
 import { Trash2 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-import { set } from "zod";
 import type {
   CellValue,
   ColType,

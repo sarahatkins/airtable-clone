@@ -179,7 +179,7 @@ const CreateColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
                       onClick={() => setNewColumnType(type)}
                       className="text-left flex cursor-pointer rounded p-2 hover:bg-gray-100 items-center text-sm"
                     >
-                      {type.toLowerCase() === STATUS.Text ? <Baseline width={18} className="mr-1"/> : <Hash width={18} className="mr-1" />}
+                      {type.toLowerCase() === "text" ? <Baseline width={18} className="mr-1"/> : <Hash width={18} className="mr-1" />}
                       {type}
                     </button>
                   ))}

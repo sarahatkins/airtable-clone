@@ -11,7 +11,6 @@ import {
 import { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
 import RenameColModal from "../RenameColModal";
-import { STATUS } from "~/app/defaults";
 
 interface HeaderProps {
   title: string;
@@ -63,7 +62,7 @@ const ColumnHeader: React.FC<HeaderProps> = ({
       className="cursor-context-menu py-1 select-none"
     >
       <div className="flex items-center">
-        {type.toLowerCase() === STATUS.Text ? (
+        {type.toLowerCase() === "text" ? (
           <Baseline width={13} className="mr-1 mt-0.25" />
         ) : (
           <Hash width={13} className="mr-1" />

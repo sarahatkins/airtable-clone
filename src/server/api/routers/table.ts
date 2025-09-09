@@ -503,17 +503,15 @@ export const tableRouter = createTRPCRouter({
         );
       });
 
-      const orderBys: (
-        | ReturnType<typeof asc>
-        | ReturnType<typeof desc>
-        | undefined
-      )[] = sorting.map((sort, i) => {
-        const sortAlias = sortAliases[i];
-        if (!sortAlias) return;
-        return sort.direction === "asc"
-          ? asc(sql`LOWER(${sortAlias.value}::text)`)
-          : desc(sql`LOWER(${sortAlias.value}::text)`);
-      });
+      const orderBys: (ReturnType<typeof asc> | undefined)[] = sorting.map(
+        (sort, i) => {
+          const sortAlias = sortAliases[i];
+          if (!sortAlias) return;
+          return sort.direction === "asc"
+            ? asc(sql`LOWER(${sortAlias?.value}::text)`)
+            : desc(sql`LOWER(${sortAlias?.value}::text)`);
+        },
+      );
 
       // Always add rows.id for stable pagination (last tiebreaker)
       orderBys.push(asc(rows.id));
@@ -542,12 +540,16 @@ export const tableRouter = createTRPCRouter({
         .from(cellValues)
         .where(inArray(cellValues.rowId, rowIds))) as CellType[];
 
-      const matchedCells: CellType[] = cellsRes.filter((c) =>
-        searchText
-          ? c.value && c.value.toString().toLowerCase().includes(searchText.toLowerCase())
-          : false,
-      );
-
+      const matchedCells: CellType[] = cellsRes.filter((c) => {
+        if (searchText) {
+          return c.value
+            ?.toString()
+            .toLowerCase()
+            .includes(searchText.toLowerCase());
+        } else {
+          return false;
+        }
+      });
 
       // Hydrate rows with cells
       const rowsWithCells = rowsRes.map((r: RowType) => ({

@@ -30,6 +30,7 @@ import FloatingAddRows from "./buttons/FloatingAddRows";
 import ColumnHeader from "./buttons/ColumnHeader";
 import IndexCell from "./buttons/IndexCell";
 import RowModal from "./modals/RowModal";
+import LoadingScreen from "./LoadingScreen";
 
 interface DataGridProps {
   table: TableType;
@@ -89,6 +90,8 @@ const DataGrid: React.FC<DataGridProps> = ({
       },
     },
   );
+  
+  const cellsLoading = rows.length === 0 || !viewData;
 
   const matchedCells: CellType[] = useMemo(() => {
     if (!viewData?.pages) return []
@@ -239,6 +242,8 @@ const DataGrid: React.FC<DataGridProps> = ({
     () => reactColumns.reduce((sum, c) => sum + (c.size ?? 150) + 50, 0),
     [reactColumns],
   );
+
+  if(cellsLoading) return <LoadingScreen message=" filtered cells..."/>
 
   return (
     <div className="flex h-full w-full flex-col">
