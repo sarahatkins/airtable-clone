@@ -13,6 +13,7 @@ import {
   type ColumnDef,
 } from "@tanstack/react-table";
 import type {
+  CellType,
   CellValue,
   ColType,
   SortingType,
@@ -88,6 +89,12 @@ const DataGrid: React.FC<DataGridProps> = ({
       },
     },
   );
+
+  const matchedCells: CellType[] = useMemo(() => {
+    if (!viewData?.pages) return []
+
+    return viewData.pages.flatMap((page) => page.matchedCells ?? []);
+  }, [viewData]);
 
   useEffect(() => {
     if (!viewData?.pages) return;
@@ -360,6 +367,9 @@ const DataGrid: React.FC<DataGridProps> = ({
                         ? Number(colIdMatch[1])
                         : undefined;
 
+                      const matchingCell = matchedCells.find((c) =>
+                        c.rowId === r.original.id && c.columnId === colId,
+                      );
                       const filteredCell = (
                         view.config as ViewConfigType
                       ).filters?.args.some((leaf) => leaf.args[0] === colId);
@@ -375,7 +385,7 @@ const DataGrid: React.FC<DataGridProps> = ({
                           className={`overflow-hidden text-ellipsis whitespace-nowrap ${
                             cell.column.id !== "__rowIndex" &&
                             "border-r border-gray-200"
-                          } ${filteredCell ? "bg-green-100" : sortedCell ? "bg-orange-100" : ""}`}
+                          } ${matchingCell ? "bg-amber-200" :filteredCell ? "bg-green-100" : sortedCell ? "bg-orange-100" : ""}`}
                           style={{ width: cell.column.getSize() }}
                           onContextMenu={() => {
                             setRowSelection((prev) => [

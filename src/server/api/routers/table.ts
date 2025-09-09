@@ -222,7 +222,7 @@ export const tableRouter = createTRPCRouter({
       }),
     )
     .mutation(async function* ({ input }) {
-      yield{type: "start", message: 'Started streaming...'}
+      yield { type: "start", message: "Started streaming..." };
       const newRows = Array.from({ length: input.count }, () => ({
         tableId: input.tableId,
         createdAt: new Date(),
@@ -277,13 +277,12 @@ export const tableRouter = createTRPCRouter({
           const chunk = newCells.slice(j, j + 1000);
           await db.insert(cellValues).values(chunk);
         }
-        
+
         yield { type: "rowsFilled", value: i };
         newCells.slice(0, newCells.length);
       }
 
-
-      yield { type:'end', message: 'Stream finished.'}
+      yield { type: "end", message: "Stream finished." };
     }),
 
   getRowsByTable: publicProcedure
@@ -476,6 +475,7 @@ export const tableRouter = createTRPCRouter({
         .$dynamic();
 
       // ========= SEARCH ============
+
       if (searchText) {
         rowQuery = rowQuery
           .leftJoin(cellValues, eq(cellValues.rowId, rows.id))
@@ -502,8 +502,12 @@ export const tableRouter = createTRPCRouter({
           ),
         );
       });
-      
-      const orderBys: (ReturnType<typeof asc> | ReturnType<typeof desc> | undefined)[] = sorting.map((sort, i) => {
+
+      const orderBys: (
+        | ReturnType<typeof asc>
+        | ReturnType<typeof desc>
+        | undefined
+      )[] = sorting.map((sort, i) => {
         const sortAlias = sortAliases[i];
         if (!sortAlias) return;
         return sort.direction === "asc"
@@ -515,9 +519,13 @@ export const tableRouter = createTRPCRouter({
       orderBys.push(asc(rows.id));
 
       // ========= Pagination =========
-      rowQuery = rowQuery.orderBy(
-        ...orderBys.filter((o): o is Exclude<typeof o, undefined> => o !== undefined)
-      ).limit(limit + 1);
+      rowQuery = rowQuery
+        .orderBy(
+          ...orderBys.filter(
+            (o): o is Exclude<typeof o, undefined> => o !== undefined,
+          ),
+        )
+        .limit(limit + 1);
 
       // ========= Execute =========
       const rowsRes = (await rowQuery) as RowType[];
@@ -534,6 +542,13 @@ export const tableRouter = createTRPCRouter({
         .from(cellValues)
         .where(inArray(cellValues.rowId, rowIds))) as CellType[];
 
+      const matchedCells: CellType[] = cellsRes.filter((c) =>
+        searchText
+          ? c.value && c.value.toString().toLowerCase().includes(searchText.toLowerCase())
+          : false,
+      );
+
+
       // Hydrate rows with cells
       const rowsWithCells = rowsRes.map((r: RowType) => ({
         ...r,
@@ -543,10 +558,10 @@ export const tableRouter = createTRPCRouter({
       // Compute next cursor
       const nextCursor =
         rowsRes.length > limit ? rowsRes[rowsRes.length - 1]?.id : undefined;
-
       return {
         rows: rowsWithCells,
         nextCursor,
+        matchedCells,
       };
     }),
 });
