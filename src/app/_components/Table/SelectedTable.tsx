@@ -188,16 +188,11 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
             )}
           </div>
 
-          <div className="flex h-10 w-full items-center bg-white pl-2 text-xs">
+          <div className="flex h-10 mt-[-20] w-full items-center bg-white pl-2 text-xs">
             {numRows?.count} record{numRows && numRows?.count > 1 ? "s" : ""}
           </div>
         </div>
       </div>
-      {/* <div className="bg-red-100 w-full h-full border">
-          <div className="h-full w-full">
-            
-          </div>
-      {/* </div> */}
     </div>
   );
 };

@@ -6,6 +6,7 @@ interface EditFieldModalProps {
   colId: number;
   onClose: () => void;
   currName: string;
+  colType: string;
   setModalName: Dispatch<SetStateAction<string>>;
 }
 
@@ -13,11 +14,12 @@ const RenameColModal: React.FC<EditFieldModalProps> = ({
   open,
   colId,
   onClose,
+  colType,
   currName,
   setModalName,
 }) => {
   const [newName, setNewName] = useState<string>(currName);
-  const [type, setType] = useState<string>(currName);
+  const [type, setType] = useState<string>(colType);
   const renameColumn = api.table.renameColumn.useMutation({
     onSuccess: (renamed) => {
       if (!renamed) return;
@@ -35,7 +37,7 @@ const RenameColModal: React.FC<EditFieldModalProps> = ({
 
   return (
     <div
-      className="absolute z-60 ml-[-20] mt-3 w-[380px] rounded-lg border border-gray-200 bg-white shadow-xl p-5"
+      className="absolute z-60 mt-3 w-[380px] rounded-lg border border-gray-200 bg-white shadow-xl p-5"
       onClick={(e) => e.stopPropagation()}
     >
         <label className="mb-1 block text-sm font-medium">Name</label>
@@ -54,6 +56,7 @@ const RenameColModal: React.FC<EditFieldModalProps> = ({
         <select
           className="mb-3 w-full rounded border px-3 py-1"
           value={type}
+          disabled
           onChange={(e) => setType(e.target.value)}
         >
           <option value="text">Single line text</option>

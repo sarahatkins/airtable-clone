@@ -1,16 +1,36 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "HaasText", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans",
-    "Helvetica Neue", sans-serif;
+  --font-sans:
+    "HaasText", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 }
 
 .scrollbar-hidden {
-  scrollbar-width: none; 
-  -ms-overflow-style: none; 
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+/* For WebKit browsers (Chrome, Edge, Safari) */
+.custom-scrollbar {
+  overflow: auto; /* Enable scrollbar */
+  scrollbar-color: #888 transparent; /* For Firefox: thumb color and track color */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent; /* track background */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #888; /* scrollbar thumb */
+  border-radius: 4px; /* round corners */
+}
+
+/* Remove scrollbar buttons/arrows */
+.custom-scrollbar::-webkit-scrollbar-button {
   display: none;
 }

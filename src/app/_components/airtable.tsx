@@ -35,7 +35,7 @@ const AirTable: React.FC<AirtableProps> = ({ baseId, tableId }) => {
   return (
     <div className="flex h-full w-full flex-col">
       {/* Header 2: Table list */}
-      <div className="flex h-7.5 items-center justify-between border-b border-gray-200 bg-indigo-50 pr-4 text-sm">
+      <div className="flex h-7.5 items-center justify-between  border-gray-200 bg-indigo-50 pr-4 text-sm">
         <div className="flex h-full items-center">
           {!isLoading &&
             tables?.map((t) => {

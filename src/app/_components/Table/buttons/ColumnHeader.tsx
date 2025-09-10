@@ -59,9 +59,9 @@ const ColumnHeader: React.FC<HeaderProps> = ({
   return (
     <div
       onContextMenu={handleContextMenu}
-      className="cursor-context-menu py-1 select-none"
+      className="cursor-context-menu py-1 select-none h-6"
     >
-      <div className="flex items-center">
+      <div className="flex items-center h-full text-sm">
         {type === "text" ? (
           <Baseline width={13} className="mr-1 mt-0.25" />
         ) : (
@@ -115,6 +115,7 @@ const ColumnHeader: React.FC<HeaderProps> = ({
           setContextMenu(null);
         }}
         currName={columnName}
+        colType={type}
         setModalName={setColumnName}
       />
     </div>

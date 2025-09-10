@@ -25,7 +25,7 @@ const IndexCell: React.FC<IndexCellProps> = ({
   return (
     <div
       key={row.id}
-      className="flex items-center justify-center"
+      className="flex items-center ml-3 text-xs text-gray-600"
       onMouseEnter={() => setHoveredRowId(row.id.toString())}
       onMouseLeave={() => setHoveredRowId(null)}
       onContextMenu={(e) => {

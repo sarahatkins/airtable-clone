@@ -172,17 +172,20 @@ const DataGrid: React.FC<DataGridProps> = ({
     () => ({
       accessorKey: "__rowIndex",
       header: () => (
-        <input
-          type="checkbox"
-          checked={rowSelection.length === rows.length}
-          onChange={(e) => {
-            if (e.target.checked) {
-              setRowSelection(rows.map((r) => r.id));
-            } else {
-              setRowSelection([]);
-            }
-          }}
-        />
+        <div className="flex w-full">
+          <input
+            type="checkbox"
+            className="border border-white shadow-2xs"
+            checked={rowSelection.length === rows.length}
+            onChange={(e) => {
+              if (e.target.checked) {
+                setRowSelection(rows.map((r) => r.id));
+              } else {
+                setRowSelection([]);
+              }
+            }}
+          />
+        </div>
       ),
       size: 60,
       enableColumnFilter: false,
@@ -275,7 +278,7 @@ const DataGrid: React.FC<DataGridProps> = ({
 
   return (
     <div
-      className="h-[79vh] w-full overflow-x-auto overflow-y-hidden scrollbar-hidden"
+      className="scrollbar-hidden h-[81vh] w-full overflow-x-auto overflow-y-hidden border-none"
       tabIndex={0}
       onKeyDown={(e) => {
         if (!focusedCell) return;
@@ -310,14 +313,14 @@ const DataGrid: React.FC<DataGridProps> = ({
       {/* Header + content wrapper with minWidth */}
       <div
         style={{ minWidth: Math.max(contentWidth + 200, 800) }}
-        className="flex h-full flex-col bg-blue-50"
+        className="flex h-full flex-col bg-slate-50"
       >
         {/* Header: fixed height */}
         <div className={`w-full h-[${ROW_HEIGHT}px] border-b border-gray-200`}>
           {reactTable.getHeaderGroups().map((hg) => (
             <div
               key={hg.id}
-              className="flex border-t border-gray-200 bg-gray-50"
+              className="flex bg-gray-50"
             >
               {hg.headers.map((header) => {
                 const colIdMatch = /_(\d+)/.exec(header.id);
@@ -367,7 +370,7 @@ const DataGrid: React.FC<DataGridProps> = ({
 
         {/* Scrollable content area: fills remaining height, scrolls vertically */}
         <div
-          className="overflow-y-auto"
+          className="custom-scrollbar overflow-y-auto"
           style={{
             height: `calc(100% - ${ROW_HEIGHT}px - 16px)`,
           }}
