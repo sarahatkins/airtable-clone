@@ -102,9 +102,9 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
   const isDataLoading = colsLoading || viewsLoading;
 
   return (
-    <div className="h-full overflow-hidden bg-slate-50 text-sm text-gray-700">
+    <div className="flex h-full w-full flex-col bg-slate-50 text-sm text-gray-700">
       {/* Header - Grid view and field views */}
-      <div className="flex h-11 w-full items-center justify-between border-b border-gray-200 bg-white px-4 text-sm">
+      <div className="flex h-11 max-w-full flex-shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 text-sm">
         {/* Left section */}
         <div className="flex items-center gap-3">
           <button className="rounded p-1 hover:bg-gray-100">
@@ -156,7 +156,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
       </div>
 
       {/* Body */}
-      <div className="flex h-full min-h-0 w-full">
+      <div className="flex h-full w-full flex-grow-0">
         {views && currentView && (
           <TableMenu
             tableId={selectedTable.id}
@@ -166,30 +166,38 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
           />
         )}
 
-        <div className="min-h-0 w-full" style={{ height: "88%" }}>
-          {!views.length || !currentView ? (
-            <LoadingScreen message=" table content..." />
-          ) : (
-            <>
-              <DataGrid
-                key={currentView.id}
-                numRows={numRows?.count ?? 0}
-                table={selectedTable}
-                view={currentView}
-                cols={shownCols}
-                searchText={search}
-                setCols={setCols}
-                rows={rows}
-                setRows={setRows}
-              />
-              
-              <div className="flex h-10 border-t border-gray-100 bg-white items-center pl-2 text-xs">
-                {numRows?.count} record{numRows && numRows?.count > 1  ? "s" : ""}
+        <div className="flex h-full w-full flex-col overflow-hidden">
+          <div className="h-full max-w-full overflow-y-hidden">
+            {!views.length || !currentView ? (
+              // <div></div>
+              <LoadingScreen message=" table content..." />
+            ) : (
+              <div className="h-full max-w-full flex flex-col overflow-y-hidden">
+                <DataGrid
+                  key={currentView.id}
+                  numRows={numRows?.count ?? 0}
+                  table={selectedTable}
+                  view={currentView}
+                  cols={shownCols}
+                  searchText={search}
+                  setCols={setCols}
+                  rows={rows}
+                  setRows={setRows}
+                />
               </div>
-            </>
-          )}
+            )}
+          </div>
+
+          <div className="flex h-10 w-full items-center bg-white pl-2 text-xs">
+            {numRows?.count} record{numRows && numRows?.count > 1 ? "s" : ""}
+          </div>
         </div>
       </div>
+      {/* <div className="bg-red-100 w-full h-full border">
+          <div className="h-full w-full">
+            
+          </div>
+      {/* </div> */}
     </div>
   );
 };

@@ -87,7 +87,7 @@ export default function BaseLayout({
      
 
 
-        <div className="min-h-0 flex-1">{children}</div>
+        <div className="min-h-0 flex-1 w-full">{children}</div>
       </div>
     </div>
   );

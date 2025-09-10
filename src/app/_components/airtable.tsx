@@ -33,7 +33,7 @@ const AirTable: React.FC<AirtableProps> = ({ baseId, tableId }) => {
   }, [isLoading, tables, tableId]);
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full w-full flex-col">
       {/* Header 2: Table list */}
       <div className="flex h-7.5 items-center justify-between border-b border-gray-200 bg-indigo-50 pr-4 text-sm">
         <div className="flex h-full items-center">
@@ -67,13 +67,14 @@ const AirTable: React.FC<AirtableProps> = ({ baseId, tableId }) => {
       </div>
 
       {/* Table content */}
-      {(isLoading || !isTableSetup) && (
-          <LoadingScreen />
-      )}
-      <div className="min-h-0 flex-1">
-        {!isLoading && isTableSetup && selectedTable && (
-          <SelectedTable selectedTable={selectedTable} />
-        )}
+
+      <div className="h-full">
+        {(isLoading || !isTableSetup) && <LoadingScreen />}
+        <div className="h-full w-full">
+          {!isLoading && isTableSetup && selectedTable && (
+            <SelectedTable selectedTable={selectedTable} />
+          )}
+        </div>
       </div>
     </div>
   );
