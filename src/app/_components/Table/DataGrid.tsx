@@ -29,7 +29,6 @@ import ColumnHeader from "./buttons/ColumnHeader";
 import IndexCell from "./buttons/IndexCell";
 import RowModal from "./modals/RowModal";
 import LoadingScreen from "./LoadingScreen";
-import { pages } from "next/dist/build/templates/app-page";
 import FloatingAddRows from "./buttons/FloatingAddRows";
 import CreateRowButton from "./buttons/CreateRowButton";
 
@@ -265,12 +264,6 @@ const DataGrid: React.FC<DataGridProps> = ({
 
   const contentWidth = useMemo(
     () => reactColumns.reduce((sum, c) => sum + (c.size ?? 150), 0),
-    [reactColumns],
-  );
-
-  // Total width including buffer for scrolling
-  const totalWidth = useMemo(
-    () => reactColumns.reduce((sum, c) => sum + (c.size ?? 150) + 50, 0),
     [reactColumns],
   );
 

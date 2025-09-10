@@ -42,6 +42,7 @@ const CreateRowButton: React.FC<ColButtonProps> = ({
           rowId: newRow.id,
           columnId: edit.columnId,
           value: edit.value as string,
+          type: edit.type,
         });
         clearPendingEditsForRow(edit.rowId);
       });
