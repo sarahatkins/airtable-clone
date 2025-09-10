@@ -275,7 +275,7 @@ const DataGrid: React.FC<DataGridProps> = ({
 
   return (
     <div
-      className="max-h-[79vh] w-full overflow-x-auto overflow-y-hidden scrollbar-hidden"
+      className="h-[79vh] w-full overflow-x-auto overflow-y-hidden scrollbar-hidden"
       tabIndex={0}
       onKeyDown={(e) => {
         if (!focusedCell) return;
@@ -367,7 +367,7 @@ const DataGrid: React.FC<DataGridProps> = ({
 
         {/* Scrollable content area: fills remaining height, scrolls vertically */}
         <div
-          className="overflow-y-auto bg-red-100"
+          className="overflow-y-auto"
           style={{
             height: `calc(100% - ${ROW_HEIGHT}px - 16px)`,
           }}

@@ -44,7 +44,9 @@ const FilterModal: React.FC<FilterModalProps> = ({
   cols,
 }) => {
   const modalRef = useRef<HTMLDivElement | null>(null);
-  const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(null);
+  const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(
+    null,
+  );
 
   const [filterTree, setFilterTree] = useState<FilterGroup>(
     currentFilter ?? { functionName: "and", args: [] },
@@ -74,24 +76,38 @@ const FilterModal: React.FC<FilterModalProps> = ({
     index: number,
     argIndex: 0 | 1,
     value: string | number,
+    colTypeChanged: boolean = false,
   ) => {
     // if timeout is not empty -> clear timeout and start a new one
     const newArgs = filterTree.args.map((cond, i) => {
       if (i !== index) return cond;
-      const args: [number, CellValue] = [...cond.args];
-      if (argIndex === 0) {
-        args[0] = Number(value);
+
+      let args: [number, CellValue] = [...cond.args];
+      let functionName = cond.functionName;
+
+      if (colTypeChanged) {
+        // If the column type changed, reset operator and value accordingly
+        const newColId = argIndex === 0 ? Number(value) : args[0]; // get new column id
+        const colType = getColType(newColId);
+        functionName = colType === "number" ? "eq" : "contains";
+
+        args = [newColId, colType === "number" ? 0 : ""];
       } else {
-        args[1] = value;
+        // Normal update
+        if (argIndex === 0) {
+          args[0] = Number(value);
+        } else {
+          args[1] = value;
+        }
       }
 
-      return { ...cond, args };
+      return { ...cond, args, functionName };
     });
 
     if (debounceTimer) {
       clearTimeout(debounceTimer);
     }
-    
+
     const timer = setTimeout(() => {
       onSave({ ...filterTree, args: newArgs });
     }, 1000);
@@ -166,7 +182,15 @@ const FilterModal: React.FC<FilterModalProps> = ({
                 <select
                   value={cond.args[0]}
                   onChange={(e) => {
-                    updateArg(index, 0, Number(e.target.value));
+                    const oldColType = getColType(Number(cond.args[0]));
+                    const newColType = getColType(Number(e.target.value));
+
+                    updateArg(
+                      index,
+                      0,
+                      e.target.value,
+                      oldColType !== newColType,
+                    );
                   }}
                   className="border-r border-r-gray-200 px-1 py-1"
                 >
@@ -187,7 +211,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
                       e.target.value as FilterOperator,
                     );
                   }}
-                  className="border-r border-r-gray-200 px-1 w-30 py-1"
+                  className="w-30 border-r border-r-gray-200 px-1 py-1"
                 >
                   {(getColType(cond.args[0]) === "text"
                     ? textOperators
@@ -210,8 +234,11 @@ const FilterModal: React.FC<FilterModalProps> = ({
                     const type = getColType(cond.args[0]);
                     return (
                       <input
+                        key={usableInput ? cond.args[1]?.toString() : "empty"}
                         type={type === "number" ? "number" : "text"}
-                        defaultValue={usableInput ? cond.args[1]?.toString() : ""}
+                        defaultValue={
+                          usableInput ? cond.args[1]?.toString() : ""
+                        }
                         disabled={!usableInput}
                         onChange={(e) => {
                           updateArg(index, 1, e.target.value);
