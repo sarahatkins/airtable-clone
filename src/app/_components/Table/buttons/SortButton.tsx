@@ -24,7 +24,6 @@ const SortButton: React.FC<ButtonProps> = ({
 
  const handleSave = (newSort: SortingType[]) => {
     const newConfig: ViewConfigType = { ...viewConfig, sorting: newSort };
-    console.log("SAVING", newConfig);
     onConfigChange(newConfig);
   };
   return (

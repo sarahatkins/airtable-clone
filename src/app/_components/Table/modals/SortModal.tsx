@@ -77,7 +77,6 @@ const SortModal: React.FC<SortModalProps> = ({
   };
 
   const addSortOption = (columnId: number, type: "text" | "number") => {
-    console.log("ADDING", columnId, type);
     updateSorts([...sorts, { columnId, direction: "asc", type }]);
     setShowAdditional(false);
   };

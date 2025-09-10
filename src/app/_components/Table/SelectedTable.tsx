@@ -86,7 +86,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
 
   const onConfigChange = (newConfig: ViewConfigType) => {
     if (!currentView) return;
-    console.log("UPDATING CONFIG", newConfig.sorting);
+
     setCurrentView({ ...currentView, config: newConfig });
     setViewConfig(newConfig);
     if (newConfig.hiddenColumns === viewConfig.hiddenColumns) setRows([]);
