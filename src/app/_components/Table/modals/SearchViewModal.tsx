@@ -11,31 +11,29 @@ interface SearchViewModalProps {
   isOpen: boolean;
   onClose: () => void;
   setSearch: Dispatch<SetStateAction<string | undefined>>;
-  currentSearch: string | undefined;
 }
 
 const SearchViewModal: React.FC<SearchViewModalProps> = ({
   isOpen,
   onClose,
   setSearch,
-  currentSearch,
 }) => {
   const modalRef = useRef<HTMLDivElement | null>(null);
+  const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(
+    null,
+  );
 
-  // Local state for input
-  const [localSearch, setLocalSearch] = useState(currentSearch ?? "");
+  const handleSearchChange = (value: string) => {
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
 
-  // Debounce search updates
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setSearch(localSearch || undefined);
-    }, 300); // 300ms debounce
-    return () => clearTimeout(handler);
-  }, [localSearch, setSearch]);
+    const timer = setTimeout(() => {
+      setSearch(value);
+    }, 1000);
 
-  useEffect(() => {
-    setLocalSearch(currentSearch ?? "");
-  }, [currentSearch]);
+    setDebounceTimer(timer);
+  };
 
   // Close on outside click
   useEffect(() => {
@@ -65,10 +63,12 @@ const SearchViewModal: React.FC<SearchViewModalProps> = ({
         <div className="flex items-center border-b px-3 py-2">
           <input
             type="text"
-            value={localSearch}
+            defaultValue={""}
             placeholder="Find in view"
             className="flex-1 text-sm placeholder-gray-400 outline-none"
-            onChange={(e) => setLocalSearch(e.target.value)}
+            onInput={(e) => {
+              handleSearchChange(e.currentTarget.value);
+            }}
           />
           <button
             onClick={onClose}

@@ -1,0 +1,1 @@
+ALTER TABLE "airtable_cell_values" ADD COLUMN "type" text DEFAULT 'text' NOT NULL;

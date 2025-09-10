@@ -42,7 +42,8 @@ const EditableCell = (ctx: CellContext<NormalizedRow, CellValue>) => {
   const saveToDB = useCallback(
     (val: CellValue) => {
       const rowId = row.original.id;
-      const colId = (column.columnDef.meta as ColMeta).col.id;
+      const linkedCol = column.columnDef.meta as ColMeta;
+      const colId = linkedCol.col.id;
 
       // New row/column, store in pending
       if (rowId < 0) {
@@ -51,6 +52,7 @@ const EditableCell = (ctx: CellContext<NormalizedRow, CellValue>) => {
           rowId,
           columnId: colId,
           value: val,
+          type: linkedCol.col.type,
         });
         return;
       }
@@ -61,6 +63,7 @@ const EditableCell = (ctx: CellContext<NormalizedRow, CellValue>) => {
           rowId,
           columnId: colId,
           value: val,
+          type: linkedCol.col.type,
         });
         return;
       }
@@ -71,6 +74,7 @@ const EditableCell = (ctx: CellContext<NormalizedRow, CellValue>) => {
         rowId,
         columnId: colId,
         value: val ? val.toString() : "",
+        type: linkedCol.col.type,
       });
     },
     [row.original, column.columnDef.meta, setCellValue],
@@ -100,12 +104,20 @@ const EditableCell = (ctx: CellContext<NormalizedRow, CellValue>) => {
   return (
     <input
       ref={inputRef}
-      type={((column.columnDef.meta as ColMeta)?.col?.type?.toLowerCase() === "number" ? "number" : "text")}
+      type={
+        (column.columnDef.meta as ColMeta)?.col?.type ===
+        "number"
+          ? "number"
+          : "text"
+      }
       value={value ? value.toString() : ""}
       onChange={(e) => setValue(e.target.value)}
-      onClick={(e) => {e.preventDefault(); onClick();}}
+      onClick={(e) => {
+        e.preventDefault();
+        onClick();
+      }}
       onBlur={onBlur}
-      className="w-full h-6.75 cursor-default border border-transparent bg-transparent text-sm p-0.75 text-gray-900 focus:border-blue-500 focus:ring-5 focus:ring-blue-500 focus:outline-none"
+      className="h-6.75 w-full cursor-default border border-transparent bg-transparent p-0.75 text-sm text-gray-900 focus:border-blue-500 focus:ring-5 focus:ring-blue-500 focus:outline-none"
     />
   );
 };

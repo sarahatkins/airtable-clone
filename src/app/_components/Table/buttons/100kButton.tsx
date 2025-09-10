@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { api } from "~/trpc/react";
 
 interface ButtonProps {
@@ -6,21 +7,47 @@ interface ButtonProps {
 
 const HundredThousandButton: React.FC<ButtonProps> = ({ tableId }) => {
   const utils = api.useUtils();
-
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const handleHundreds = api.hundreds.generateLargeTable.useMutation({
     onSuccess: async () => {
       console.log("Generated 100k rows");
       await utils.table.getFilterCells.invalidate();
       await utils.table.getNumRows.invalidate();
+      setIsLoading(false);
     },
   });
 
   return (
     <button
-      className="h-full w-full cursor-pointer rounded rounded-tr-3xl rounded-br-3xl border-l border-gray-100 p-1 font-semibold hover:bg-gray-50"
-      onClick={() => handleHundreds.mutate({ tableId })}
+      className="flex h-full w-full justify-center items-center cursor-pointer rounded rounded-tr-3xl rounded-br-3xl border-l border-gray-100 p-1 font-semibold hover:bg-gray-50"
+      onClick={() => {
+        setIsLoading(true);
+        handleHundreds.mutate({ tableId });
+      }}
     >
       Generate 100k rows
+      {isLoading && (
+        <svg
+          className="h-5 ml-2 animate-spin text-slate-500"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="3"
+          ></circle>
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+      )}
     </button>
   );
 };

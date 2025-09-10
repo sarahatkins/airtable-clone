@@ -149,7 +149,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
               <button className="flex items-center gap-1 hover:text-gray-900">
                 <List className="h-4 w-4" /> Share and sync
               </button>
-              <SearchViewButton search={search} setSearch={setSearch} />
+              <SearchViewButton setSearch={setSearch} />
             </>
           )}
         </div>

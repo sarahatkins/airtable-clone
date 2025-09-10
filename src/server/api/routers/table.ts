@@ -136,7 +136,7 @@ export const tableRouter = createTRPCRouter({
         .values({
           tableId: Number(input.tableId),
           name: input.name,
-          type: input.type,
+          type: input.type.toLowerCase(),
           orderIndex: 0,
         })
         .returning();
@@ -268,6 +268,7 @@ export const tableRouter = createTRPCRouter({
               rowId: row.id,
               columnId: col.id,
               value: JSON.stringify(fakeValue),
+              type: col.type
             });
           }
         }
@@ -387,6 +388,7 @@ export const tableRouter = createTRPCRouter({
         rowId: z.number(),
         columnId: z.number(),
         value: z.string(),
+        type: z.string(),
       }),
     )
     .mutation(async ({ input }) => {
@@ -417,6 +419,7 @@ export const tableRouter = createTRPCRouter({
             rowId: Number(input.rowId),
             columnId: Number(input.columnId),
             value: input.value,
+            type: input.type.toLowerCase(),
           })
           .returning();
         return newCell;
@@ -507,6 +510,13 @@ export const tableRouter = createTRPCRouter({
         (sort, i) => {
           const sortAlias = sortAliases[i];
           if (!sortAlias) return;
+          console.log(sortAlias.type)
+          if(sort.type === "number") {
+            return sort.direction === "asc"
+              ? asc(sql`(${sortAlias?.value})::numeric`)
+              : desc(sql`${sortAlias?.value}::numeric`);
+          }
+          
           return sort.direction === "asc"
             ? asc(sql`LOWER(${sortAlias?.value}::text)`)
             : desc(sql`LOWER(${sortAlias?.value}::text)`);

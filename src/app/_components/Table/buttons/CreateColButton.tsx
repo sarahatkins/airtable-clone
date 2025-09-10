@@ -60,6 +60,7 @@ const CreateColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
           rowId: edit.rowId,
           columnId: newCol.id,
           value: editVal,
+          type: edit.type,
         });
         clearPendingColEditsForCol(edit.columnId);
       });

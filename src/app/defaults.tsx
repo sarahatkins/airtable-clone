@@ -36,6 +36,7 @@ export type ViewConfigType = {
 export type SortingType = {
   columnId: number;
   direction: "asc" | "desc";
+  type: "text" | "number";
 };
 
 export type FilterGroup = {

@@ -3,12 +3,10 @@ import { useState, type Dispatch, type SetStateAction } from "react";
 import SearchViewModal from "../modals/SearchViewModal";
 
 interface ButtonProps {
-  search: string | undefined;
   setSearch: Dispatch<SetStateAction<string | undefined>>;
 }
 
 const SearchViewButton: React.FC<ButtonProps> = ({
-  search,
   setSearch,
 }) => {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
@@ -23,7 +21,6 @@ const SearchViewButton: React.FC<ButtonProps> = ({
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         setSearch={setSearch}
-        currentSearch={search}
       />
     </div>
   );

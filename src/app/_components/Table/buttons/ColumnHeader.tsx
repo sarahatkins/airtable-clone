@@ -62,7 +62,7 @@ const ColumnHeader: React.FC<HeaderProps> = ({
       className="cursor-context-menu py-1 select-none"
     >
       <div className="flex items-center">
-        {type.toLowerCase() === "text" ? (
+        {type === "text" ? (
           <Baseline width={13} className="mr-1 mt-0.25" />
         ) : (
           <Hash width={13} className="mr-1" />

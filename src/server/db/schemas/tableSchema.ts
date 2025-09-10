@@ -71,6 +71,7 @@ export const cellValues = createTable("cell_values", (d) => ({
       onDelete: "cascade",
     })
     .notNull(),
+  type: d.text().notNull().default("text"),
   value: d.jsonb("value").$type<string | number | null>().notNull(),
 }));
 

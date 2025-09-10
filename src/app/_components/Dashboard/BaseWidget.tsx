@@ -105,7 +105,7 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({ base, setBases }) => {
     >
       {/* Icon */}
       <div
-        className={`flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500 font-semibold text-white`}
+        className={`flex shrink-0 h-10 w-10 items-center justify-center rounded-lg bg-blue-500 font-semibold text-white`}
       >
         {widgetName.replace(/\s/g, "").slice(0, 2)}
       </div>
@@ -116,7 +116,7 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({ base, setBases }) => {
           ref={inputRef}
           disabled={!isRenaming}
           onBlur={(e) => handleRename(e.target.value)}
-          className="w-fit rounded font-semibold text-gray-900 focus:p-1 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          className="w-40 rounded font-semibold text-gray-900 focus:p-1 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           onChange={(e) => setWidgetName(e.target.value)}
           value={widgetName}
         />

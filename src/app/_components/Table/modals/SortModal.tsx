@@ -20,6 +20,7 @@ export type SortModalColType = {
   id: number;
   name: string;
   icon: LucideIcon;
+  type: "text" | "number";
 };
 
 const SortModal: React.FC<SortModalProps> = ({
@@ -49,6 +50,7 @@ const SortModal: React.FC<SortModalProps> = ({
         id: col.id,
         name: col.name,
         icon: typeToIconMap[col.type as STATUS] || Baseline,
+        type: col.type === "text" ? "text" : "number" as "text" | "number",
       }));
     setAvailableCols(mappedCols);
     setShowPickCol(currentSorts.length === 0);
@@ -72,8 +74,8 @@ const SortModal: React.FC<SortModalProps> = ({
     updateSorts(updated);
   };
 
-  const addSortOption = (columnId: number) => {
-    updateSorts([...sorts, { columnId, direction: "asc" }]);
+  const addSortOption = (columnId: number, type: "text" | "number") => {
+    updateSorts([...sorts, { columnId, direction: "asc", type }]);
     setShowAdditional(false);
   };
 

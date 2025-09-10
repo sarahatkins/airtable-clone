@@ -44,8 +44,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
   cols,
 }) => {
   const modalRef = useRef<HTMLDivElement | null>(null);
-  const [typeChange, setTypeChange] = useState<boolean>(false);
-  const [currType, setCurrType] = useState<"text" | "number">("text");
+  const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(null);
 
   const [filterTree, setFilterTree] = useState<FilterGroup>(
     currentFilter ?? { functionName: "and", args: [] },
@@ -57,7 +56,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
 
   const getColType = (colId: number) => {
     const col = cols.find((c) => c.id === colId);
-    return col?.type.toLowerCase() === "number" ? "number" : "text";
+    return col?.type === "number" ? "number" : "text";
   };
 
   const updateCondition = (
@@ -76,6 +75,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
     argIndex: 0 | 1,
     value: string | number,
   ) => {
+    // if timeout is not empty -> clear timeout and start a new one
     const newArgs = filterTree.args.map((cond, i) => {
       if (i !== index) return cond;
       const args: [number, CellValue] = [...cond.args];
@@ -87,7 +87,16 @@ const FilterModal: React.FC<FilterModalProps> = ({
 
       return { ...cond, args };
     });
-    onSave({ ...filterTree, args: newArgs });
+
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
+    
+    const timer = setTimeout(() => {
+      onSave({ ...filterTree, args: newArgs });
+    }, 1000);
+
+    setDebounceTimer(timer);
   };
 
   const removeCondition = (index: number) => {
@@ -103,12 +112,6 @@ const FilterModal: React.FC<FilterModalProps> = ({
     };
     onSave({ ...filterTree, args: [...filterTree.args, newCond] });
   };
-
-  useEffect(() => {
-    if (typeChange) {
-      setTypeChange(false);
-    }
-  }, [setTypeChange, typeChange]);
 
   // Close modal on outside click
   useEffect(() => {
@@ -163,12 +166,6 @@ const FilterModal: React.FC<FilterModalProps> = ({
                 <select
                   value={cond.args[0]}
                   onChange={(e) => {
-                    const newType = getColType(Number(e.target.value));
-                    if (newType !== currType) {
-                      setTypeChange(true);
-                      console.log("new", newType)
-                      setCurrType(newType.toLowerCase() as "text" | "number");
-                    }
                     updateArg(index, 0, Number(e.target.value));
                   }}
                   className="border-r border-r-gray-200 px-1 py-1"
@@ -210,11 +207,11 @@ const FilterModal: React.FC<FilterModalProps> = ({
                       cond.functionName !== "isNotEmpty" &&
                       cond.args[1] !== null &&
                       cond.args[1] !== undefined;
-
+                    const type = getColType(cond.args[0]);
                     return (
                       <input
-                        type={currType}
-                        value={usableInput ? cond.args[1]?.toString() : ""}
+                        type={type === "number" ? "number" : "text"}
+                        defaultValue={usableInput ? cond.args[1]?.toString() : ""}
                         disabled={!usableInput}
                         onChange={(e) => {
                           updateArg(index, 1, e.target.value);

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import { Pool } from "pg";
+import { faker } from "@faker-js/faker";
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -21,7 +22,7 @@ export const hundredsRouter = createTRPCRouter({
         // Fetch columns and their types
         const { rows: columns } = await client.query(
           `SELECT id, type FROM airtable_columns WHERE "tableId" = $1`,
-          [tableId]
+          [tableId],
         );
 
         if (columns.length === 0) {
@@ -37,22 +38,31 @@ export const hundredsRouter = createTRPCRouter({
             `INSERT INTO airtable_rows ("tableId")
              SELECT $1 FROM generate_series(1, $2)
              RETURNING id`,
-            [tableId, end - start + 1]
+            [tableId, end - start + 1],
           );
 
           const rowIds = insertedRows.map((r) => r.id);
 
-          // Insert cell values using SQL only
+          // Insert cell values
           for (const col of columns) {
+            const values = rowIds.map(() => {
+              if (col.type === "number") {
+                return faker.number.int({ min: 1, max: 1000 });
+              }
+              return faker.lorem.word();
+            });
+
             await client.query(
-              `INSERT INTO airtable_cell_values ("tableId", "rowId", "columnId", "value")
-               SELECT $1, r.id, $2,
-                 CASE LOWER($3)
-                   WHEN 'text' THEN to_jsonb(substr(md5(random()::text), 1, 8))
-                   WHEN 'number' THEN to_jsonb(floor(random() * 1000)::int)
-                 END
-               FROM unnest($4::int[]) AS r(id)`,
-              [tableId, col.id, col.type, rowIds]
+              `INSERT INTO airtable_cell_values ("tableId", "rowId", "columnId", "value", "type")
+              SELECT $1, r.id, $2, r.value::jsonb, $3::text
+              FROM unnest($4::int[], $5::text[]) AS r(id, value)`,
+              [
+                tableId,
+                col.id,
+                col.type,
+                rowIds,
+                values.map((v) => JSON.stringify(v)),
+              ],
             );
           }
 
