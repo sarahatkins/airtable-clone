@@ -46,12 +46,14 @@ const SortModal: React.FC<SortModalProps> = ({
     setSorts(currentSorts);
     const mappedCols = cols
       .filter((col) => !currentSorts.some((s) => s.columnId === col.id))
-      .map((col) => ({
-        id: col.id,
-        name: col.name,
-        icon: typeToIconMap[col.type as STATUS] || Baseline,
-        type: col.type === "text" ? "text" : "number" as "text" | "number",
-      }));
+      .map((col) => {
+        return {
+          id: col.id,
+          name: col.name,
+          icon: typeToIconMap[col.type as STATUS] || Baseline,
+          type: col.type as "text" | "number",
+        };
+      });
     setAvailableCols(mappedCols);
     setShowPickCol(currentSorts.length === 0);
   }, [cols, currentSorts]);
@@ -62,8 +64,8 @@ const SortModal: React.FC<SortModalProps> = ({
     onSave(newSorts);
   };
 
-  const updateColumn = (index: number, columnId: number) => {
-    const updated = sorts.map((s, i) => (i === index ? { ...s, columnId } : s));
+  const updateColumn = (index: number, columnId: number, type: "number" | "text") => {
+    const updated = sorts.map((s, i) => (i === index ? { ...s, columnId, type } : s));
     updateSorts(updated);
   };
 
@@ -75,6 +77,7 @@ const SortModal: React.FC<SortModalProps> = ({
   };
 
   const addSortOption = (columnId: number, type: "text" | "number") => {
+    console.log("ADDING", columnId, type);
     updateSorts([...sorts, { columnId, direction: "asc", type }]);
     setShowAdditional(false);
   };
@@ -154,8 +157,13 @@ const SortModal: React.FC<SortModalProps> = ({
                 <div key={idx} className="flex items-center gap-2">
                   <select
                     className="flex-1 rounded border border-gray-300 px-2 py-1"
-                    value={opt.columnId ?? ""}
-                    onChange={(e) => updateColumn(idx, Number(e.target.value))}
+                    value={`${opt.columnId}:${opt.type}`}
+                    onChange={(e) => {
+                      const [idStr, type] = e.target.value.split(":");
+                      if(!idStr || !type) return;
+                      updateColumn(idx, Number(idStr), type as "text" | "number")
+                    
+                    }}
                   >
                     {cols
                       .filter(
@@ -164,7 +172,7 @@ const SortModal: React.FC<SortModalProps> = ({
                           col.id === opt.columnId,
                       )
                       .map((col) => (
-                        <option key={col.id} value={col.id}>
+                        <option key={col.id} value={`${col.id}:${col.type}`} >
                           {col.name}
                         </option>
                       ))}

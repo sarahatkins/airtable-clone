@@ -86,7 +86,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
 
   const onConfigChange = (newConfig: ViewConfigType) => {
     if (!currentView) return;
-
+    console.log("UPDATING CONFIG", newConfig.sorting);
     setCurrentView({ ...currentView, config: newConfig });
     setViewConfig(newConfig);
     if (newConfig.hiddenColumns === viewConfig.hiddenColumns) setRows([]);
@@ -182,6 +182,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
                 rows={rows}
                 setRows={setRows}
               />
+              
               <div className="flex h-10 border-t border-gray-100 bg-white items-center pl-2 text-xs">
                 {numRows?.count} record{numRows && numRows?.count > 1  ? "s" : ""}
               </div>

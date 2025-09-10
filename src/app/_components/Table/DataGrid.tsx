@@ -25,8 +25,6 @@ import EditableCell from "./EditableCell";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import CreateColButton from "./buttons/CreateColButton";
 import { api } from "~/trpc/react";
-import CreateRowButton from "./buttons/CreateRowButton";
-import FloatingAddRows from "./buttons/FloatingAddRows";
 import ColumnHeader from "./buttons/ColumnHeader";
 import IndexCell from "./buttons/IndexCell";
 import RowModal from "./modals/RowModal";
@@ -82,7 +80,7 @@ const DataGrid: React.FC<DataGridProps> = ({
   } = api.table.getFilterCells.useInfiniteQuery(
     {
       viewId: view?.id ?? 0,
-      limit: 100,
+      limit: 1000,
       searchText,
     },
     {
@@ -96,15 +94,15 @@ const DataGrid: React.FC<DataGridProps> = ({
   const cellsLoading = (rows.length === 0 && numRows != 0) || !viewData;
 
   const matchedCells: CellType[] = useMemo(() => {
-    if (!viewData?.pages) return []
+    if (!viewData?.pages) return [];
 
     return viewData.pages.flatMap((page) => page.matchedCells ?? []);
   }, [viewData]);
 
-  useEffect(() => {
-    if (!viewData?.pages) return;
-
-    const normalized = viewData.pages.flatMap((page) =>
+  const normalizedRows: NormalizedRow[] = useMemo(() => {
+    if (!viewData?.pages) return [];
+    console.log("Pages fetched:", viewData?.pages.length);
+    return viewData.pages.flatMap((page) =>
       page.rows.map((row) => {
         const rowObj: NormalizedRow = {
           id: row.id,
@@ -116,9 +114,11 @@ const DataGrid: React.FC<DataGridProps> = ({
         return rowObj;
       }),
     );
-    console.log("normalized", normalized);
-    setRows(normalized);
-  }, [viewData, table.id, setRows]);
+  }, [viewData, table.id]);
+
+  useEffect(() => {
+    setRows(normalizedRows);
+  }, [setRows, normalizedRows]);
 
   const virtualizer = useVirtualizer({
     count: rows.length,
@@ -126,26 +126,28 @@ const DataGrid: React.FC<DataGridProps> = ({
     getScrollElement: () => scrollRef.current,
   });
 
-  const virtualItems = virtualizer.getVirtualItems();
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (!hasNextPage || isFetchingNextPage) return;
+
+    const target = e.currentTarget;
+    const scrollTop = target.scrollTop; // how far we scrolled
+    const scrollHeight = target.scrollHeight; // total scrollable height
+    const clientHeight = target.clientHeight; // visible height
+
+    const virtualItems = virtualizer.getVirtualItems();
+    if (!virtualItems.length) return;
+
+    const lastVisibleIndex = virtualItems[virtualItems.length - 1]!.index;
+
+    const buffer = 500; // trigger when we are 500 rows away
+    if ((lastVisibleIndex >= rows.length - buffer) && (scrollTop + clientHeight >= scrollHeight/2)) {
+      fetchNextPage();
+    }
+  };
 
   useEffect(() => {
-    const loadMore = async () => {
-      const lastItem = virtualItems[virtualItems.length - 1];
-
-      if (!hasNextPage || isFetchingNextPage || !lastItem) return;
-      if (lastItem.index >= rows.length - 500) {
-        await fetchNextPage();
-      }
-    };
-
-    void loadMore();
-  }, [
-    virtualItems,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-    rows.length,
-  ]);
+    fetchNextPage();
+  }, []);
 
   const indexColumn = useMemo<ColumnDef<NormalizedRow, unknown>>(
     () => ({
@@ -202,7 +204,12 @@ const DataGrid: React.FC<DataGridProps> = ({
       ...cols.map((col, colIdx) => ({
         accessorKey: `col_${col.id}`,
         header: () => (
-          <ColumnHeader title={col.name} type={col.type} colId={col.id} tableId={table.id} />
+          <ColumnHeader
+            title={col.name}
+            type={col.type}
+            colId={col.id}
+            tableId={table.id}
+          />
         ),
         size: 200,
         enableColumnFilter: true,
@@ -245,191 +252,375 @@ const DataGrid: React.FC<DataGridProps> = ({
     [reactColumns],
   );
 
-  if(cellsLoading) return <LoadingScreen message=" filtered cells..."/>
+  if (cellsLoading) return <LoadingScreen message=" filtered cells..." />;
 
   return (
-    <div className="flex h-full w-full flex-col">
+    // <div className="h-full w-full overflow-x-auto" >
+    <div
+      className="h-full w-full overflow-x-auto overflow-y-hidden"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (!focusedCell) return;
+
+        const maxRows = rows.length;
+        const maxCols = cols.length;
+
+        const next = { ...focusedCell };
+
+        switch (e.key) {
+          case "ArrowRight":
+            if (next.col < maxCols - 1) next.col += 1;
+            break;
+          case "ArrowLeft":
+            if (next.col > 0) next.col -= 1;
+            break;
+          case "ArrowDown":
+            if (next.row < maxRows - 1) next.row += 1;
+            break;
+          case "ArrowUp":
+            if (next.row > 0) next.row -= 1;
+            break;
+          default:
+            return;
+        }
+
+        e.preventDefault();
+        setFocusedCell(next);
+        virtualizer.scrollToIndex(next.row); // ensure visible
+      }}
+    >
+      {/* HEADER */}
       <div
-        ref={scrollRef}
-        className="scrollbar-hidden overflow-auto"
-        style={{ height: "100%" }}
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (!focusedCell) return;
-
-          const maxRows = rows.length;
-          const maxCols = cols.length;
-
-          const next = { ...focusedCell };
-
-          switch (e.key) {
-            case "ArrowRight":
-              if (next.col < maxCols - 1) next.col += 1;
-              break;
-            case "ArrowLeft":
-              if (next.col > 0) next.col -= 1;
-              break;
-            case "ArrowDown":
-              if (next.row < maxRows - 1) next.row += 1;
-              break;
-            case "ArrowUp":
-              if (next.row > 0) next.row -= 1;
-              break;
-            default:
-              return;
-          }
-
-          e.preventDefault();
-          setFocusedCell(next);
-          virtualizer.scrollToIndex(next.row); // ensure visible
-        }}
+        style={{ maxWidth: Math.max(totalWidth + 200, 800) }}
+        className={`w-full h-[${ROW_HEIGHT}px] overflow-hidden border-b border-gray-200`}
       >
-        {/* LONG LINE */}
-        {/* <div className="absolute left-136 top-31 bottom-8.5 w-px bg-gray-400 z-10" /> */}
-        <div style={{ width: Math.max(totalWidth + 200, 800) }}>
-          {/* Header */}
-          {reactTable.getHeaderGroups().map((hg) => (
-            <div
-              key={hg.id}
-              className="flex border-t border-gray-200 bg-gray-50"
-            >
-              {hg.headers.map((header) => {
-                const colIdMatch = /_(\d+)/.exec(header.id);
-                const colId = colIdMatch?.[1]
-                  ? Number(colIdMatch[1])
-                  : undefined;
+        {reactTable.getHeaderGroups().map((hg) => (
+          <div key={hg.id} className="flex border-t border-gray-200 bg-gray-50">
+            {hg.headers.map((header) => {
+              const colIdMatch = /_(\d+)/.exec(header.id);
+              const colId = colIdMatch?.[1] ? Number(colIdMatch[1]) : undefined;
 
-                const filteredCell = (
-                  view.config as ViewConfigType
-                ).filters?.args.some((leaf) => leaf.args[0] === colId);
-                const sortedCell =
-                  colId !== null
-                    ? (view.config as ViewConfigType).sorting.some(
-                        (s: SortingType) => s.columnId === colId,
-                      )
-                    : false;
-                return (
-                  <div
-                    key={header.id}
-                    className={`border-b border-gray-200 px-3 py-1 text-sm font-semibold ${
-                      header.column.id !== "__rowIndex"
-                        ? "border-r"
-                        : "flex justify-center"
-                    } ${filteredCell ? "bg-green-50" : sortedCell ? "bg-orange-50" : "bg-white"}`}
-                    style={{ width: header.getSize() }}
-                  >
-                    <>
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
-                    </>
-                  </div>
-                );
-              })}
-              <div
-                key="column_add"
-                className="flex cursor-pointer items-center justify-center border-r border-b border-gray-200 bg-white hover:bg-neutral-50"
-                style={{ minWidth: "120px" }}
-              >
-                <CreateColButton dbTable={table} setCols={setCols} />
-              </div>
-            </div>
-          ))}
-
-          {/* Body (virtualized rows) */}
-          <div
-            className="relative"
-            style={{
-              height: virtualizer.getTotalSize(),
-              position: "relative",
-            }}
-          >
-            {virtualizer.getVirtualItems().map((vr) => {
-              const r = reactTable.getRowModel().rows[vr.index];
-              if (!r || !rows.includes(r.original)) return null;
-
-              const selectedRow = rowSelection.includes(r.original.id);
+              const filteredCell = (
+                view.config as ViewConfigType
+              ).filters?.args.some((leaf) => leaf.args[0] === colId);
+              const sortedCell =
+                colId !== null
+                  ? (view.config as ViewConfigType).sorting.some(
+                      (s: SortingType) => s.columnId === colId,
+                    )
+                  : false;
               return (
-                <div key={vr.key} onContextMenu={(e) => e.stopPropagation()}>
-                  <div
-                    className={`absolute top-0 left-0 flex items-center border-b border-gray-200 ${selectedRow ? "bg-blue-50" : "bg-white"} hover:bg-neutral-50`}
-                    style={{
-                      height: `${vr.size}px`,
-                      transform: `translateY(${vr.start}px)`,
-                    }}
-                    data-index={vr.index}
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      setContextMenu({
-                        x: e.clientX,
-                        y: e.clientY,
-                        rowId: r.id,
-                      });
-                    }}
-                  >
-                    {r.getVisibleCells().map((cell) => {
-                      const colIdMatch = /_(\d+)/.exec(cell.column.id);
-                      const colId = colIdMatch?.[1]
-                        ? Number(colIdMatch[1])
-                        : undefined;
-
-                      const matchingCell = matchedCells.find((c) =>
-                        c.rowId === r.original.id && c.columnId === colId,
-                      );
-                      const filteredCell = (
-                        view.config as ViewConfigType
-                      ).filters?.args.some((leaf) => leaf.args[0] === colId);
-                      const sortedCell =
-                        colId !== null
-                          ? (view.config as ViewConfigType).sorting.some(
-                              (s: SortingType) => s.columnId === colId,
-                            )
-                          : false;
-                      return (
-                        <div
-                          key={cell.id}
-                          className={`overflow-hidden text-ellipsis whitespace-nowrap ${
-                            cell.column.id !== "__rowIndex" &&
-                            "border-r border-gray-200"
-                          } ${matchingCell ? "bg-amber-200" :filteredCell ? "bg-green-100" : sortedCell ? "bg-orange-100" : ""}`}
-                          style={{ width: cell.column.getSize() }}
-                          onContextMenu={() => {
-                            setRowSelection((prev) => [
-                              ...prev,
-                              cell.row.original.id,
-                            ]);
-                          }}
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <RowModal
-                    x={contextMenu?.x ?? 0}
-                    y={contextMenu?.y ?? 0}
-                    isOpen={contextMenu != null}
-                    onClose={() => setContextMenu(null)}
-                    setRows={setRows}
-                    selectedRows={rowSelection}
-                    setRowSelection={setRowSelection}
-                  />
+                <div
+                  key={header.id}
+                  className={`border-b border-gray-200 px-3 py-1 text-sm font-semibold ${
+                    header.column.id !== "__rowIndex"
+                      ? "border-r"
+                      : "flex justify-center"
+                  } ${filteredCell ? "bg-green-50" : sortedCell ? "bg-orange-50" : "bg-white"}`}
+                  style={{ width: header.getSize() }}
+                >
+                  <>
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext(),
+                    )}
+                  </>
                 </div>
               );
             })}
+            <div
+              key="column_add"
+              // style={{ width: Math.max(totalWidth + 200, 800) }}
+              className="flex cursor-pointer items-center justify-center border-r border-b border-gray-200 bg-white hover:bg-neutral-50"
+              style={{ minWidth: "120px" }}
+            >
+              <CreateColButton dbTable={table} setCols={setCols} />
+            </div>
           </div>
-          <div style={{ width: contentWidth }}>
-            <CreateRowButton dbTable={table} setRows={setRows} />
-          </div>
+        ))}
+      </div>
+
+      {/* BODY DIV */}
+      <div
+        className="overflow-y-auto bg-red-100"
+        style={{
+          height: `calc(100% - ${ROW_HEIGHT}px - 16px)`,
+        }}
+        onScroll={handleScroll}
+      >
+        <div
+          ref={scrollRef}
+          style={{
+            height: virtualizer.getTotalSize(),
+            position: "relative",
+            width: Math.max(contentWidth, scrollRef.current?.clientWidth ?? 0),
+          }}
+        >
+          {virtualizer.getVirtualItems().map((vr) => {
+            const r = reactTable.getRowModel().rows[vr.index];
+            if (!r || !rows.includes(r.original)) return null;
+
+            const selectedRow = rowSelection.includes(r.original.id);
+            return (
+              <div key={vr.key} onContextMenu={(e) => e.stopPropagation()}>
+                <div
+                  className={`absolute top-0 left-0 flex items-center border-b border-gray-200 ${selectedRow ? "bg-blue-50" : "bg-white"} hover:bg-neutral-50`}
+                  style={{
+                    height: `${vr.size}px`,
+                    transform: `translateY(${vr.start}px)`,
+                  }}
+                  data-index={vr.index}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    setContextMenu({
+                      x: e.clientX,
+                      y: e.clientY,
+                      rowId: r.id,
+                    });
+                  }}
+                >
+                  {r.getVisibleCells().map((cell) => {
+                    const colIdMatch = /_(\d+)/.exec(cell.column.id);
+                    const colId = colIdMatch?.[1]
+                      ? Number(colIdMatch[1])
+                      : undefined;
+
+                    const matchingCell = matchedCells.find(
+                      (c) => c.rowId === r.original.id && c.columnId === colId,
+                    );
+                    const filteredCell = (
+                      view.config as ViewConfigType
+                    ).filters?.args.some((leaf) => leaf.args[0] === colId);
+                    const sortedCell =
+                      colId !== null
+                        ? (view.config as ViewConfigType).sorting.some(
+                            (s: SortingType) => s.columnId === colId,
+                          )
+                        : false;
+                    return (
+                      <div
+                        key={cell.id}
+                        className={`overflow-hidden text-ellipsis whitespace-nowrap ${
+                          cell.column.id !== "__rowIndex" &&
+                          "border-r border-gray-200"
+                        } ${matchingCell ? "bg-amber-200" : filteredCell ? "bg-green-100" : sortedCell ? "bg-orange-100" : ""}`}
+                        style={{ width: cell.column.getSize() }}
+                        onContextMenu={() => {
+                          setRowSelection((prev) => [
+                            ...prev,
+                            cell.row.original.id,
+                          ]);
+                        }}
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <RowModal
+                  x={contextMenu?.x ?? 0}
+                  y={contextMenu?.y ?? 0}
+                  isOpen={contextMenu != null}
+                  onClose={() => setContextMenu(null)}
+                  setRows={setRows}
+                  selectedRows={rowSelection}
+                  setRowSelection={setRowSelection}
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
-      <FloatingAddRows dbTable={table} setRows={setRows} />
     </div>
+    // </div>
   );
+
+  // return (
+  //   <div className="h-full w-full">
+  // <div
+  //   ref={scrollRef}
+  //   className="overflow-auto"
+  //   style={{ height: "100%" }}
+  //   tabIndex={0}
+  //   onKeyDown={(e) => {
+  //     if (!focusedCell) return;
+
+  //     const maxRows = rows.length;
+  //     const maxCols = cols.length;
+
+  //     const next = { ...focusedCell };
+
+  //     switch (e.key) {
+  //       case "ArrowRight":
+  //         if (next.col < maxCols - 1) next.col += 1;
+  //         break;
+  //       case "ArrowLeft":
+  //         if (next.col > 0) next.col -= 1;
+  //         break;
+  //       case "ArrowDown":
+  //         if (next.row < maxRows - 1) next.row += 1;
+  //         break;
+  //       case "ArrowUp":
+  //         if (next.row > 0) next.row -= 1;
+  //         break;
+  //       default:
+  //         return;
+  //     }
+
+  //     e.preventDefault();
+  //     setFocusedCell(next);
+  //     virtualizer.scrollToIndex(next.row); // ensure visible
+  //   }}
+  // >
+  //       {/* LONG LINE */}
+  //       {/* <div className="absolute left-136 top-31 bottom-8.5 w-px bg-gray-400 z-10" /> */}
+  // <div style={{ width: Math.max(totalWidth + 200, 800) }}>
+  //   {/* Header */}
+  //   {reactTable.getHeaderGroups().map((hg) => (
+  //     <div
+  //       key={hg.id}
+  //       className="flex border-t border-gray-200 bg-gray-50"
+  //     >
+  //       {hg.headers.map((header) => {
+  //         const colIdMatch = /_(\d+)/.exec(header.id);
+  //         const colId = colIdMatch?.[1]
+  //           ? Number(colIdMatch[1])
+  //           : undefined;
+
+  //         const filteredCell = (
+  //           view.config as ViewConfigType
+  //         ).filters?.args.some((leaf) => leaf.args[0] === colId);
+  //         const sortedCell =
+  //           colId !== null
+  //             ? (view.config as ViewConfigType).sorting.some(
+  //                 (s: SortingType) => s.columnId === colId,
+  //               )
+  //             : false;
+  //         return (
+  //           <div
+  //             key={header.id}
+  //             className={`border-b border-gray-200 px-3 py-1 text-sm font-semibold ${
+  //               header.column.id !== "__rowIndex"
+  //                 ? "border-r"
+  //                 : "flex justify-center"
+  //             } ${filteredCell ? "bg-green-50" : sortedCell ? "bg-orange-50" : "bg-white"}`}
+  //             style={{ width: header.getSize() }}
+  //           >
+  //             <>
+  //               {flexRender(
+  //                 header.column.columnDef.header,
+  //                 header.getContext(),
+  //               )}
+  //             </>
+  //           </div>
+  //         );
+  //       })}
+  //       <div
+  //         key="column_add"
+  //         className="flex cursor-pointer items-center justify-center border-r border-b border-gray-200 bg-white hover:bg-neutral-50"
+  //         style={{ minWidth: "120px" }}
+  //       >
+  //         <CreateColButton dbTable={table} setCols={setCols} />
+  //       </div>
+  //     </div>
+  //   ))}
+
+  //         {/* Body (virtualized rows) */}
+  // <div
+  //   className="relative"
+  //   style={{
+  //     height: virtualizer.getTotalSize(),
+  //     position: "relative",
+  //   }}
+  // >
+  //   {virtualizer.getVirtualItems().map((vr) => {
+  //     const r = reactTable.getRowModel().rows[vr.index];
+  //     if (!r || !rows.includes(r.original)) return null;
+
+  //     const selectedRow = rowSelection.includes(r.original.id);
+  //     return (
+  //       <div key={vr.key} onContextMenu={(e) => e.stopPropagation()}>
+  //         <div
+  //           className={`absolute top-0 left-0 flex items-center border-b border-gray-200 ${selectedRow ? "bg-blue-50" : "bg-white"} hover:bg-neutral-50`}
+  //           style={{
+  //             height: `${vr.size}px`,
+  //             transform: `translateY(${vr.start}px)`,
+  //           }}
+  //           data-index={vr.index}
+  //           onContextMenu={(e) => {
+  //             e.preventDefault();
+  //             setContextMenu({
+  //               x: e.clientX,
+  //               y: e.clientY,
+  //               rowId: r.id,
+  //             });
+  //           }}
+  //         >
+  //           {r.getVisibleCells().map((cell) => {
+  //             const colIdMatch = /_(\d+)/.exec(cell.column.id);
+  //             const colId = colIdMatch?.[1]
+  //               ? Number(colIdMatch[1])
+  //               : undefined;
+
+  //             const matchingCell = matchedCells.find((c) =>
+  //               c.rowId === r.original.id && c.columnId === colId,
+  //             );
+  //             const filteredCell = (
+  //               view.config as ViewConfigType
+  //             ).filters?.args.some((leaf) => leaf.args[0] === colId);
+  //             const sortedCell =
+  //               colId !== null
+  //                 ? (view.config as ViewConfigType).sorting.some(
+  //                     (s: SortingType) => s.columnId === colId,
+  //                   )
+  //                 : false;
+  //             return (
+  //               <div
+  //                 key={cell.id}
+  //                 className={`overflow-hidden text-ellipsis whitespace-nowrap ${
+  //                   cell.column.id !== "__rowIndex" &&
+  //                   "border-r border-gray-200"
+  //                 } ${matchingCell ? "bg-amber-200" :filteredCell ? "bg-green-100" : sortedCell ? "bg-orange-100" : ""}`}
+  //                 style={{ width: cell.column.getSize() }}
+  //                 onContextMenu={() => {
+  //                   setRowSelection((prev) => [
+  //                     ...prev,
+  //                     cell.row.original.id,
+  //                   ]);
+  //                 }}
+  //               >
+  //                 {flexRender(
+  //                   cell.column.columnDef.cell,
+  //                   cell.getContext(),
+  //                 )}
+  //               </div>
+  //             );
+  //           })}
+  //         </div>
+  //         <RowModal
+  //           x={contextMenu?.x ?? 0}
+  //           y={contextMenu?.y ?? 0}
+  //           isOpen={contextMenu != null}
+  //           onClose={() => setContextMenu(null)}
+  //           setRows={setRows}
+  //           selectedRows={rowSelection}
+  //           setRowSelection={setRowSelection}
+  //         />
+  //       </div>
+  //     );
+  //   })}
+  // </div>
+  //         <div style={{ width: contentWidth }}>
+  //           <CreateRowButton dbTable={table} setRows={setRows} />
+  //         </div>
+  //       </div>
+  //     </div>
+  //     <FloatingAddRows dbTable={table} setRows={setRows} />
+  //   </div>
+  // );
 };
 
 export default DataGrid;

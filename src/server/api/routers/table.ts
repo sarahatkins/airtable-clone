@@ -62,6 +62,7 @@ const ViewConfigSchema = z.object({
       z.object({
         columnId: z.number(),
         direction: z.enum(["asc", "desc"]),
+        type: z.enum(["text", "number"]),
       }),
     )
     .optional(),
@@ -510,7 +511,7 @@ export const tableRouter = createTRPCRouter({
         (sort, i) => {
           const sortAlias = sortAliases[i];
           if (!sortAlias) return;
-          console.log(sortAlias.type)
+          console.log(sort.type, "TYPE");
           if(sort.type === "number") {
             return sort.direction === "asc"
               ? asc(sql`(${sortAlias?.value})::numeric`)
