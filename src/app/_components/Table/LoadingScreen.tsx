@@ -33,7 +33,6 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({
       </svg>
       <span className="animation-spin font-sans text-sm font-semibold text-neutral-500 text-center">
         <p className="text-xl mb-1">Loading{message}</p>
-        <p className="text-xs">This may be loading slowly due to a large number of records or fields</p>
       </span>
     </div>
   );

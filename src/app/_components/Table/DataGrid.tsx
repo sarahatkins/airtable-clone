@@ -318,7 +318,7 @@ const DataGrid: React.FC<DataGridProps> = ({
         className="flex h-full flex-col bg-slate-50"
       >
         {/* Header: fixed height */}
-        <div className={`w-full h-[${ROW_HEIGHT}px] border-b border-gray-200`}>
+        <div className={`w-full h-[${ROW_HEIGHT}px]`}>
           {reactTable.getHeaderGroups().map((hg) => (
             <div key={hg.id} className="flex bg-gray-50">
               {hg.headers.map((header) => {

@@ -67,7 +67,7 @@ const CreateRowButton: React.FC<ColButtonProps> = ({
         onClick={addNewRow}
         className={
           style ??
-          `text-gray w-full border-r border-b border-gray-200 bg-white px-4.5 py-2 text-start hover:bg-neutral-50`
+          `text-gray w-full border-r border-b border-gray-200 bg-white px-1.5 py-2 text-start hover:bg-neutral-50`
         }
       >
         <Plus height={15} />

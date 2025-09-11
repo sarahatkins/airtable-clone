@@ -59,17 +59,17 @@ export default function BaseLayout({
           </div>
 
           {/* Middle nav */}
-            <div className="ml-10 flex items-center gap-6">
-              <button className="border-b-2 border-blue-600 font-medium text-blue-600">
+            <div className="ml-10 flex items-center gap-6 h-full">
+              <button className="border-b-2 border-blue-800 h-full text-black">
                 Data
               </button>
-              <button className="text-gray-600 hover:text-gray-900">
+              <button className="text-gray-600 hover:text-gray-900 h-full border-b border-white">
                 Automations
               </button>
-              <button className="text-gray-600 hover:text-gray-900">
+              <button className="text-gray-600 hover:text-gray-900 h-full border-b border-white">
                 Interfaces
               </button>
-              <button className="text-gray-600 hover:text-gray-900">
+              <button className="text-gray-600 hover:text-gray-900 h-full border-b border-white">
                 Forms
               </button>
             </div>

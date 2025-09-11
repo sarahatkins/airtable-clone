@@ -73,7 +73,7 @@ const ColumnHeader: React.FC<HeaderProps> = ({
       {contextMenu && !showRename && (
         <div
           onClick={(e) => e.stopPropagation()}
-          className="fixed z-50 w-56 rounded-md border border-gray-200 bg-white shadow-lg"
+          className="fixed z-50 w-56 rounded-md border border-b-none border-gray-200 bg-white shadow-lg"
           style={{ top: contextMenu.y, left: contextMenu.x }}
         >
           <ul className="text-sm text-gray-700">
