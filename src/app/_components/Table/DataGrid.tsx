@@ -104,10 +104,7 @@ const DataGrid: React.FC<DataGridProps> = ({
     }
     return false;
   };
-  (rows.length === 0 &&
-    rows.length != viewData?.pages.length &&
-    numRows != 0) ||
-    !viewData;
+
   const matchedCells: CellType[] = useMemo(() => {
     if (!viewData?.pages) return [];
 
@@ -157,7 +154,7 @@ const DataGrid: React.FC<DataGridProps> = ({
     const buffer = 500; // trigger when we are 500 rows away
     if (
       lastVisibleIndex >= rows.length - buffer &&
-      scrollTop + clientHeight >= scrollHeight / 2
+      scrollTop + clientHeight >= ((scrollHeight / 5) * 4)
     ) {
       fetchNextPage();
     }
@@ -266,6 +263,18 @@ const DataGrid: React.FC<DataGridProps> = ({
     () => reactColumns.reduce((sum, c) => sum + (c.size ?? 150), 0),
     [reactColumns],
   );
+  // const utils = api.useUtils();
+  // useEffect(() => {
+  //   const loading = cellsLoading()
+  //   console.log("hello", loading, isFetchingNextPage, rows.length)
+    
+  //     console.log("running");
+  //     // setRows([]);
+  //     utils.table.getViewByTable.invalidate({ tableId: table.id }).then(() => {
+  //       utils.table.getFilterCells.invalidate();
+  //     });
+    
+  // }, [table]);
 
   if (cellsLoading()) return <LoadingScreen message=" filtered cells..." />;
 
@@ -311,10 +320,7 @@ const DataGrid: React.FC<DataGridProps> = ({
         {/* Header: fixed height */}
         <div className={`w-full h-[${ROW_HEIGHT}px] border-b border-gray-200`}>
           {reactTable.getHeaderGroups().map((hg) => (
-            <div
-              key={hg.id}
-              className="flex bg-gray-50"
-            >
+            <div key={hg.id} className="flex bg-gray-50">
               {hg.headers.map((header) => {
                 const colIdMatch = /_(\d+)/.exec(header.id);
                 const colId = colIdMatch?.[1]
