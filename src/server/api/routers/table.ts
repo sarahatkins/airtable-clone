@@ -511,10 +511,12 @@ export const tableRouter = createTRPCRouter({
         (sort, i) => {
           const sortAlias = sortAliases[i];
           if (!sortAlias) return;
+          console.log("SORT TYPE",sort.type, typeof(sortAlias?.value), sortAlias?.value)
           if(sort.type === "number") {
+            console.log("hello")
             return sort.direction === "asc"
-              ? asc(sql`(${sortAlias?.value})::numeric`)
-              : desc(sql`${sortAlias?.value}::numeric`);
+              ? asc(sql`(${sortAlias.value} #>> '{}')::numeric`)
+              : desc(sql`(${sortAlias.value} #>> '{}')::numeric`);
           }
           
           return sort.direction === "asc"
