@@ -296,15 +296,6 @@ export const tableRouter = createTRPCRouter({
       yield { type: "end", message: "Stream finished." };
     }),
 
-  getRowsByTable: publicProcedure
-    .input(z.object({ tableId: z.number() }))
-    .query(async ({ input }) => {
-      return db
-        .select()
-        .from(rows)
-        .where(eq(rows.tableId, Number(input.tableId)));
-    }),
-
   getNumRows: publicProcedure
     .input(z.object({ tableId: z.number() }))
     .query(async ({ input }) => {
@@ -434,15 +425,6 @@ export const tableRouter = createTRPCRouter({
           .returning();
         return newCell;
       }
-    }),
-
-  getCellsByTable: publicProcedure
-    .input(z.object({ tableId: z.number() }))
-    .query(async ({ input }) => {
-      return db
-        .select()
-        .from(cellValues)
-        .where(eq(cellValues.tableId, input.tableId)); // assuming you have tableId in cellValues
     }),
 
   getFilterCells: publicProcedure
