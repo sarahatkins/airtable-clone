@@ -18,7 +18,6 @@ export function buildFilter(node: FilterGroup | FilterLeaf): SQL {
   // Must be a leaf node at this point
   if (node.args.length === 2) {
     const [columnId, value] = node.args as [number, string | number | boolean];
-    console.log('info', columnId, value, node.functionName)
     switch (node.functionName) {
       case "is":
         return sql`EXISTS (

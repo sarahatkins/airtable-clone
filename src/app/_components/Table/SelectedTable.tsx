@@ -122,7 +122,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
         </div>
 
         {/* Right section */}
-        <div className="flex items-center gap-5 text-gray-600">
+        <div className="flex items-center gap-2.5 text-gray-600">
           {!isDataLoading && currentView && cols && (
             <>
               <HiddenButton
@@ -138,7 +138,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
                 viewConfig={viewConfig}
                 onConfigChange={onConfigChange}
               />
-              <button className="flex items-center gap-1 hover:text-gray-900">
+              <button className="flex items-center gap-1">
                 <LayoutGrid className="h-4 w-4" /> Group
               </button>
               <SortButton
@@ -147,10 +147,10 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
                 viewConfig={viewConfig}
                 onConfigChange={onConfigChange}
               />
-              <button className="flex items-center gap-1 hover:text-gray-900">
+              <button className="flex items-center gap-1">
                 <Palette className="h-4 w-4" /> Color
               </button>
-              <button className="flex items-center gap-1 hover:text-gray-900">
+              <button className="flex items-center gap-1">
                 <List className="h-4 w-4" /> Share and sync
               </button>
               <SearchViewButton setSearch={setSearch} />

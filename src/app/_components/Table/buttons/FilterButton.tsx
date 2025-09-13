@@ -23,7 +23,7 @@ const FilterButton: React.FC<ButtonProps> = ({
 
     return currFilter.args.length > 0;
   }, [currFilter]);
-  console.log(currFilter);
+
   const handleSave = (filters: FilterGroup | null) => {
     const newConfig: ViewConfigType = { ...viewConfig, filters };
     onConfigChange(newConfig);

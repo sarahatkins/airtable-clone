@@ -61,39 +61,39 @@ const RowModal: React.FC<RowModalProps> = ({
     <div
       ref={modalRef}
       // onContextMenu={(e) => e.preventDefault()}
-      className="fixed z-50 w-48 rounded-md border border-gray-200 bg-white"
+      className="fixed z-50 w-55 rounded-md border border-gray-200 bg-white p-2"
       style={{ top: y, left: x }}
     >
-      <ul className="text-sm text-gray-700">
-        <li className="cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100">
+      <ul className="text-sm text-gray-700 cursor-default ">
+        <li className="px-4 py-2 text-gray-400 hover:bg-gray-100">
           ↑ Insert record above
         </li>
-        <li className="cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100">
+        <li className="px-4 py-2 text-gray-400 hover:bg-gray-100">
           ↓ Insert record below
         </li>
-        <li className="cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100">
+        <li className="px-4 py-2 text-gray-400 hover:bg-gray-100">
           Duplicate record
         </li>
-        <li className="cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100">
+        <li className="px-4 py-2 text-gray-400 hover:bg-gray-100">
           Apply template
         </li>
-        <li className="cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100">
+        <li className="px-4 py-2 text-gray-400 hover:bg-gray-100">
           Expand record
         </li>
-        <li className="cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100">
+        <li className="px-4 py-2 text-gray-400 hover:bg-gray-100">
           Run field agent
         </li>
-        <li className="cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100">
+        <li className="px-4 py-2 text-gray-400 hover:bg-gray-100">
           Add comment
         </li>
-        <li className="cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100">
+        <li className="px-4 py-2 text-gray-400 hover:bg-gray-100">
           Copy record URL
         </li>
-        <li className="cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100">
+        <li className="px-4 py-2 text-gray-400 hover:bg-gray-100">
           Send record
         </li>
         <li
-          className="cursor-pointer px-4 py-2 text-red-600 hover:bg-red-100"
+          className="cursor-pointer px-4 py-2 text-red-600 hover:bg-gray-100"
           onClick={() => handleDelete()}
         >
           Delete selected record(s)

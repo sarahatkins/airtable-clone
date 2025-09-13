@@ -267,18 +267,6 @@ const DataGrid: React.FC<DataGridProps> = ({
     () => reactColumns.reduce((sum, c) => sum + (c.size ?? 150), 0),
     [reactColumns],
   );
-  // const utils = api.useUtils();
-  // useEffect(() => {
-  //   const loading = cellsLoading()
-  //   console.log("hello", loading, isFetchingNextPage, rows.length)
-
-  //     console.log("running");
-  //     // setRows([]);
-  //     utils.table.getViewByTable.invalidate({ tableId: table.id }).then(() => {
-  //       utils.table.getFilterCells.invalidate();
-  //     });
-
-  // }, [table]);
 
   if (cellsLoading()) return <LoadingScreen message=" filtered cells..." />;
 
@@ -470,7 +458,7 @@ const DataGrid: React.FC<DataGridProps> = ({
           </div>
         </div>
       </div>
-      {/*<FloatingAddRows dbTable={table} setRows={setRows} />*/}
+      <FloatingAddRows dbTable={table} setRows={setRows} />
     </div>
   );
 };

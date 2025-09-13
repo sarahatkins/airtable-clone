@@ -73,34 +73,35 @@ const ColumnHeader: React.FC<HeaderProps> = ({
       {contextMenu && !showRename && (
         <div
           onClick={(e) => e.stopPropagation()}
-          className="fixed z-50 w-56 rounded-md border border-b-none border-gray-200 bg-white shadow-lg"
+          className="fixed z-50 w-75 rounded-md border border-b-none border-gray-200 bg-white shadow-lg p-2 font-normal"
           style={{ top: contextMenu.y, left: contextMenu.x }}
         >
           <ul className="text-sm text-gray-700">
             <li
-              className="flex cursor-pointer items-center px-4 py-2 hover:bg-gray-100"
+              className="flex cursor-pointer items-center px-2 py-2 hover:bg-gray-100"
               onClick={() => setShowRename(true)}
             >
               <Pencil height={15} className="mr-2" />
               Edit field
             </li>
-            <li className="center flex cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100">
+            <li className="my-1 border-t border-gray-200" />
+            <li className="center flex px-2 py-2 text-gray-400 hover:bg-gray-100">
               <Copy height={15} className="mr-2" />
               Duplicate field
             </li>
-            <li className="center flex cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100">
+            <li className="center flex px-2 py-2 text-gray-400 hover:bg-gray-100">
               <ArrowLeft height={15} className="mr-2" />
               Insert left
             </li>
-            <li className="center flex cursor-not-allowed px-4 py-2 text-gray-400 hover:bg-gray-100">
+            <li className="center flex px-2 py-2 text-gray-400 hover:bg-gray-100">
               <ArrowRight height={15} className="mr-2" />
               Insert right
             </li>
             <li
-              className="flex cursor-pointer items-center px-4 py-2 hover:bg-gray-100"
+              className="flex cursor-pointer items-center px-2 py-2 hover:bg-gray-100 text-red-700"
               onClick={() => deleteColumn.mutate({ columnId: colId })}
             >
-              <Trash height={15} className="mr-2" />
+              <Trash height={15} className="mr-2" color="gray" />
               Delete field
             </li>
           </ul>

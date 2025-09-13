@@ -167,16 +167,16 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({ base, setBases }) => {
                   >
                     <Pencil /> Rename
                   </li>
-                  <li className="flex cursor-not-allowed items-center gap-2 px-4 py-2 hover:bg-gray-100">
+                  <li className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100">
                     <File /> Duplicate
                   </li>
-                  <li className="flex cursor-not-allowed items-center gap-2 px-4 py-2 hover:bg-gray-100">
+                  <li className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100">
                     <ArrowRight /> Move
                   </li>
-                  <li className="flex cursor-not-allowed items-center gap-2 px-4 py-2 hover:bg-gray-100">
+                  <li className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100">
                     <Building /> Go to workspace
                   </li>
-                  <li className="flex cursor-not-allowed items-center gap-2 px-4 py-2 hover:bg-gray-100">
+                  <li className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100">
                     <Paintbrush /> Customize appearance
                   </li>
                   <li

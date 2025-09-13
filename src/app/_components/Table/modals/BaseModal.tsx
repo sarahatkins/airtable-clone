@@ -104,27 +104,27 @@ const EditBaseModal: React.FC<ModalProps> = ({
           onBlur={() => {
             handleRename();
           }}
-          className="w-full rounded px-2 text-xl text-gray-700 transition-discrete hover:bg-gray-100 focus:bg-gray-100 focus:ring-2 focus:ring-blue-200 focus:outline-none"
+          className="w-full rounded px-2 py-2 text-xl text-gray-700 transition-discrete hover:bg-gray-100 focus:bg-gray-100 focus:ring-2 focus:ring-blue-200 focus:outline-none"
         />
         <button
           onClick={() => setShowOptions(true)}
           className="ml-2 p-1 text-gray-500 hover:text-gray-700"
         >
-          <div className="text-xl font-bold">⋯</div>
+          <div className="cursor-pointer text-xl font-bold">⋯</div>
         </button>
       </div>
 
       {/* Appearance Section */}
       <button
         onClick={() => setAppearanceOpen(!appearanceOpen)}
-        className="mt-2 flex w-full items-center border-b border-gray-200 py-3 text-left text-lg font-medium"
+        className="flex w-full cursor-pointer items-center py-3 text-left text-lg font-medium"
       >
         {appearanceOpen ? (
           <ChevronUpIcon className="mt-1 h-4 w-4 text-gray-500" />
         ) : (
           <ChevronRightIcon className="mt-1 h-4 w-4 text-gray-500" />
         )}
-        <span className="ml-1 text-sm">Appearance</span>
+        <span className="ml-1 py-2 text-sm">Appearance</span>
       </button>
 
       {appearanceOpen && (
@@ -136,14 +136,14 @@ const EditBaseModal: React.FC<ModalProps> = ({
       {/* Base Guide Section */}
       <button
         onClick={() => setGuideOpen(!guideOpen)}
-        className="flex w-full items-center border-b border-gray-200 py-2 text-left text-lg font-medium"
+        className="flex w-full cursor-pointer items-center border-t border-gray-200 py-2 text-left text-lg font-medium"
       >
         {guideOpen ? (
           <ChevronUpIcon className="h-4 w-4 text-gray-500" />
         ) : (
           <ChevronRightIcon className="h-4 w-4 text-gray-500" />
         )}
-        <span className="ml-1 text-sm">Base guide</span>
+        <span className="ml-1 py-2 text-sm">Base guide</span>
       </button>
       {guideOpen && (
         <div className="space-y-3 px-1 pt-2 text-xs text-gray-700">
@@ -169,21 +169,21 @@ const EditBaseModal: React.FC<ModalProps> = ({
       {showOptions && (
         <div
           ref={optionsRef}
-          className="absolute top-12 right-[-200] z-100 w-60 rounded-md border border-gray-200 bg-white py-2 shadow-xl"
+          className="absolute top-12 right-[-200] z-100 w-60 rounded-md border border-gray-200 bg-white p-2 py-2 shadow-xl"
         >
-          <button className="flex w-full cursor-not-allowed items-center px-4 py-2 text-xs text-gray-700 hover:bg-gray-100">
-            <Copy width={12} className="mr-2" />
+          <button className="flex w-full items-center px-4 py-2 text-xs text-gray-700 hover:bg-gray-100">
+            <Copy width={15} className="mr-2" />
             Duplicate base
           </button>
-          <button className="flex w-full cursor-not-allowed items-center px-4 py-2 text-xs text-gray-700 hover:bg-gray-100">
-            <Slack width={12} className="mr-2" />
+          <button className="flex w-full items-center px-4 py-2 text-xs text-gray-700 hover:bg-gray-100">
+            <Slack width={15} className="mr-2" />
             Slack notifications
           </button>
           <button
             onClick={() => handleDelete()}
-            className="flex w-full cursor-pointer items-center px-4 py-2 text-xs text-gray-700 hover:bg-gray-100"
+            className="flex w-full cursor-pointer items-center px-4 py-2 text-xs text-red-700 hover:bg-gray-100"
           >
-            <Trash width={12} className="mr-2" />
+            <Trash width={15} className="mr-2" color="gray" />
             Delete base
           </button>
         </div>

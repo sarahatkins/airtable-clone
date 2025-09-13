@@ -172,15 +172,24 @@ const CreateColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
           >
             {!newColumnType ? (
               <>
-                <h3 className="mb-2 text-gray-500">Select field type</h3>
-                <div className="flex flex-col gap-1">
+                <h3 className="mb-2 text-xs text-gray-500">
+                  Select field type
+                </h3>
+                <ul>
+                  <li className="my-1 border-t border-gray-200" />
+                </ul>
+                <div className="flex flex-col">
                   {(Object.keys(STATUS) as STATUS[]).map((type) => (
                     <button
                       key={type}
                       onClick={() => setNewColumnType(type)}
-                      className="text-left flex cursor-pointer rounded p-2 hover:bg-gray-100 items-center text-sm"
+                      className="flex cursor-pointer items-center rounded p-2 text-left text-sm hover:bg-gray-100"
                     >
-                      {type.toLowerCase() === "text" ? <Baseline width={18} className="mr-1"/> : <Hash width={18} className="mr-1" />}
+                      {type.toLowerCase() === "text" ? (
+                        <Baseline width={15} className="mr-1" />
+                      ) : (
+                        <Hash width={15} className="mr-1" />
+                      )}
                       {type}
                     </button>
                   ))}
@@ -188,9 +197,9 @@ const CreateColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
               </>
             ) : (
               <>
-                <h3 className="mb-2 font-semibold">Enter field name</h3>
+                <h3 className="mb-2 text-sm">Enter field name</h3>
                 <input
-                  className="mb-2 w-full rounded border p-2"
+                  className="mb-2 w-full rounded border px-3 py-1 border-transparent ring-1 ring-gray-200"
                   placeholder="Field name"
                   value={newColumnName}
                   onChange={(e) => setNewColumnName(e.target.value)}
@@ -198,13 +207,13 @@ const CreateColButton: React.FC<ColButtonProps> = ({ dbTable, setCols }) => {
                 <div className="flex justify-end gap-2">
                   <button
                     onClick={closeAddColumn}
-                    className="rounded border px-3 py-1"
+                    className="rounded border px-3 py-1 border-none text-gray-700 hover:bg-gray-100 cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleAddNewColumn}
-                    className="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
+                    className="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700 cursor-pointer"
                   >
                     Create field
                   </button>

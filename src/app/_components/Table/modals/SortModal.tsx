@@ -136,12 +136,12 @@ const SortModal: React.FC<SortModalProps> = ({
     >
       {/* Content */}
       <div className="space-y-3 px-4 py-3">
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-3 flex items-center justify-between">
           <h2 className="flex items-center font-semibold text-gray-400">
             Sort by <Info height={15} className="ml-0.5" />
           </h2>
-          <button onClick={onClose}>
-            <X className="h-4 w-4" />
+          <button onClick={onClose} className="cursor-pointer ">
+            <X className="h-4 w-4 " />
           </button>
         </div>
         <ul>
@@ -155,7 +155,7 @@ const SortModal: React.FC<SortModalProps> = ({
               {currentSorts.map((opt, idx) => (
                 <div key={idx} className="flex items-center gap-2">
                   <select
-                    className="flex-1 rounded border border-gray-300 px-2 py-1"
+                    className="cursor-pointer flex-1 rounded border border-gray-300 px-2 py-1"
                     value={`${opt.columnId}:${opt.type}`}
                     onChange={(e) => {
                       const [idStr, type] = e.target.value.split(":");
@@ -178,7 +178,7 @@ const SortModal: React.FC<SortModalProps> = ({
                   </select>
 
                   <select
-                    className="rounded border border-gray-300 px-2 py-1"
+                    className="rounded border border-gray-300 px-2 py-1 cursor-pointer"
                     value={opt.direction}
                     onChange={(e) =>
                       updateDirection(idx, e.target.value as "asc" | "desc")
@@ -190,7 +190,7 @@ const SortModal: React.FC<SortModalProps> = ({
 
                   <button
                     onClick={() => removeSortOption(idx)}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-gray-400 hover:text-gray-600 cursor-pointer"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -202,10 +202,10 @@ const SortModal: React.FC<SortModalProps> = ({
 
         <div className="relative inline-block">
           <button
-            className="mt-2 flex items-center gap-1 text-blue-600"
+            className="mt-2 mb-2 flex items-center gap-2.5 text-gray-500 cursor-pointer hover:text-gray-700"
             onClick={() => setShowAdditional(true)}
           >
-            <Plus className="h-4 w-4" /> Add another sort
+            <Plus className="h-4 w-5" /> Add another sort
           </button>
 
           {showAdditional && (

@@ -62,7 +62,7 @@ const AirTable: React.FC<AirtableProps> = ({ baseId, tableId }) => {
           />
         </div>
 
-        <button className="flex items-center rounded px-2 py-1 text-gray-600 hover:bg-gray-100 hover:text-gray-800">
+        <button className="flex items-center rounded px-2 py-1 text-gray-600">
           Tools
         </button>
       </div>

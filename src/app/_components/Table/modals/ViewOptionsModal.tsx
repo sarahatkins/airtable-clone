@@ -47,10 +47,10 @@ const ViewOptionsModal: React.FC<ModalProps> = ({
   return (
     <div
       ref={modalRef}
-      className="absolute left-50 z-50 mt-[-30] w-48 rounded-md border border-gray-200 bg-white shadow-md"
+      className="absolute left-50 z-50 mt-[-30] w-48 p-2 rounded-md border border-gray-200 bg-white shadow-md"
     >
       <button
-        className="flex w-full items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
+        className="cursor-pointer flex w-full items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
         onClick={() => {
           setShowRename(true);
           onClose();
@@ -60,16 +60,17 @@ const ViewOptionsModal: React.FC<ModalProps> = ({
       </button>
       <button
         disabled={true}
-        className="flex w-full cursor-not-allowed items-center gap-2 px-4 py-2 text-sm hover:bg-gray-50"
+        className="flex w-full items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
       >
         <Copy height={18} /> Duplicate view
       </button>
       <button
-        className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-500 hover:bg-gray-50 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
+        className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-500 hover:bg-gray-50 disabled: disabled:text-gray-300"
         disabled={isCurrView}
         onClick={() => {
           deleteView.mutate({ viewId });
         }}
+        title={isCurrView ? "Cannot delete selected view" :""}
       >
         <Trash height={18} /> Delete view
       </button>

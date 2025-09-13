@@ -86,7 +86,7 @@ const HiddenModal: React.FC<ModalProps> = ({
                 <div className="flex items-center gap-2">
                   <button onClick={() => handleHiddenCol(!hiddenCol, col.id)}>
                     {/* <switch /> */}
-                    <TinySwitch checked={hiddenCol} />
+                    <TinySwitch checked={!hiddenCol} />
                   </button>
 
                   <span className="flex items-center text-sm text-gray-900">
@@ -132,7 +132,8 @@ const TinySwitch = styled(Switch)(({ theme }) => ({
   display: "flex",
 
   "& .MuiSwitch-switchBase": {
-    padding: 1.5,
+    padding: 1.25,
+    paddingTop: 2,
     transform: "translateX(0px)",
     "&.Mui-checked": {
       transform: "translateX(12px)",

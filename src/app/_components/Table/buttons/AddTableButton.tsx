@@ -27,7 +27,7 @@ const AddTableButton: React.FC<ButtonProps> = ({
   const newTableName: string = useMemo(() => {
     return `Table ${numTables + 1}`;
   }, [numTables]);
-  console.log("NEW", newTableName);
+
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const modalRef = useRef<HTMLDivElement | null>(null);
 
@@ -71,7 +71,7 @@ const AddTableButton: React.FC<ButtonProps> = ({
     <div className="relative inline-block text-left">
       <button
         ref={buttonRef}
-        className="flex items-center gap-1 rounded px-2 py-1 text-gray-600 hover:bg-gray-100 hover:text-gray-800"
+        className="flex items-center gap-1 rounded px-2 py-1 text-gray-500 cursor-pointer hover:text-black"
         onClick={() => {
           setShowModal(!showModal);
         }}

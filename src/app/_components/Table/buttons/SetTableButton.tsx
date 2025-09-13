@@ -67,7 +67,7 @@ const SetTableButton: React.FC<ButtonProps> = ({
 
   return (
     <div
-      className="scrollbar-hidden overflow-x-auto max-w-[75vw] ml-[-1] flex h-full items-center hover:bg-gray-100"
+      className="scrollbar-hidden overflow-x-auto max-w-[75vw] ml-[-1] flex h-full items-center hover:bg-slate-200 hover:text-black"
       onContextMenu={(e) => {
         e.preventDefault();
         setShowEditModal(true);

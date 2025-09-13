@@ -269,7 +269,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
           >
             + Add condition
           </button>
-          <button disabled className="cursor-not-allowed text-gray-400">
+          <button disabled className="text-gray-400">
             + Add condition group
           </button>
           <button disabled className="ml-auto cursor-not-allowed">

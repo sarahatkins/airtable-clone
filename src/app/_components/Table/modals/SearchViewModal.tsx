@@ -57,15 +57,15 @@ const SearchViewModal: React.FC<SearchViewModalProps> = ({
   return (
     <div
       ref={modalRef}
-      className="absolute right-0 z-60 mt-2 w-[500px] rounded-lg border border-gray-200 bg-white shadow-xl"
+      className="absolute right-0 z-60 mt-2 w-[325px] rounded-lg border border-gray-200 bg-gray-200 shadow-xl"
     >
-      <div className="space-y-3 px-4 py-3">
-        <div className="flex items-center border-b px-3 py-2">
+      <div className="">
+        <div className="flex bg-white items-center px-3 py-2">
           <input
             type="text"
             defaultValue={""}
             placeholder="Find in view"
-            className="flex-1 text-sm placeholder-gray-400 outline-none"
+            className="flex-1 text-sm placeholder-gray-400 outline-none "
             onInput={(e) => {
               handleSearchChange(e.currentTarget.value);
             }}
@@ -77,9 +77,9 @@ const SearchViewModal: React.FC<SearchViewModalProps> = ({
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="px-3 py-2 text-xs text-gray-500">
+        <div className="px-3 text-xs text-gray-500 mt-2">
           Use advanced search options in the{" "}
-          <a href="#" className="text-blue-600 hover:underline">
+          <a href="#" className="text-blue-600 hover:underline m-0 p-0">
             search extension
           </a>
           .
