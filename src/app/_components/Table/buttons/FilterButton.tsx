@@ -1,7 +1,5 @@
 import { Filter } from "lucide-react";
-import {
-  useState,
-} from "react";
+import { useMemo, useState } from "react";
 import FilterModal from "../modals/FilterModal";
 import type { ColType, ViewConfigType, FilterGroup } from "~/app/defaults";
 
@@ -19,19 +17,32 @@ const FilterButton: React.FC<ButtonProps> = ({
   viewConfig,
 }) => {
   const [showModal, setShowModal] = useState<boolean>(false);
+  const isFiltering: boolean = useMemo(() => {
+    if (!currFilter) return false;
+    if (!currFilter.args) return false;
 
+    return currFilter.args.length > 0;
+  }, [currFilter]);
+  console.log(currFilter);
   const handleSave = (filters: FilterGroup | null) => {
     const newConfig: ViewConfigType = { ...viewConfig, filters };
     onConfigChange(newConfig);
   };
 
   return (
-    <div className="relative inline-block">
+    <div
+      className={`relative inline-block ${isFiltering ? "bg-green-200 hover:ring hover:ring-gray-300" : "hover:bg-gray-100"} rounded-sm px-2 py-1`}
+    >
       <button
-        className="flex cursor-pointer items-center gap-1 hover:text-gray-900"
+        className="flex cursor-pointer items-center gap-1"
         onClick={() => setShowModal(true)}
       >
-        <Filter className="h-4 w-4" /> Filter
+        <Filter className="h-4 w-4" />{" "}
+        {isFiltering
+          ? `Filtered by ${currFilter?.args?.length ?? 0} field${
+              currFilter?.args && currFilter.args.length > 1 ? "s" : ""
+            }`
+          : "Filter"}
       </button>
 
       {/* Modal content */}
