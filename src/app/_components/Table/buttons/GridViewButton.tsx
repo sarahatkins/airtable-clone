@@ -1,13 +1,10 @@
-import {
-  useState,
-  type Dispatch,
-  type SetStateAction,
-} from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import type React from "react";
 import type { ViewType } from "~/app/defaults";
 import ViewNameModal from "../modals/ViewNameModal";
 import ViewOptionsModal from "../modals/ViewOptionsModal";
 import { Table2 } from "lucide-react";
+import { api } from "~/trpc/react";
 
 interface ButtonProps {
   view: ViewType;
@@ -20,6 +17,7 @@ const GridViewButton: React.FC<ButtonProps> = ({
   selected,
   setSelectedView,
 }) => {
+  const utils = api.useUtils();
   const [viewName, setViewName] = useState<string>(view.name);
   const [showRenameModal, setShowRenameModal] = useState<boolean>(false);
   const [showOptionsModal, setShowOptionsModal] = useState<boolean>(false);
@@ -32,10 +30,13 @@ const GridViewButton: React.FC<ButtonProps> = ({
       }}
     >
       <button
-        className={`flex w-full items-center ${selected ? "bg-gray-100" : "bg-transparent"} cursor-pointer px-3 py-2 font-medium text-black hover:bg-gray-100 text-xs`}
-        onClick={() => setSelectedView(view)}
+        className={`flex w-full items-center ${selected ? "bg-gray-100" : "bg-transparent"} cursor-pointer px-3 py-2 text-xs font-medium text-black hover:bg-gray-100`}
+        onClick={() => {
+          setSelectedView(view);
+          // utils.table.getFilterCells.invalidate();
+        }}
       >
-        <Table2 width={15} className="text-blue-600 mr-1"/>
+        <Table2 width={15} className="mr-1 text-blue-600" />
         {viewName}
       </button>
 

@@ -146,7 +146,7 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({ base, setBases }) => {
             <button
               type="button"
               aria-label="More options"
-              className="bg-red h-10 rounded p-1 hover:bg-gray-100"
+              className="cursor-pointer bg-red h-10 rounded p-1 hover:bg-gray-100"
               onClick={(e) => {
                 e.stopPropagation();
                 setMenuOpen((prev) => !prev);
@@ -156,7 +156,7 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({ base, setBases }) => {
             </button>
 
             {menuOpen && (
-              <div className="absolute top-full right-0 z-50 mt-[-10] w-48 rounded-md border border-gray-200 bg-white shadow-lg">
+              <div className="absolute top-full right-0 z-50 mt-[-10] w-60 rounded-md border border-gray-200 bg-white shadow-lg text-sm p-2">
                 <ul className="py-1">
                   <li
                     onClick={() => {
@@ -165,25 +165,25 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({ base, setBases }) => {
                     }}
                     className="flex cursor-pointer items-center gap-2 px-4 py-2 hover:bg-gray-100"
                   >
-                    <Pencil /> Rename
+                    <Pencil height={15}/> Rename
                   </li>
                   <li className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100">
-                    <File /> Duplicate
+                    <File height={15}/> Duplicate
                   </li>
                   <li className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100">
-                    <ArrowRight /> Move
+                    <ArrowRight height={15}/> Move
                   </li>
                   <li className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100">
-                    <Building /> Go to workspace
+                    <Building height={15}/> Go to workspace
                   </li>
                   <li className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100">
-                    <Paintbrush /> Customize appearance
+                    <Paintbrush height={15}/> Customize appearance
                   </li>
                   <li
                     onClick={() => handleDelete()}
-                    className="mt-1 flex cursor-pointer items-center gap-2 border-t border-gray-200 px-4 py-2 text-red-600 hover:bg-red-100"
+                    className="mt-1 flex cursor-pointer items-center gap-2 border-t border-gray-200 px-4 py-2 text-red-700 hover:bg-gray-100"
                   >
-                    <Trash /> Delete
+                    <Trash height={15} color="gray"/> Delete
                   </li>
                 </ul>
               </div>

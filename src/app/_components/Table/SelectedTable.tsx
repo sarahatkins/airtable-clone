@@ -99,6 +99,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
       },
     });
   };
+  
   useEffect(() => {
     utils.table.getViewByTable.invalidate({tableId: selectedTable.id})
   }, [])

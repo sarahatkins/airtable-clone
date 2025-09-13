@@ -49,7 +49,7 @@ export default function Dashboard() {
       >
         <div className="flex items-center">
           <AlignJustify
-            className="mr-5 h-5 w-5"
+            className="mr-5 h-5 w-5 cursor-pointer"
             onClick={() => setExpandedSidebar((prev) => !prev)}
           />
           <Image
@@ -72,8 +72,8 @@ export default function Dashboard() {
           <button className="flex text-sm items-center"><CircleQuestionMark height={15} />Help</button>
           <button className="border border-gray-100 rounded-2xl"><Bell /></button>
           <div>
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-600 text-white" onClick={() => setShowLogout(true)}>
-            <User height={15}/>
+          <div className="cursor-pointer flex h-8 w-8 items-center justify-center rounded-full bg-orange-600 text-white" onClick={() => setShowLogout(true)}>
+            {session?.user.name?.slice(0,1)}
           </div>
           <LougoutModal isOpen={showLogout} onClose={() => setShowLogout(false)} />
             </div>
