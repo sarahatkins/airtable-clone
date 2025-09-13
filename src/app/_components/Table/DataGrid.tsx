@@ -87,9 +87,7 @@ const DataGrid: React.FC<DataGridProps> = ({
     },
     {
       enabled: !!view?.id,
-      getNextPageParam: (lastPage) => {
-        return lastPage.nextCursor ?? undefined;
-      },
+      getNextPageParam: (lastPage) => lastPage?.nextCursor ?? undefined,
     },
   );
 
@@ -97,7 +95,7 @@ const DataGrid: React.FC<DataGridProps> = ({
     if (!viewData) return false;
     if (rows.length === 0 && numRows != 0) {
       const loadedEntriesLength = viewData.pages.reduce(
-        (sum, page) => sum + page.rows.length,
+        (sum, page) => sum + (page?.rows.length ?? 0),
         0,
       );
       return loadedEntriesLength != rows.length;
@@ -108,24 +106,30 @@ const DataGrid: React.FC<DataGridProps> = ({
   const matchedCells: CellType[] = useMemo(() => {
     if (!viewData?.pages) return [];
 
-    return viewData.pages.flatMap((page) => page.matchedCells ?? []);
+    return viewData.pages.flatMap((page) => page?.matchedCells ?? []);
   }, [viewData]);
 
   const normalizedRows: NormalizedRow[] = useMemo(() => {
     if (!viewData?.pages) return [];
-    console.log("Pages fetched:", viewData?.pages.length);
-    return viewData.pages.flatMap((page) =>
-      page.rows.map((row) => {
+
+    console.log("Pages fetched:", viewData.pages.length);
+
+    return viewData.pages.flatMap((page) => {
+      if (!page?.rows) return [];
+
+      return page.rows.map((row) => {
         const rowObj: NormalizedRow = {
           id: row.id,
           tableId: table.id,
         };
+
         for (const cell of row.cells) {
           rowObj[`col_${cell.columnId}`] = cell.value;
         }
+
         return rowObj;
-      }),
-    );
+      });
+    });
   }, [viewData, table.id]);
 
   useEffect(() => {
@@ -154,7 +158,7 @@ const DataGrid: React.FC<DataGridProps> = ({
     const buffer = 500; // trigger when we are 500 rows away
     if (
       lastVisibleIndex >= rows.length - buffer &&
-      scrollTop + clientHeight >= ((scrollHeight / 5) * 4)
+      scrollTop + clientHeight >= (scrollHeight / 5) * 4
     ) {
       fetchNextPage();
     }
@@ -267,13 +271,13 @@ const DataGrid: React.FC<DataGridProps> = ({
   // useEffect(() => {
   //   const loading = cellsLoading()
   //   console.log("hello", loading, isFetchingNextPage, rows.length)
-    
+
   //     console.log("running");
   //     // setRows([]);
   //     utils.table.getViewByTable.invalidate({ tableId: table.id }).then(() => {
   //       utils.table.getFilterCells.invalidate();
   //     });
-    
+
   // }, [table]);
 
   if (cellsLoading()) return <LoadingScreen message=" filtered cells..." />;
@@ -466,7 +470,7 @@ const DataGrid: React.FC<DataGridProps> = ({
           </div>
         </div>
       </div>
-      <FloatingAddRows dbTable={table} setRows={setRows} />
+      {/*<FloatingAddRows dbTable={table} setRows={setRows} />*/}
     </div>
   );
 };

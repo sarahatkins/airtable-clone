@@ -25,14 +25,14 @@ export function buildFilter(node: FilterGroup | FilterLeaf): SQL {
           SELECT 1 FROM ${cellValues} cv
           WHERE cv."rowId" = ${rows.id}
             AND cv."columnId" = ${columnId}
-            AND cv."value"::jsonb = to_jsonb(${value}::text)
+            AND (cv."value" #>> '{}')::numeric = (${value})::numeric
         )`;
       case "neq":
         return sql`EXISTS (
           SELECT 1 FROM ${cellValues} cv
           WHERE cv."rowId" = ${rows.id}
             AND cv."columnId" = ${columnId}
-            AND cv."value"::jsonb != to_jsonb(${value}::text)
+            AND (cv."value" #>> '{}')::numeric != (${value})::numeric
         )`;
       case "contains":
         return sql`EXISTS (
@@ -78,7 +78,8 @@ export function buildFilter(node: FilterGroup | FilterLeaf): SQL {
           SELECT 1 FROM ${cellValues} cv
           WHERE cv."rowId" = ${rows.id}
             AND cv."columnId" = ${columnId}
-            AND (cv."value" #>> '{}')::numeric > ${String(value)}
+            
+            AND (cv."value" #>> '{}')::numeric > (${value})::numeric
         )`;
 
       case "lt":
@@ -86,7 +87,7 @@ export function buildFilter(node: FilterGroup | FilterLeaf): SQL {
           SELECT 1 FROM ${cellValues} cv
           WHERE cv."rowId" = ${rows.id}
             AND cv."columnId" = ${columnId}
-            AND (cv."value" #>> '{}')::numeric < ${String(value)}
+            AND (cv."value" #>> '{}')::numeric < (${value})::numeric
         )`;
 
       case "gte":
@@ -94,14 +95,14 @@ export function buildFilter(node: FilterGroup | FilterLeaf): SQL {
           SELECT 1 FROM ${cellValues} cv
           WHERE cv."rowId" = ${rows.id}
             AND cv."columnId" = ${columnId}
-            AND (cv."value" #>> '{}')::numeric >= ${String(value)}
+            AND (cv."value" #>> '{}')::numeric >= (${value})::numeric
         )`;
       case "lte":
         return sql`EXISTS (
           SELECT 1 FROM ${cellValues} cv
           WHERE cv."rowId" = ${rows.id}
             AND cv."columnId" = ${columnId}
-            AND (cv."value" #>> '{}')::numeric <= ${String(value)}
+            AND (cv."value" #>> '{}')::numeric <= (${value})::numeric
         )`;
     }
   }

@@ -7,7 +7,7 @@ import {
   cellValues,
   views,
 } from "~/server/db/schemas/tableSchema";
-import { eq, and, inArray, gt, sql, asc, desc } from "drizzle-orm";
+import { eq, and, inArray, gt, sql, asc, desc, SQL } from "drizzle-orm";
 import { faker } from "@faker-js/faker";
 import { db } from "~/server/db";
 import {
@@ -23,6 +23,13 @@ import {
 } from "~/app/defaults";
 import { buildFilter, validateFilterGroup } from "./helpers/filtering";
 import { alias } from "drizzle-orm/pg-core";
+import {
+  createCellValueAlias,
+  CursorSchema,
+  findRowChunk,
+  type Cursor,
+  type SortAlias,
+} from "./helpers/sorting";
 
 // Types
 const CellValueSchema = z.union([
@@ -269,7 +276,7 @@ export const tableRouter = createTRPCRouter({
               rowId: row.id,
               columnId: col.id,
               value: JSON.stringify(fakeValue),
-              type: col.type
+              type: col.type,
             });
           }
         }
@@ -436,19 +443,179 @@ export const tableRouter = createTRPCRouter({
         .where(eq(cellValues.tableId, input.tableId)); // assuming you have tableId in cellValues
     }),
 
+  // getFilterCells: publicProcedure
+  //   .input(
+  //     z.object({
+  //       viewId: z.number(),
+  //       limit: z.number().default(500),
+  //       cursor: CursorSchema.optional(),
+  //       searchText: z.string().optional(),
+  //     }),
+  //   )
+  //   .query(async ({ input, ctx }) => {
+  //     const { viewId, limit, cursor, searchText } = input;
+
+  //     // Get respective view
+  //     const [view] = await ctx.db
+  //       .select({ config: views.config, tableId: views.tableId })
+  //       .from(views)
+  //       .where(eq(views.id, viewId));
+
+  //     if (!view) throw new Error("View not found");
+
+  //     // Extract config
+  //     const { filters: filterTree, sorting } = view.config as ViewConfigType;
+
+  //     // Build WHERE conditions
+  //     const conditions = [eq(rows.tableId, view.tableId)];
+
+  //     if (filterTree && filterTree.args.length > 0) {
+  //       validateFilterGroup(filterTree); // makes sure it doesn't crash the system
+  //       conditions.push(buildFilter(filterTree));
+  //     }
+
+  //     // Base query (only rows) - lets's you add more
+  //     let rowQuery = ctx.db
+  //       .select({ id: rows.id })
+  //       .from(rows)
+  //       .where(and(...conditions))
+  //       .$dynamic();
+
+  //     // ========= SEARCH ============
+  //     if (searchText) {
+  //       rowQuery = rowQuery
+  //         .leftJoin(cellValues, eq(cellValues.rowId, rows.id))
+  //         .where(
+  //           and(
+  //             ...conditions,
+  //             sql`${cellValues.value}::text ILIKE ${`%${searchText}%`}`,
+  //           ),
+  //         );
+  //     }
+
+  //     // ========= Sorting =========
+  //     // EAV - entity attribute value
+  //     // Cells are in a different table -> sortAlias holds all cellValues for a given column
+  //     const sortAliases = sorting.map((s, i) => alias(cellValues, `sort_${i}`));
+
+  //     sorting.forEach((sort, i) => {
+  //       const sortAlias = sortAliases[i];
+  //       if (!sortAlias) return;
+
+  //       rowQuery = rowQuery.leftJoin(
+  //         sortAlias,
+  //         and(
+  //           eq(rows.id, sortAlias.rowId),
+  //           eq(sortAlias.columnId, sort.columnId),
+  //         ),
+  //       );
+  //     });
+
+  //     // actual sorting happens here
+  //     const orderBys: (ReturnType<typeof asc> | undefined)[] = sorting
+  //       .map((sort, i) => {
+  //         const sortAlias = sortAliases[i];
+  //         if (!sortAlias) return;
+
+  //         if (sort.type === "number") {
+  //           return sort.direction === "asc"
+  //             ? asc(sql`(${sortAlias.value} #>> '{}')::numeric`)
+  //             : desc(sql`(${sortAlias.value} #>> '{}')::numeric`);
+  //         }
+
+  //         return sort.direction === "asc"
+  //           ? asc(sql`LOWER(${sortAlias?.value}::text)`)
+  //           : desc(sql`LOWER(${sortAlias?.value}::text)`);
+  //       })
+  //       .filter(Boolean);
+
+  //     // Always add rows.id for stable pagination (last tiebreaker)
+  //     orderBys.push(asc(rows.id));
+
+  //     // ========= Pagination =========
+  //     rowQuery = rowQuery.orderBy(
+  //       ...orderBys.filter(
+  //         (o): o is Exclude<typeof o, undefined> => o !== undefined,
+  //       ),
+  //     );
+
+  //     // ===== Cursor logic =====
+  //     // Instead of just checking rowId, you should use the lexicographic cursor
+  //     if (cursor) {
+  //       const cursorCondition = findRowChunk(cursor, sortAliases);
+  //       if (cursorCondition) {
+  //         rowQuery = rowQuery.where(cursorCondition);
+  //       }
+  //     }
+
+  //     rowQuery = rowQuery.limit(limit + 1);
+  //     // ========= Execute =========
+  //     const rowsRes = (await rowQuery) as RowType[];
+
+  //     if (rowsRes.length === 0) {
+  //       return { rows: [], nextCursor: null };
+  //     }
+
+  //     const rowIds = rowsRes.map((r: RowType) => r.id);
+
+  //     // Fetch related cells separately
+  //     const cellsRes = (await ctx.db
+  //       .select()
+  //       .from(cellValues)
+  //       .where(inArray(cellValues.rowId, rowIds))) as CellType[];
+
+  //     const matchedCells: CellType[] = cellsRes.filter((c) => {
+  //       if (searchText) {
+  //         return c.value
+  //           ?.toString()
+  //           .toLowerCase()
+  //           .includes(searchText.toLowerCase());
+  //       } else {
+  //         return false;
+  //       }
+  //     });
+
+  //     // Hydrate rows with cells
+  //     const rowsWithCells = rowsRes.map((r: RowType) => ({
+  //       ...r,
+  //       cells: cellsRes.filter((c) => c.rowId === r.id),
+  //     }));
+
+  //     // Compute next cursor
+  //     let nextCursor: Cursor | null = null;
+  //     if (rowsRes.length > limit) {
+  //       const lastRow = rowsRes[limit - 1];
+  //       if (lastRow) {
+  //         nextCursor = {
+  //           rowId: lastRow.id,
+  //           cursorVals: sorting.map((sort, i) => ({
+  //             colId: sort.columnId,
+  //             value: (lastRow as Record<string, unknown>)[`sort_${i}`] ?? null,
+  //             direction: sort.direction,
+  //           })),
+  //         };
+  //       }
+  //     }
+
+  //     return {
+  //       rows: rowsWithCells,
+  //       matchedCells,
+  //       nextCursor,
+  //     };
+  //   }),
   getFilterCells: publicProcedure
     .input(
       z.object({
         viewId: z.number(),
         limit: z.number().default(500),
-        cursor: z.number().optional(),
+        cursor: CursorSchema.optional(),
         searchText: z.string().optional(),
       }),
     )
     .query(async ({ input, ctx }) => {
       const { viewId, limit, cursor, searchText } = input;
 
-      // Get respective view
+      // Get view
       const [view] = await ctx.db
         .select({ config: views.config, tableId: views.tableId })
         .from(views)
@@ -456,126 +623,161 @@ export const tableRouter = createTRPCRouter({
 
       if (!view) throw new Error("View not found");
 
-      // Extract config
       const { filters: filterTree, sorting } = view.config as ViewConfigType;
+      const baseConditions = [eq(rows.tableId, view.tableId)];
 
-      // Build WHERE conditions
-      const conditions = [eq(rows.tableId, view.tableId)];
-
-      if (filterTree && filterTree.args.length > 0) {
+      if (filterTree?.args.length) {
         validateFilterGroup(filterTree);
-        conditions.push(buildFilter(filterTree));
+        baseConditions.push(buildFilter(filterTree));
       }
 
-      if (cursor) {
-        conditions.push(gt(rows.id, cursor));
-      }
+      // const sortAliases = sorting.map((_, i) => alias(cellValues, `sort_${i}`));
+      const sortAliases: SortAlias[] = sorting.map((sort, i) => ({
+        columnId: sort.columnId,
+        alias: createCellValueAlias(`sort_${i}`),
+      }));
+      // Build sort joins
+      sorting.forEach((sort, i) => {
+        const sortAlias = sortAliases[i];
+        if (!sortAlias) return;
 
-      // Base query (only rows)
+        baseConditions.push(
+          eq(rows.id, sortAlias.alias.rowId),
+          eq(sortAlias.alias.columnId, sort.columnId),
+        );
+      });
+
+      // Start row query
       let rowQuery = ctx.db
-        .select({ id: rows.id })
+        .select({
+          id: rows.id,
+          ...Object.fromEntries(
+            sorting.map((_, i) => [`sort_${i}`, sortAliases[i]?.alias.value]),
+          ),
+        })
         .from(rows)
-        .where(and(...conditions))
         .$dynamic();
 
-      // ========= SEARCH ============
-
-      if (searchText) {
-        rowQuery = rowQuery
-          .leftJoin(cellValues, eq(cellValues.rowId, rows.id))
-          .where(
-            and(
-              ...conditions,
-              sql`${cellValues.value}::text ILIKE ${`%${searchText}%`}`,
-            ),
-          );
-      }
-
-      // ========= Sorting =========
-      const sortAliases = sorting.map((s, i) => alias(cellValues, `sort_${i}`));
-
+      // Apply joins for sort aliases
       sorting.forEach((sort, i) => {
         const sortAlias = sortAliases[i];
         if (!sortAlias) return;
 
         rowQuery = rowQuery.leftJoin(
-          sortAlias,
+          sortAlias.alias,
           and(
-            eq(rows.id, sortAlias.rowId),
-            eq(sortAlias.columnId, sort.columnId),
+            eq(rows.id, sortAlias.alias.rowId),
+            eq(sortAlias.alias.columnId, sort.columnId),
           ),
         );
       });
 
-      const orderBys: (ReturnType<typeof asc> | undefined)[] = sorting.map(
-        (sort, i) => {
-          const sortAlias = sortAliases[i];
-          if (!sortAlias) return;
-          console.log("SORT TYPE",sort.type, typeof(sortAlias?.value), sortAlias?.value)
-          if(sort.type === "number") {
-            console.log("hello")
-            return sort.direction === "asc"
-              ? asc(sql`(${sortAlias.value} #>> '{}')::numeric`)
-              : desc(sql`(${sortAlias.value} #>> '{}')::numeric`);
-          }
-          
-          return sort.direction === "asc"
-            ? asc(sql`LOWER(${sortAlias?.value}::text)`)
-            : desc(sql`LOWER(${sortAlias?.value}::text)`);
-        },
-      );
+      // Apply filters
+      const whereClauses: SQL[] = [...baseConditions];
+      // rowQuery = rowQuery.where(and(...baseConditions));
 
-      // Always add rows.id for stable pagination (last tiebreaker)
-      orderBys.push(asc(rows.id));
-
-      // ========= Pagination =========
-      rowQuery = rowQuery
-        .orderBy(
-          ...orderBys.filter(
-            (o): o is Exclude<typeof o, undefined> => o !== undefined,
-          ),
-        )
-        .limit(limit + 1);
-
-      // ========= Execute =========
-      const rowsRes = (await rowQuery) as RowType[];
-
-      if (rowsRes.length === 0) {
-        return { rows: [], nextCursor: null };
+      // Search (optional)
+      if (searchText) {
+        rowQuery = rowQuery.leftJoin(cellValues, eq(cellValues.rowId, rows.id));
+        whereClauses.push(
+          sql`${cellValues.value}::text ILIKE ${`%${searchText}%`}`,
+        );
+        // .where(
+        //   and(
+        //     ...baseConditions,
+        //     sql`${cellValues.value}::text ILIKE ${`%${searchText}%`}`,
+        //   ),
+        // );
       }
 
-      const rowIds = rowsRes.map((r: RowType) => r.id);
+      // Order by sort values + rowId (stable ordering)
+      const orderBys = sorting
+        .map((sort, i) => {
+          const sortAlias = sortAliases[i];
+          if (!sortAlias) return;
 
-      // Fetch related cells separately
-      const cellsRes = (await ctx.db
+          const valueExpr =
+            sort.type === "number"
+              ? sql`(${sortAlias.alias.value} #>> '{}')::numeric`
+              : sql`LOWER(${sortAlias.alias.value}::text)`;
+
+          return sort.direction === "asc" ? asc(valueExpr) : desc(valueExpr);
+        })
+        .filter(Boolean) as (
+        | ReturnType<typeof asc>
+        | ReturnType<typeof desc>
+      )[];
+
+      orderBys.push(asc(rows.id));
+
+      rowQuery = rowQuery.orderBy(...orderBys);
+
+      // Cursor logic
+      if (cursor) {
+        const cursorCondition = findRowChunk(cursor, sortAliases);
+        if (cursorCondition) {
+          whereClauses.push(cursorCondition);
+        }
+      }
+
+      // Pagination
+      rowQuery = rowQuery.where(and(...whereClauses)).limit(limit + 1);
+      const rowsRes = await rowQuery;
+      console.log("ROWS RES", rowsRes);
+      if (rowsRes.length === 0) {
+        return { rows: [], matchedCells: [], nextCursor: null };
+      }
+
+      const paginatedRows = rowsRes.slice(0, limit);
+      const rowIds = paginatedRows.map((r) => r.id);
+
+      // Fetch related cells
+      const cellsRes = await ctx.db
         .select()
         .from(cellValues)
-        .where(inArray(cellValues.rowId, rowIds))) as CellType[];
+        .where(inArray(cellValues.rowId, rowIds));
 
-      const matchedCells: CellType[] = cellsRes.filter((c) => {
-        if (searchText) {
-          return c.value
-            ?.toString()
-            .toLowerCase()
-            .includes(searchText.toLowerCase());
-        } else {
-          return false;
-        }
-      });
+      const matchedCells = searchText
+        ? cellsRes.filter((c) =>
+            c.value
+              ?.toString()
+              .toLowerCase()
+              .includes(searchText.toLowerCase()),
+          )
+        : [];
 
-      // Hydrate rows with cells
-      const rowsWithCells = rowsRes.map((r: RowType) => ({
-        ...r,
-        cells: cellsRes.filter((c) => c.rowId === r.id),
+      const rowsWithCells = paginatedRows.map((row) => ({
+        ...row,
+        cells: cellsRes.filter((cell) => cell.rowId === row.id),
       }));
 
-      // Compute next cursor
-      const nextCursor =
-        rowsRes.length > limit ? rowsRes[rowsRes.length - 1]?.id : undefined;
+      // Build nextCursor
+
+      let nextCursor: Cursor | null = null;
+      if (rowsRes.length > limit) {
+        const lastRow = rowsRes[limit - 1];
+        console.log("last row", lastRow);
+        if (lastRow) {
+          nextCursor = {
+            rowId: lastRow.id,
+            cursorVals: sorting.map((sort, i) => ({
+              colId: sort.columnId,
+              value:
+                (lastRow as Record<string, string | number | null>)[
+                  `sort_${i}`
+                ] ?? null,
+              direction: sort.direction,
+            })),
+          };
+        }
+      }
+      console.log("CursorVals:", nextCursor?.cursorVals);
+      console.log("RowId:", nextCursor?.rowId);
+
       return {
         rows: rowsWithCells,
-        nextCursor,
         matchedCells,
+        nextCursor,
       };
     }),
 });
