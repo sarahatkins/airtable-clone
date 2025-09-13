@@ -73,7 +73,7 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
   const updateConfig = api.table.updateViewConfig.useMutation({
     onSuccess: async (newConfig) => {
       console.log("View Config has been updated...", newConfig);
-
+      
       await utils.table.getFilterCells.invalidate();
     },
   });
@@ -99,6 +99,10 @@ const SelectedTable: React.FC<SelectedTableProps> = ({ selectedTable }) => {
       },
     });
   };
+  useEffect(() => {
+    utils.table.getViewByTable.invalidate({tableId: selectedTable.id})
+  }, [])
+
   const isDataLoading = colsLoading || viewsLoading;
 
   return (

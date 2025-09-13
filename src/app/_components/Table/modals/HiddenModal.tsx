@@ -1,11 +1,10 @@
 // components/SortModal.tsx
-import {
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import { Eye, GripVertical } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Baseline, Eye, GripVertical, Hash } from "lucide-react";
 import type { ColType, HiddenColType } from "~/app/defaults";
+// import { IonToggle } from '@ionic/react';
+import { styled } from "@mui/material/styles";
+import Switch from "@mui/material/Switch";
 
 interface ModalProps {
   isOpen: boolean;
@@ -30,12 +29,12 @@ const HiddenModal: React.FC<ModalProps> = ({
   );
 
   const handleHiddenCol = (hide: boolean, id: number) => {
-    if(hide) {
-      onSave([...hiddenCols, id])
+    if (hide) {
+      onSave([...hiddenCols, id]);
     } else {
-      onSave(hiddenCols.filter((colId) => colId != id))
+      onSave(hiddenCols.filter((colId) => colId != id));
     }
-  }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -58,59 +57,64 @@ const HiddenModal: React.FC<ModalProps> = ({
     <div
       ref={modalRef}
       className="absolute right-0 z-60 mt-2 w-[380px] rounded-lg border border-gray-200 bg-white shadow-xl"
-       onClick={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
     >
       {/* Content */}
-      <div className="space-y-2 px-4 py-3">
+      <div className="mt-3 px-4 pb-2">
         <div className="mb-3 flex items-center">
           <input
             type="text"
             placeholder="Find a field"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded border border-none py-1.5 pr-2 pl-2 text-sm focus:ring-1 focus:ring-transparent focus:outline-none"
+            className="w-full rounded border border-none pr-2 pl-2 text-sm focus:ring-1 focus:ring-transparent focus:outline-none"
           />
         </div>
 
         <ul>
-          <li className="my-1 border-t border-gray-200" />
+          <li className="border-t border-gray-200" />
         </ul>
+
         <div className="mt-3 space-y-2">
-          {filteredFields.map((col: ColType) =>{ 
+          {filteredFields.map((col: ColType) => {
             const hiddenCol: boolean = hiddenCols.includes(col.id);
             return (
-            <div
-              key={col.id}
-              className="flex items-center justify-between rounded-md px-2 py-1 hover:bg-gray-50"
-            >
-              <div className="flex items-center gap-2">
-                <button onClick={() => handleHiddenCol(!hiddenCol, col.id)}>
-                  {hiddenCol ? (
-                    <Eye className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-gray-300" />
-                  )}
-                </button>
-                {/* {field.icon} */}
-                <span className="text-sm">{col.name}</span>
+              <div
+                key={col.id}
+                className="flex items-center justify-between rounded-md px-1 hover:bg-gray-50"
+              >
+                <div className="flex items-center gap-2">
+                  <button onClick={() => handleHiddenCol(!hiddenCol, col.id)}>
+                    {/* <switch /> */}
+                    <TinySwitch checked={hiddenCol} />
+                  </button>
+
+                  <span className="flex items-center text-sm text-gray-900">
+                    {col.type === "text" ? (
+                      <Baseline width={13} className="mt-0.25 mr-1" />
+                    ) : (
+                      <Hash width={13} className="mr-1" />
+                    )}
+
+                    {col.name}
+                  </span>
+                </div>
+                <GripVertical className="h-4 w-4 text-gray-300" />
               </div>
-              <GripVertical className="h-4 w-4 text-gray-400" />
-            </div>
-          )})}
+            );
+          })}
         </div>
 
         {/* Footer buttons */}
-        <div className="mt-4 flex justify-between">
+        <div className="mt-4 flex justify-between gap-5">
           <button
-            className="rounded-md border border-gray-300 px-3 py-1 text-sm hover:bg-gray-50"
-            onClick={() =>
-              onSave(cols.map((c) => c.id))
-            }
+            className="w-full cursor-pointer rounded-md bg-gray-100 py-1 text-sm text-gray-700 hover:bg-gray-200 hover:text-black"
+            onClick={() => onSave(cols.map((c) => c.id))}
           >
             Hide all
           </button>
           <button
-            className="rounded-md border border-gray-300 px-3 py-1 text-sm hover:bg-gray-50"
+            className="w-full cursor-pointer rounded-md bg-gray-100 py-1 text-sm text-gray-700 hover:bg-gray-200 hover:text-black"
             onClick={() => onSave([])}
           >
             Show all
@@ -120,5 +124,37 @@ const HiddenModal: React.FC<ModalProps> = ({
     </div>
   );
 };
+
+const TinySwitch = styled(Switch)(({ theme }) => ({
+  width: 20,
+  height: 10,
+  padding: 0,
+  display: "flex",
+
+  "& .MuiSwitch-switchBase": {
+    padding: 1.5,
+    transform: "translateX(0px)",
+    "&.Mui-checked": {
+      transform: "translateX(12px)",
+      color: "#fff",
+      "& + .MuiSwitch-track": {
+        backgroundColor: "#16a34a", // Tailwind green-600
+        opacity: 1,
+      },
+    },
+  },
+
+  "& .MuiSwitch-thumb": {
+    width: 6,
+    height: 6,
+    boxShadow: "0 0 2px rgba(0, 0, 0, 0.2)",
+  },
+
+  "& .MuiSwitch-track": {
+    borderRadius: 16 / 2,
+    backgroundColor: "#d1d5db", // Tailwind gray-300
+    opacity: 1,
+  },
+}));
 
 export default HiddenModal;
