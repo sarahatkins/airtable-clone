@@ -4,10 +4,11 @@ import ViewNameModal from "../modals/ViewNameModal";
 
 interface ButtonProps {
   tableId: number;
+  numViews: number;
 }
 
-const CreateViewButton: React.FC<ButtonProps> = ({ tableId }) => {
-  const [viewName, setViewName] = useState<string>("Grid");
+const CreateViewButton: React.FC<ButtonProps> = ({ tableId, numViews }) => {
+  const [viewName, setViewName] = useState<string>(`Grid ${numViews + 1}`);
   const [showModal, setShowModal] = useState<boolean>(false);
 
   useEffect(() => {

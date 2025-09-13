@@ -56,6 +56,7 @@ const AirTable: React.FC<AirtableProps> = ({ baseId, tableId }) => {
           <ChevronDown height={18} className="mt-0.5 text-gray-700" />
           <AddTableButton
             baseId={baseId}
+            numTables={tables?.length ?? 0}
             setSelectedTable={setSelectedTable}
             setFinishedTableSetup={setIsTableSetup}
           />

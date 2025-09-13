@@ -435,7 +435,7 @@ const DataGrid: React.FC<DataGridProps> = ({
                           className={`overflow-hidden text-ellipsis whitespace-nowrap ${
                             cell.column.id !== "__rowIndex" &&
                             "border-r border-gray-200"
-                          } ${matchingCell ? "bg-amber-200" : filteredCell ? "bg-green-100" : sortedCell ? "bg-orange-100" : ""}`}
+                          } ${matchingCell ? "bg-amber-200" : filteredCell ? "bg-green-100" : sortedCell ? "bg-orange-100" : ""} `}
                           style={{ width: cell.column.getSize() }}
                           onContextMenu={() => {
                             setRowSelection((prev) => [

@@ -19,8 +19,8 @@ interface FilterModalProps {
 const textOperators: { value: FilterOperator; label: string }[] = [
   { value: "contains", label: "contains..." },
   { value: "notContains", label: "does not contain..." },
-  { value: "eq", label: "is..." },
-  { value: "neq", label: "is not..." },
+  { value: "is", label: "is..." },
+  { value: "isNot", label: "is not..." },
   { value: "isEmpty", label: "is empty" },
   { value: "isNotEmpty", label: "is not empty" },
 ];

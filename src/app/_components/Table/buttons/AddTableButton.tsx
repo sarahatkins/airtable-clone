@@ -2,6 +2,7 @@ import { Pencil, Plus } from "lucide-react";
 import { useDefaultTableSetup } from "../helper/CreateDefaultTable";
 import {
   useEffect,
+  useMemo,
   useRef,
   useState,
   type Dispatch,
@@ -13,14 +14,20 @@ interface ButtonProps {
   baseId: string;
   setSelectedTable: Dispatch<SetStateAction<TableType | null>>;
   setFinishedTableSetup: Dispatch<SetStateAction<boolean>>;
+  numTables: number;
 }
 
 const AddTableButton: React.FC<ButtonProps> = ({
   baseId,
+  numTables,
   setSelectedTable,
   setFinishedTableSetup,
 }) => {
   const [showModal, setShowModal] = useState<boolean>(false);
+  const newTableName: string = useMemo(() => {
+    return `Table ${numTables + 1}`;
+  }, [numTables]);
+  console.log("NEW", newTableName);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const modalRef = useRef<HTMLDivElement | null>(null);
 
@@ -44,7 +51,7 @@ const AddTableButton: React.FC<ButtonProps> = ({
   }, []);
 
   const handleAddTable = () => {
-    handleCreateTable("Table x");
+    handleCreateTable(newTableName);
     setFinishedTableSetup(false);
     setShowModal(false);
   };
@@ -70,7 +77,6 @@ const AddTableButton: React.FC<ButtonProps> = ({
         }}
       >
         <Plus className="h-4 w-4" />
-        
       </button>
       {showModal && (
         <div

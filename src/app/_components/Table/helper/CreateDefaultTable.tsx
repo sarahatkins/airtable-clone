@@ -1,6 +1,12 @@
 import { useCallback, useState } from "react";
 import { api } from "~/trpc/react";
-import { DEFAULT_COLS, DEFAULT_NUM_ROWS, type ColType,  type RowType, type TableType } from "~/app/defaults";
+import {
+  DEFAULT_COLS,
+  DEFAULT_NUM_ROWS,
+  type ColType,
+  type RowType,
+  type TableType,
+} from "~/app/defaults";
 import { useRouter } from "next/navigation";
 
 export function useDefaultTableSetup(baseId: string) {
@@ -14,23 +20,23 @@ export function useDefaultTableSetup(baseId: string) {
   // --- default newRows/newCols/newGrid hook ---
   const createColumn = api.table.createColumn.useMutation({
     onSuccess: (newCol) => {
-      if(!newCol) return;
+      if (!newCol) return;
       setNewCols((prev) => [...prev, newCol]);
     },
   });
 
   const createRow = api.table.createRow.useMutation({
     onSuccess: (newRow) => {
-      if(!newRow) return;
+      if (!newRow) return;
       setNewRows((prev) => [...prev, newRow]);
     },
   });
 
   const createView = api.table.createView.useMutation({
     onSuccess: (newView) => {
-      console.log("Created view", newView)
-    }
-  })
+      console.log("Created view", newView);
+    },
+  });
 
   const createDefaultTable = useCallback(
     async (tableId: number) => {
@@ -47,9 +53,9 @@ export function useDefaultTableSetup(baseId: string) {
           await createRow.mutateAsync({ tableId });
         }
 
-        await createView.mutateAsync({tableId, name: "Grid view"})
+        await createView.mutateAsync({ tableId, name: "Grid view" });
         setFinishedTableSetup(true);
-        router.push(`/${baseId}/${tableId}`)
+        router.push(`/${baseId}/${tableId}`);
       } catch (error) {
         console.error("Issue with default table setup", error);
       }
@@ -66,10 +72,11 @@ export function useDefaultTableSetup(baseId: string) {
 
       // create defaults immediately after table is created
       await createDefaultTable(newTable.id);
-      await utils.table.getTablesByBase.invalidate({baseId})
+      await utils.table.getTablesByBase.invalidate({ baseId });
     },
     onError: (error) => {
       console.error("Error creating table:", error);
+      window.location.reload();
     },
   });
 
