@@ -54,6 +54,8 @@ export type FilterOperator =
   | "neq"
   | "contains"
   | "notContains"
+  | "is"
+  | "isNot"
   | "isEmpty"
   | "isNotEmpty"
   | "gt"

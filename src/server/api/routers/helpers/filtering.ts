@@ -18,21 +18,21 @@ export function buildFilter(node: FilterGroup | FilterLeaf): SQL {
   // Must be a leaf node at this point
   if (node.args.length === 2) {
     const [columnId, value] = node.args as [number, string | number | boolean];
-
+    console.log('info', columnId, value, node.functionName)
     switch (node.functionName) {
-      case "eq":
+      case "is":
         return sql`EXISTS (
           SELECT 1 FROM ${cellValues} cv
           WHERE cv."rowId" = ${rows.id}
             AND cv."columnId" = ${columnId}
-            AND (cv."value" #>> '{}')::numeric = (${value})::numeric
+            AND (cv."value" #>> '{}') = (${value})::text
         )`;
-      case "neq":
+      case "isNot":
         return sql`EXISTS (
           SELECT 1 FROM ${cellValues} cv
           WHERE cv."rowId" = ${rows.id}
             AND cv."columnId" = ${columnId}
-            AND (cv."value" #>> '{}')::numeric != (${value})::numeric
+            AND (cv."value" #>> '{}') != (${value})::text
         )`;
       case "contains":
         return sql`EXISTS (
@@ -73,6 +73,20 @@ export function buildFilter(node: FilterGroup | FilterLeaf): SQL {
           AND cv."value" IS NOT NULL
           AND cv."value"::jsonb != to_jsonb(''::text)
       )`;
+      case "eq":
+        return sql`EXISTS (
+          SELECT 1 FROM ${cellValues} cv
+          WHERE cv."rowId" = ${rows.id}
+            AND cv."columnId" = ${columnId}
+            AND (cv."value" #>> '{}')::numeric = (${value})::numeric
+        )`;
+      case "neq":
+        return sql`EXISTS (
+          SELECT 1 FROM ${cellValues} cv
+          WHERE cv."rowId" = ${rows.id}
+            AND cv."columnId" = ${columnId}
+            AND (cv."value" #>> '{}')::numeric != (${value})::numeric
+        )`;
       case "gt":
         return sql`EXISTS (
           SELECT 1 FROM ${cellValues} cv

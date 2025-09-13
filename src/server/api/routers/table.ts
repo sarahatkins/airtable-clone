@@ -46,6 +46,8 @@ const FilterLeafSchema = z.object({
     "neq",
     "contains",
     "notContains",
+    "is",
+    "isNot",
     "isEmpty",
     "isNotEmpty",
     "gt",
@@ -443,166 +445,6 @@ export const tableRouter = createTRPCRouter({
         .where(eq(cellValues.tableId, input.tableId)); // assuming you have tableId in cellValues
     }),
 
-  // getFilterCells: publicProcedure
-  //   .input(
-  //     z.object({
-  //       viewId: z.number(),
-  //       limit: z.number().default(500),
-  //       cursor: CursorSchema.optional(),
-  //       searchText: z.string().optional(),
-  //     }),
-  //   )
-  //   .query(async ({ input, ctx }) => {
-  //     const { viewId, limit, cursor, searchText } = input;
-
-  //     // Get respective view
-  //     const [view] = await ctx.db
-  //       .select({ config: views.config, tableId: views.tableId })
-  //       .from(views)
-  //       .where(eq(views.id, viewId));
-
-  //     if (!view) throw new Error("View not found");
-
-  //     // Extract config
-  //     const { filters: filterTree, sorting } = view.config as ViewConfigType;
-
-  //     // Build WHERE conditions
-  //     const conditions = [eq(rows.tableId, view.tableId)];
-
-  //     if (filterTree && filterTree.args.length > 0) {
-  //       validateFilterGroup(filterTree); // makes sure it doesn't crash the system
-  //       conditions.push(buildFilter(filterTree));
-  //     }
-
-  //     // Base query (only rows) - lets's you add more
-  //     let rowQuery = ctx.db
-  //       .select({ id: rows.id })
-  //       .from(rows)
-  //       .where(and(...conditions))
-  //       .$dynamic();
-
-  //     // ========= SEARCH ============
-  //     if (searchText) {
-  //       rowQuery = rowQuery
-  //         .leftJoin(cellValues, eq(cellValues.rowId, rows.id))
-  //         .where(
-  //           and(
-  //             ...conditions,
-  //             sql`${cellValues.value}::text ILIKE ${`%${searchText}%`}`,
-  //           ),
-  //         );
-  //     }
-
-  //     // ========= Sorting =========
-  //     // EAV - entity attribute value
-  //     // Cells are in a different table -> sortAlias holds all cellValues for a given column
-  //     const sortAliases = sorting.map((s, i) => alias(cellValues, `sort_${i}`));
-
-  //     sorting.forEach((sort, i) => {
-  //       const sortAlias = sortAliases[i];
-  //       if (!sortAlias) return;
-
-  //       rowQuery = rowQuery.leftJoin(
-  //         sortAlias,
-  //         and(
-  //           eq(rows.id, sortAlias.rowId),
-  //           eq(sortAlias.columnId, sort.columnId),
-  //         ),
-  //       );
-  //     });
-
-  //     // actual sorting happens here
-  //     const orderBys: (ReturnType<typeof asc> | undefined)[] = sorting
-  //       .map((sort, i) => {
-  //         const sortAlias = sortAliases[i];
-  //         if (!sortAlias) return;
-
-  //         if (sort.type === "number") {
-  //           return sort.direction === "asc"
-  //             ? asc(sql`(${sortAlias.value} #>> '{}')::numeric`)
-  //             : desc(sql`(${sortAlias.value} #>> '{}')::numeric`);
-  //         }
-
-  //         return sort.direction === "asc"
-  //           ? asc(sql`LOWER(${sortAlias?.value}::text)`)
-  //           : desc(sql`LOWER(${sortAlias?.value}::text)`);
-  //       })
-  //       .filter(Boolean);
-
-  //     // Always add rows.id for stable pagination (last tiebreaker)
-  //     orderBys.push(asc(rows.id));
-
-  //     // ========= Pagination =========
-  //     rowQuery = rowQuery.orderBy(
-  //       ...orderBys.filter(
-  //         (o): o is Exclude<typeof o, undefined> => o !== undefined,
-  //       ),
-  //     );
-
-  //     // ===== Cursor logic =====
-  //     // Instead of just checking rowId, you should use the lexicographic cursor
-  //     if (cursor) {
-  //       const cursorCondition = findRowChunk(cursor, sortAliases);
-  //       if (cursorCondition) {
-  //         rowQuery = rowQuery.where(cursorCondition);
-  //       }
-  //     }
-
-  //     rowQuery = rowQuery.limit(limit + 1);
-  //     // ========= Execute =========
-  //     const rowsRes = (await rowQuery) as RowType[];
-
-  //     if (rowsRes.length === 0) {
-  //       return { rows: [], nextCursor: null };
-  //     }
-
-  //     const rowIds = rowsRes.map((r: RowType) => r.id);
-
-  //     // Fetch related cells separately
-  //     const cellsRes = (await ctx.db
-  //       .select()
-  //       .from(cellValues)
-  //       .where(inArray(cellValues.rowId, rowIds))) as CellType[];
-
-  //     const matchedCells: CellType[] = cellsRes.filter((c) => {
-  //       if (searchText) {
-  //         return c.value
-  //           ?.toString()
-  //           .toLowerCase()
-  //           .includes(searchText.toLowerCase());
-  //       } else {
-  //         return false;
-  //       }
-  //     });
-
-  //     // Hydrate rows with cells
-  //     const rowsWithCells = rowsRes.map((r: RowType) => ({
-  //       ...r,
-  //       cells: cellsRes.filter((c) => c.rowId === r.id),
-  //     }));
-
-  //     // Compute next cursor
-  //     let nextCursor: Cursor | null = null;
-  //     if (rowsRes.length > limit) {
-  //       const lastRow = rowsRes[limit - 1];
-  //       if (lastRow) {
-  //         nextCursor = {
-  //           rowId: lastRow.id,
-  //           cursorVals: sorting.map((sort, i) => ({
-  //             colId: sort.columnId,
-  //             value: (lastRow as Record<string, unknown>)[`sort_${i}`] ?? null,
-  //             direction: sort.direction,
-  //           })),
-  //         };
-  //       }
-  //     }
-
-  //     return {
-  //       rows: rowsWithCells,
-  //       matchedCells,
-  //       nextCursor,
-  //     };
-  //   }),
   getFilterCells: publicProcedure
     .input(
       z.object({
@@ -723,7 +565,7 @@ export const tableRouter = createTRPCRouter({
       // Pagination
       rowQuery = rowQuery.where(and(...whereClauses)).limit(limit + 1);
       const rowsRes = await rowQuery;
-      console.log("ROWS RES", rowsRes);
+
       if (rowsRes.length === 0) {
         return { rows: [], matchedCells: [], nextCursor: null };
       }
@@ -756,7 +598,7 @@ export const tableRouter = createTRPCRouter({
       let nextCursor: Cursor | null = null;
       if (rowsRes.length > limit) {
         const lastRow = rowsRes[limit - 1];
-        console.log("last row", lastRow);
+
         if (lastRow) {
           nextCursor = {
             rowId: lastRow.id,
@@ -771,8 +613,6 @@ export const tableRouter = createTRPCRouter({
           };
         }
       }
-      console.log("CursorVals:", nextCursor?.cursorVals);
-      console.log("RowId:", nextCursor?.rowId);
 
       return {
         rows: rowsWithCells,

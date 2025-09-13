@@ -39,7 +39,6 @@ export const findRowChunk = (
 
   for (let i = 0; i < cursor.cursorVals.length; i++) {
     const andConditions: SQL[] = [];
-    console.log(cursor.cursorVals.length);
     // All previous values must match exactly
     for (let j = 0; j < i; j++) {
       const prevCursor = cursor.cursorVals[j];
@@ -48,23 +47,17 @@ export const findRowChunk = (
         throw new Error("Invalid cursor or alias at index " + j);
       }
 
-      console.log("PREV CUR + ALIAS ONE", prevCursor);
       const valueCol = prevAlias.alias.value;
 
       if (prevCursor.value === null) {
-        console.log("hehe");
         andConditions.push(eq(valueCol, null));
       } else {
-        console.log("haha");
         andConditions.push(eq(valueCol, prevCursor.value));
       }
     }
 
     const currCursor = cursor.cursorVals[i];
     const currAlias = sortAliases[i]; // in order of the orders given
-    // first -> val is col  9, val 2, dir asc
-    // second -> col 6 val 'a', dis asc
-    console.log("CURR CUR + ALIAS TWO", currCursor);
 
     if (!currCursor || !currAlias) {
       throw new Error("Invalid current cursor or alias at index " + i);
@@ -91,30 +84,5 @@ export const findRowChunk = (
       orConditions.push(andExpr);
     }
   }
-
-  // Final tie-breaker: if all values match, use rowId to break tie
-  // const lastIndex = cursor.cursorVals.length - 1;
-  // const lastCursor = cursor.cursorVals[lastIndex];
-  // const lastAlias = sortAliases[lastIndex];
-
-  // if (!lastCursor || !lastAlias) {
-  //   throw new Error("Invalid cursor or alias ");
-  // }
-
-  // const lastValueCol = lastAlias.alias.value;
-
-  // if (lastCursor.value === null) {
-  //   orConditions.push(gt(rows.id, cursor.rowId));
-  // } else {
-  //   const orExpr = or(
-  //     and(eq(lastValueCol, lastCursor.value), gt(rows.id, cursor.rowId)),
-  //     gt(lastValueCol, lastCursor.value),
-  //   );
-
-  //   if (orExpr) {
-  //     orConditions.push(orExpr);
-  //   }
-  // }
-  console.log("OR", orConditions[0]?.queryChunks);
-  return or(...orConditions);
+    return or(...orConditions);
 };
